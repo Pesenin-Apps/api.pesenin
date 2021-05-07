@@ -1,3 +1,6 @@
+# Directory
 node_modules/
-
 public/uploads/
+
+# File
+package.json
