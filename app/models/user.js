@@ -43,7 +43,7 @@ userSchema.path('email').validate(function(value) {
 userSchema.path('email').validate(async function(value) {
     try {
         // fetch email form `collection user` by `email`
-        const count = await this.model('User').count({ name: value });
+        const count = await this.model('User').count({ email: value });
         // if user.email was found then return `false`, if user.email not found then return `true`
         // if true, validation is success
         // if false, validation is fail
