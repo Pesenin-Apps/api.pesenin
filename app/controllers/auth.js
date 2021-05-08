@@ -59,8 +59,18 @@ async function signIn(req, res, next) {
     })(req, res, next);
 }
 
+function me(req, res, next) {
+    if (!req.user) {
+        return res.status(403).json({
+            message: 'Your\'re not signin or token expired'
+        });
+    }
+    return res.json(req.user);
+}
+
 module.exports = {
     signUp,
     localStrategy,
-    signIn
+    signIn,
+    me
 }
