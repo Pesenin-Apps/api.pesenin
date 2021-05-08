@@ -6,6 +6,8 @@ var logger = require('morgan');
 
 const apiRouter = require('./routes/app');
 
+const { decodeToken } = require('./app/middlewares/auth');
+
 var app = express();
 
 // view engine setup
@@ -17,6 +19,8 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
+
+app.use(decodeToken());
 
 app.use('/api/v1/', apiRouter);
 
