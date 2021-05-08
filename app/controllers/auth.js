@@ -4,6 +4,16 @@ const bcrypt = require('bcrypt');
 
 const User = require('../models/user');
 const config = require('../config/app');
+const { getToken } = require('../utils/get-token');
+
+function me(req, res, next) {
+    if (!req.user) {
+        return res.status(403).json({
+            message: 'Your\'re not signin or token expired'
+        });
+    }
+    return res.json(req.user);
+}
 
 async function signUp(req, res, next) {
     try {
@@ -59,18 +69,27 @@ async function signIn(req, res, next) {
     })(req, res, next);
 }
 
-function me(req, res, next) {
-    if (!req.user) {
+async function signOut(req, res, next) {
+    let token = getToken(req);
+    let user = await User.findOneAndUpdate(
+        { token: {$in: [token]} },
+        { $pull: { token } },
+        { useFindAndModify: false }
+    );
+    if (!user || !token) {
         return res.status(403).json({
-            message: 'Your\'re not signin or token expired'
+            message: 'User Not Found'
         });
     }
-    return res.json(req.user);
+    return res.status(200).json({
+        message: 'Signed Out Successfully!'
+    });
 }
 
 module.exports = {
+    me,
     signUp,
     localStrategy,
     signIn,
-    me
+    signOut
 }

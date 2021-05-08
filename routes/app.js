@@ -11,5 +11,6 @@ passport.use(new LocalStrategy({ usernameField: 'email' }, authController.localS
 router.get('/auth/me', authController.me);
 router.post('/auth/signup', multer().none(), authController.signUp);
 router.post('/auth/signin', multer().none(), authController.signIn);
+router.post('/auth/signout', authController.signOut);
 
 module.exports = router;
