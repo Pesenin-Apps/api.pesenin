@@ -18,8 +18,10 @@ const userSchema = Schema({
         required: [true, 'Password harus diisi'],
         maxlength: [255, 'Panjang password maksimal 255 karakter'],
     },
-    role_id: {
-        type: Number
+    role: {
+        type: String, 
+        enum: ['cashier', 'chef', 'waiter'],
+        default: 'waiter'
     },
     token: [String]
 }, { timestamps: true });
