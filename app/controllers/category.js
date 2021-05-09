@@ -1,8 +1,15 @@
 const Category = require('../models/category');
 
-// TODO: Get all data categories
 async function index(req, res, next) {
-    
+    try {
+        let category = await Category.find();
+        return res.status(200).json({
+            message: "Categories Retrieved Successfully!",
+            categories: category
+        })
+    } catch (err) {
+        next(err);
+    }
 }
 
 // TODO: Get one data category by id
