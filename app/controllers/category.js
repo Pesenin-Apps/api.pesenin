@@ -4,7 +4,7 @@ async function index(req, res, next) {
     try {
         let category = await Category.find();
         return res.status(200).json({
-            message: "Categories Retrieved Successfully!",
+            message: "Categories Retrived Successfully!",
             categories: category
         })
     } catch (err) {
