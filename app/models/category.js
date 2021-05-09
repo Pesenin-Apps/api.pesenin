@@ -8,7 +8,7 @@ const categorySchema = Schema({
         minlength: [ 3, 'must be at least 3 characters in length.' ],
         maxlength: [ 50, 'Panjang nama kategori maksimal 50 karakter' ]
     }
-});
+}, { timestamps: true });
 
 categorySchema.virtual('products', {
     ref: 'Product',
