@@ -4,10 +4,11 @@ const path = require('path');
 const config = require('../../config/app')
 const Product = require('../../models/products/product');
 const Category = require('../../models/products/category');
+const Type = require('../../models/products/type');
 
 async function index(req, res, next) {
     try {
-        let products = await Product.find().populate('category', 'name');
+        let products = await Product.find().populate('category', 'name').populate('type', 'name');
         return res.status(200).json({
             message: "Products Retrived Successfully!",
             products: products
@@ -19,7 +20,7 @@ async function index(req, res, next) {
 
 async function show(req, res, next) {
     try {
-        let product = await Product.findById(req.params.id).populate('category');
+        let product = await Product.findById(req.params.id).populate('category').populate('type');
         return res.status(200).json({
             message: "Product Retrived Successfully!",
             product: product
@@ -43,6 +44,17 @@ async function store(req, res, next) {
                 payload = { ...payload, category: category._id }
             } else {
                 delete payload.category
+            }
+        }
+        // relationship of type
+        if (payload.type) {
+            let type = await Type.findOne({
+                _id: payload.type
+            });
+            if (type) {
+                payload = { ...payload, type: type._id }
+            } else {
+                delete payload.type
             }
         }
         // store and upload data
@@ -116,6 +128,17 @@ async function update(req, res, next) {
                 payload = { ...payload, category: category._id }
             } else {
                 delete payload.category
+            }
+        }
+        // relationship of type
+        if (payload.type) {
+            let type = await Type.findOne({
+                _id: payload.type
+            });
+            if (type) {
+                payload = { ...payload, type: type._id }
+            } else {
+                delete payload.type
             }
         }
         // store and upload data
