@@ -32,6 +32,10 @@ router.put('/product-categories/:id', multer().none(), categoryController.update
 router.delete('/product-categories/:id', categoryController.destroy);
 
 // type
+router.get('/product-types', typeController.index);
+router.get('/product-types/:id', typeController.show);
 router.post('/product-types', multer().none(), typeController.store);
+router.put('/product-types/:id', multer().none(), typeController.update);
+router.delete('/product-types/:id', typeController.destroy);
 
 module.exports = router;
