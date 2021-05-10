@@ -25,7 +25,7 @@ router.delete('/products/:id', productController.destroy);
 
 // category
 router.get('/product-categories', categoryController.index);
-router.get('/products-categories/:id', categoryController.show);
+router.get('/product-categories/:id', categoryController.show);
 router.post('/product-categories', multer().none(), categoryController.store);
 router.put('/product-categories/:id', multer().none(), categoryController.update);
 router.delete('/product-categories/:id', categoryController.destroy);
