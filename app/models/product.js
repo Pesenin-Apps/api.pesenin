@@ -9,12 +9,12 @@ const productSchema = Schema({
     },
     description: {
         type: String,
-        maxlength: [ 1000, 'cannot exceed 1000 characters in length.' ],
+        maxlength: [ 1000, 'cannot exceed 1000 characters in length.' ]
     },
     price: {
         type: Number,
         default: 0,
-        required: [ true, 'is required.' ],
+        required: [ true, 'is required.' ]
     },
     category: {
         type: Schema.Types.ObjectId,

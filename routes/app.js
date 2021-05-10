@@ -18,7 +18,7 @@ router.post('/auth/signout', authController.signOut);
 
 // product
 router.get('/products', productController.index);
-router.post('/products', multer({dest: os.tmpdir()}).single('image'), productController.store)
+router.post('/products', multer({dest: os.tmpdir()}).single('image'), productController.store);
 
 // category
 router.get('/products/category', categoryController.index);

@@ -7,14 +7,13 @@ const Category = require('../models/category');
 
 async function index(req, res, next) {
     try {
-        let products = await Product.find()
-            .populate('category', 'name')
+        let products = await Product.find().populate('category', 'name');
         return res.status(200).json({
             message: "Products Retrived Successfully!",
             products: products
         });
     } catch (err) {
-        next(error)
+        next(error);
     }
 }
 
