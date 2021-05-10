@@ -2,19 +2,26 @@ const Category = require('../models/category');
 
 async function index(req, res, next) {
     try {
-        let category = await Category.find();
+        let categories = await Category.find();
         return res.status(200).json({
             message: "Categories Retrived Successfully!",
-            categories: category
-        })
+            categories: categories
+        });
     } catch (err) {
         next(err);
     }
 }
 
-// TODO: Get one data category by id
 async function show(req, res, next) {
-
+    try {
+        let category = await Category.findById(req.params.id).populate('products');
+        return res.status(200).json({
+            message: "Product Retrived Successfully!",
+            category: category
+        });
+    } catch (err) {
+        next(err);
+    }
 }
 
 async function store(req, res, next) {

@@ -24,10 +24,10 @@ router.put('/products/:id', multer({dest: os.tmpdir()}).single('image'), product
 router.delete('/products/:id', productController.destroy);
 
 // category
-router.get('/products/category', categoryController.index);
-router.get('/products/category/:id', categoryController.show);
-router.post('/products/category', multer().none(), categoryController.store);
-router.put('/products/category/:id', multer().none(), categoryController.update);
-router.delete('/products/category/:id', categoryController.destroy);
+router.get('/product-categories', categoryController.index);
+router.get('/products-categories/:id', categoryController.show);
+router.post('/product-categories', multer().none(), categoryController.store);
+router.put('/product-categories/:id', multer().none(), categoryController.update);
+router.delete('/product-categories/:id', categoryController.destroy);
 
 module.exports = router;
