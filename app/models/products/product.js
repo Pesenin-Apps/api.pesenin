@@ -21,6 +21,11 @@ const productSchema = Schema({
         ref: 'Category',
         required: [ true, 'is required.' ]
     },
+    type: {
+        type: Schema.Types.ObjectId,
+        ref: 'Type',
+        required: [ true, 'is required.' ]
+    },
     image_url: String
 }, { timestamps: true });
 
