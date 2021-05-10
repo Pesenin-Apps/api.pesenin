@@ -5,8 +5,8 @@ const passport = require('passport');
 const LocalStrategy = require('passport-local').Strategy;
 
 const authController = require('../app/controllers/auth');
-const categoryController = require('../app/controllers/category');
-const productController = require('../app/controllers/product');
+const categoryController = require('../app/controllers/products/category');
+const productController = require('../app/controllers/products/product');
 
 passport.use(new LocalStrategy({ usernameField: 'email' }, authController.localStrategy));
 
@@ -29,5 +29,7 @@ router.get('/product-categories/:id', categoryController.show);
 router.post('/product-categories', multer().none(), categoryController.store);
 router.put('/product-categories/:id', multer().none(), categoryController.update);
 router.delete('/product-categories/:id', categoryController.destroy);
+
+// type
 
 module.exports = router;

@@ -1,4 +1,4 @@
-const Category = require('../models/category');
+const Category = require('../../models/products/category');
 
 async function index(req, res, next) {
     try {
