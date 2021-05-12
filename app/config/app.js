@@ -12,4 +12,7 @@ module.exports = {
     dbPassword: process.env.DB_PASSWORD,
     dbPort: process.env.DB_PORT,
     dbName: process.env.DB_NAME,
+    mDBuser: process.env.MDB_USER,
+    mDBpassword: process.env.MDB_PASSWORD,
+    mDBname: process.env.MDB_NAME
 }
