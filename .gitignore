@@ -3,4 +3,5 @@ node_modules/
 public/uploads/
 
 # File
+package-lock.json
 .env
