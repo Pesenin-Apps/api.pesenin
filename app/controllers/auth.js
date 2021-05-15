@@ -6,15 +6,6 @@ const User = require('../models/user');
 const config = require('../config/app');
 const { getToken } = require('../utils/get-token');
 
-function me(req, res, next) {
-    if (!req.user) {
-        return res.status(403).json({
-            message: 'Your\'re not signin or token expired'
-        });
-    }
-    return res.json(req.user);
-}
-
 async function signUp(req, res, next) {
     try {
         const payload = req.body;
@@ -87,7 +78,6 @@ async function signOut(req, res, next) {
 }
 
 module.exports = {
-    me,
     signUp,
     localStrategy,
     signIn,

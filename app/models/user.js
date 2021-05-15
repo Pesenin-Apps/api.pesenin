@@ -2,6 +2,12 @@ const mongoose = require('mongoose');
 const { model, Schema } = mongoose;
 const bcrypt = require('bcrypt');
 
+const ROLE = {
+    CASHIER: 'cashier',
+    CHEF: 'chef',
+    WAITER: 'waiter'
+}
+
 const HASH_ROUND = 10;
 
 const userSchema = Schema({
@@ -59,4 +65,7 @@ userSchema.pre('save', function(next) {
     next();
 });
 
-module.exports = model('User', userSchema);
+module.exports = {
+    User: model('User', userSchema),
+    ROLE: ROLE
+}
