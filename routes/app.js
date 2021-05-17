@@ -4,7 +4,7 @@ const router = require('express').Router();
 const passport = require('passport');
 const LocalStrategy = require('passport-local').Strategy;
 
-const { hasRole } = require('../app/middlewares/authentication')
+const { hasRole } = require('../app/middlewares/authentication');
 
 const authController = require('../app/controllers/auth');
 const userController = require('../app/controllers/user');
