@@ -28,21 +28,21 @@ router.get('/user/me', userController.me);
 router.get('/products/types', productTypeController.index);
 router.get('/products/types/:id', productTypeController.show);
 router.post('/products/types', [ hasRole('cashier'), multer().none() ], productTypeController.store);
-router.put('/products/types/:id', [ hasRole('cashier'), multer().none() ], productTypeController.update);
+router.patch('/products/types/:id', [ hasRole('cashier'), multer().none() ], productTypeController.update);
 router.delete('/products/types/:id', hasRole('cashier'), productTypeController.destroy);
 
 // category
 router.get('/products/categories', productCategoryController.index);
 router.get('/products/categories/:id', productCategoryController.show);
 router.post('/products/categories', [ hasRole('cashier'), multer().none() ], productCategoryController.store);
-router.put('/products/categories/:id', [ hasRole('cashier'), multer().none() ], productCategoryController.update);
+router.patch('/products/categories/:id', [ hasRole('cashier'), multer().none() ], productCategoryController.update);
 router.delete('/products/categories/:id', productCategoryController.destroy);
 
 // product
 router.get('/products', productController.index);
 router.get('/products/:id', productController.show);
 router.post('/products', [ hasRole('cashier'), multer({dest: os.tmpdir()}).single('image') ], productController.store);
-router.put('/products/:id', [ hasRole('cashier'), multer({dest: os.tmpdir()}).single('image') ], productController.update);
+router.patch('/products/:id', [ hasRole('cashier'), multer({dest: os.tmpdir()}).single('image') ], productController.update);
 router.delete('/products/:id', hasRole('cashier'), productController.destroy);
 
 /* ========= END PRODUCT ENDPOINT ========= */
