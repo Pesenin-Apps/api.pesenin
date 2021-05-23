@@ -3,8 +3,8 @@ const path = require('path');
 
 const config = require('../../config/app')
 const Product = require('../../models/products/product');
-const Category = require('../../models/products/category');
-const Type = require('../../models/products/type');
+const ProductCategory = require('../../models/products/category');
+const ProductType = require('../../models/products/type');
 
 async function index(req, res, next) {
     try {
@@ -37,7 +37,7 @@ async function store(req, res, next) {
         let file = req.file;
         // relationship of category
         if (payload.category) {
-            let category = await Category.findOne({
+            let category = await ProductCategory.findOne({
                 _id: payload.category
             });
             if (category) {
@@ -48,7 +48,7 @@ async function store(req, res, next) {
         }
         // relationship of type
         if (payload.type) {
-            let type = await Type.findOne({
+            let type = await ProductType.findOne({
                 _id: payload.type
             });
             if (type) {
@@ -121,7 +121,7 @@ async function update(req, res, next) {
         let file = req.file;
         // relationship of category
         if (payload.category) {
-            let category = await Category.findOne({
+            let category = await ProductCategory.findOne({
                 _id: payload.category
             });
             if (category) {
@@ -132,7 +132,7 @@ async function update(req, res, next) {
         }
         // relationship of type
         if (payload.type) {
-            let type = await Type.findOne({
+            let type = await ProductType.findOne({
                 _id: payload.type
             });
             if (type) {
