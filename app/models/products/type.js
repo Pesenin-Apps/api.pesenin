@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 const { model, Schema } = mongoose;
 
-const typeSchema = Schema({
+const productTypeSchema = Schema({
     name: {
         type: String,
         required: [ true, 'is required.' ],
@@ -10,13 +10,10 @@ const typeSchema = Schema({
     }
 }, { timestamps: true });
 
-typeSchema.virtual('products', {
+productTypeSchema.virtual('products', {
     ref: 'Product',
     localField: '_id',
     foreignField: 'type'
 });
 
-typeSchema.set('toObject', { virtuals: true });
-typeSchema.set('toJSON', { virtuals: true });
-
-module.exports = model('Type', typeSchema);
+module.exports = model('ProductType', productTypeSchema);

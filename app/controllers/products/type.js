@@ -1,11 +1,11 @@
-const Type = require('../../models/products/type');
+const ProductType = require('../../models/products/type');
 
 async function index(req, res, next) {
     try {
-        let types = await Type.find();
+        let productTypes = await ProductType.find();
         return res.status(200).json({
-            message: "Types Retrived Successfully!",
-            types: types
+            message: "ProductTypes Retrived Successfully!",
+            productTypes: productTypes
         });
     } catch (err) {
         next(err);
@@ -14,10 +14,10 @@ async function index(req, res, next) {
 
 async function show(req, res, next) {
     try {
-        let type = await Type.findById(req.params.id).populate('products');
+        let productType = await ProductType.findById(req.params.id).populate('products');
         return res.status(200).json({
-            message: "Type Retrived Successfully!",
-            type: type
+            message: "ProductType Retrived Successfully!",
+            productType: productType
         });
     } catch (err) {
         next(err);
@@ -27,11 +27,11 @@ async function show(req, res, next) {
 async function store(req, res, next) {
     try {
         let payload = req.body;
-        let type = new Type(payload);
-        await type.save();
+        let productType = new ProductType(payload);
+        await productType.save();
         return res.status(201).json({
-            message: 'Type Stored Successfully!',
-            type: type
+            message: 'ProductType Stored Successfully!',
+            productType: productType
         });
     } catch (err) {
         if (err && err.name === 'ValidationError') {
@@ -47,14 +47,14 @@ async function store(req, res, next) {
 async function update(req, res, next) {
     try {
         let payload = req.body;
-        let type = await Type.findByIdAndUpdate(
+        let productType = await ProductType.findByIdAndUpdate(
             { _id: req.params.id },
             payload,
             { new: true, runValidators: true }
         );
         return res.status(200).json({
-            message: 'Type Updated Successfully!',
-            type: type
+            message: 'ProductType Updated Successfully!',
+            productType: productType
         });
     } catch (err) {
         if (err && err.name === 'ValidationError') {
@@ -69,10 +69,10 @@ async function update(req, res, next) {
 
 async function destroy(req, res, next) {
     try {
-        let type = await Type.findOneAndDelete({ _id: req.params.id });
+        let productType = await ProductType.findOneAndDelete({ _id: req.params.id });
         return res.status(200).json({
-            message: 'Type Deleted Successfully!',
-            type: type
+            message: 'ProductType Deleted Successfully!',
+            productType: productType
         });
     } catch (err) {
         next(err);
