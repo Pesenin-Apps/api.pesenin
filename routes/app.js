@@ -38,13 +38,13 @@ router.post('/products/categories', [ hasRole('cashier'), multer().none() ], pro
 router.put('/products/categories/:id', [ hasRole('cashier'), multer().none() ], productCategoryController.update);
 router.delete('/products/categories/:id', productCategoryController.destroy);
 
-/* ========= END PRODUCT ENDPOINT ========= */
-
 // product
 router.get('/products', productController.index);
 router.get('/products/:id', productController.show);
 router.post('/products', [ hasRole('cashier'), multer({dest: os.tmpdir()}).single('image') ], productController.store);
 router.put('/products/:id', [ hasRole('cashier'), multer({dest: os.tmpdir()}).single('image') ], productController.update);
 router.delete('/products/:id', hasRole('cashier'), productController.destroy);
+
+/* ========= END PRODUCT ENDPOINT ========= */
 
 module.exports = router;

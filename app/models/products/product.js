@@ -18,12 +18,12 @@ const productSchema = Schema({
     },
     category: {
         type: Schema.Types.ObjectId,
-        ref: 'Category',
+        ref: 'ProductCategory',
         required: [ true, 'is required.' ]
     },
     type: {
         type: Schema.Types.ObjectId,
-        ref: 'Type',
+        ref: 'ProductType',
         required: [ true, 'is required.' ]
     },
     image_url: String
