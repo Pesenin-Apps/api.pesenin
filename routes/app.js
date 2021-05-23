@@ -8,7 +8,7 @@ const { hasRole } = require('../app/middlewares/authentication');
 
 const authController = require('../app/controllers/auth');
 const userController = require('../app/controllers/user');
-const categoryController = require('../app/controllers/products/category');
+const productCategoryController = require('../app/controllers/products/category');
 const productController = require('../app/controllers/products/product');
 const productTypeController = require('../app/controllers/products/type');
 
@@ -31,6 +31,13 @@ router.post('/products/types', [ hasRole('cashier'), multer().none() ], productT
 router.put('/products/types/:id', [ hasRole('cashier'), multer().none() ], productTypeController.update);
 router.delete('/products/types/:id', hasRole('cashier'), productTypeController.destroy);
 
+// category
+router.get('/products/categories', productCategoryController.index);
+router.get('/products/categories/:id', productCategoryController.show);
+router.post('/products/categories', [ hasRole('cashier'), multer().none() ], productCategoryController.store);
+router.put('/products/categories/:id', [ hasRole('cashier'), multer().none() ], productCategoryController.update);
+router.delete('/products/categories/:id', productCategoryController.destroy);
+
 /* ========= END PRODUCT ENDPOINT ========= */
 
 // product
@@ -39,12 +46,5 @@ router.get('/products/:id', productController.show);
 router.post('/products', [ hasRole('cashier'), multer({dest: os.tmpdir()}).single('image') ], productController.store);
 router.put('/products/:id', [ hasRole('cashier'), multer({dest: os.tmpdir()}).single('image') ], productController.update);
 router.delete('/products/:id', hasRole('cashier'), productController.destroy);
-
-// category
-router.get('/product-categories', categoryController.index);
-router.get('/product-categories/:id', categoryController.show);
-router.post('/product-categories', [ hasRole('cashier'), multer().none() ], categoryController.store);
-router.put('/product-categories/:id', [ hasRole('cashier'), multer().none() ], categoryController.update);
-router.delete('/product-categories/:id', categoryController.destroy);
 
 module.exports = router;

@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 const { model, Schema } = mongoose;
 
-const categorySchema = Schema({
+const productCategorySchema = Schema({
     name: {
         type: String,
         required: [ true, 'is required.' ],
@@ -10,13 +10,13 @@ const categorySchema = Schema({
     }
 }, { timestamps: true });
 
-categorySchema.virtual('products', {
+productCategorySchema.virtual('products', {
     ref: 'Product',
     localField: '_id',
     foreignField: 'category'
 });
 
-categorySchema.set('toObject', { virtuals: true });
-categorySchema.set('toJSON', { virtuals: true });
+productCategorySchema.set('toObject', { virtuals: true });
+productCategorySchema.set('toJSON', { virtuals: true });
 
-module.exports = model('Category', categorySchema);
+module.exports = model('ProductCategory', productCategorySchema);

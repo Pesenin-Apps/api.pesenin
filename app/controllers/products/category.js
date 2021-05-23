@@ -1,8 +1,8 @@
-const Category = require('../../models/products/category');
+const ProductCategory = require('../../models/products/category');
 
 async function index(req, res, next) {
     try {
-        let categories = await Category.find();
+        let categories = await ProductCategory.find();
         return res.status(200).json({
             message: "Categories Retrived Successfully!",
             categories: categories
@@ -14,10 +14,10 @@ async function index(req, res, next) {
 
 async function show(req, res, next) {
     try {
-        let category = await Category.findById(req.params.id).populate('products');
+        let productCategories = await ProductCategory.findById(req.params.id).populate('products');
         return res.status(200).json({
-            message: "Product Retrived Successfully!",
-            category: category
+            message: "ProductCategories Retrived Successfully!",
+            productCategories: productCategories
         });
     } catch (err) {
         next(err);
@@ -27,11 +27,11 @@ async function show(req, res, next) {
 async function store(req, res, next) {
     try {
         let payload = req.body;
-        let category = new Category(payload);
-        await category.save();
+        let productCategory = new ProductCategory(payload);
+        await productCategory.save();
         return res.status(201).json({
-            message: 'Category Stored Successfully!',
-            category: category
+            message: 'ProductCategory Stored Successfully!',
+            productCategory: productCategory
         });
     } catch (err) {
         if (err && err.name === 'ValidationError') {
@@ -47,14 +47,14 @@ async function store(req, res, next) {
 async function update(req, res, next) {
     try {
         let payload = req.body;
-        let category = await Category.findByIdAndUpdate(
+        let productCategory = await ProductCategory.findByIdAndUpdate(
             { _id: req.params.id },
             payload,
             { new: true, runValidators: true }
         );
         return res.status(200).json({
-            message: 'Category Updated Successfully!',
-            category: category
+            message: 'ProductCategory Updated Successfully!',
+            productCategory: productCategory
         });
     } catch (err) {
         if (err && err.name === 'ValidationError') {
@@ -69,10 +69,10 @@ async function update(req, res, next) {
 
 async function destroy(req, res, next) {
     try {
-        let category = await Category.findOneAndDelete({ _id: req.params.id });
+        let productCategory = await ProductCategory.findOneAndDelete({ _id: req.params.id });
         return res.status(200).json({
-            message: 'Category Deleted Successfully!',
-            category: category
+            message: 'ProductCategory Deleted Successfully!',
+            productCategory: productCategory
         });
     } catch (err) {
         next(err);
