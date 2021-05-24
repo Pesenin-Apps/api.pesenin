@@ -11,6 +11,8 @@ const userController = require('../app/controllers/user');
 const productCategoryController = require('../app/controllers/products/category');
 const productController = require('../app/controllers/products/product');
 const productTypeController = require('../app/controllers/products/type');
+const tableController = require('../app/controllers/tables/table');
+const tableSectionController = require('../app/controllers/tables/section');
 
 passport.use(new LocalStrategy({ usernameField: 'email' }, authController.localStrategy));
 
@@ -46,5 +48,23 @@ router.patch('/products/:id', [ hasRole('cashier'), multer({dest: os.tmpdir()}).
 router.delete('/products/:id', hasRole('cashier'), productController.destroy);
 
 /* ========= END PRODUCT ENDPOINT ========= */
+
+/* ========= START TABLE ENDPOINT ========= */
+
+// section
+router.get('/tables/sections', tableSectionController.index);
+router.get('/tables/sections/:id', tableSectionController.show);
+router.post('/tables/sections', [ hasRole('cashier'), multer().none() ], tableSectionController.store);
+router.patch('/tables/sections/:id', [ hasRole('cashier'), multer().none() ], tableSectionController.update);
+router.delete('/tables/sections/:id', hasRole('cashier'), tableSectionController.destroy);
+
+// table
+router.get('/tables', tableController.index);
+router.get('/tables/:id', tableController.show);
+router.post('/tables', [ hasRole('cashier'), multer().none() ], tableController.store);
+router.patch('/tables/:id', [ hasRole('cashier'), multer().none() ], tableController.update);
+router.delete('/tables/:id', hasRole('cashier'), tableController.destroy);
+
+/* ========= END TABLE ENDPOINT ========= */
 
 module.exports = router;
