@@ -12,6 +12,7 @@ const productCategoryController = require('../app/controllers/products/category'
 const productController = require('../app/controllers/products/product');
 const productTypeController = require('../app/controllers/products/type');
 const tableController = require('../app/controllers/tables/table');
+const tableSectionController = require('../app/controllers/tables/section');
 
 passport.use(new LocalStrategy({ usernameField: 'email' }, authController.localStrategy));
 
@@ -49,6 +50,13 @@ router.delete('/products/:id', hasRole('cashier'), productController.destroy);
 /* ========= END PRODUCT ENDPOINT ========= */
 
 /* ========= START TABLE ENDPOINT ========= */
+
+// section
+router.get('/tables/sections', tableSectionController.index);
+router.get('/tables/sections/:id', tableSectionController.show);
+router.post('/tables/sections', [ hasRole('cashier'), multer().none() ], tableSectionController.store);
+router.patch('/tables/sections/:id', [ hasRole('cashier'), multer().none() ], tableSectionController.update);
+router.delete('/tables/sections/:id', hasRole('cashier'), tableSectionController.destroy);
 
 // table
 router.get('/tables', tableController.index);
