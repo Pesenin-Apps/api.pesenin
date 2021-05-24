@@ -14,4 +14,13 @@ const tableSectionSchema = Schema({
     }
 }, { timestamps: true });
 
+tableSectionSchema.virtual('tables', {
+    ref: 'Table',
+    localField: '_id',
+    foreignField: 'section'
+});
+
+tableSectionSchema.set('toObject', { virtuals: true });
+tableSectionSchema.set('toJSON', { virtuals: true });
+
 module.exports = model('TableSection', tableSectionSchema);

@@ -1,8 +1,9 @@
 const Table = require('../../models/tables/tabel');
+const TableSection = require('../../models/tables/section');
 
 async function index(req, res, next) {
     try {
-        let tables = await Table.find();
+        let tables = await Table.find().populate('section', 'name');
         return res.status(200).json({
             message: "Tables Retrived Successfully!",
             tables: tables
@@ -14,7 +15,7 @@ async function index(req, res, next) {
 
 async function show(req, res, next) {
     try {
-        let table = await Table.findById(req.params.id);
+        let table = await Table.findById(req.params.id).populate('section', 'name');
         return res.status(200).json({
             message: "Table Retrived Successfully!",
             table: table
@@ -27,12 +28,23 @@ async function show(req, res, next) {
 async function store(req, res, next) {
     try {
         // request
+        let code;
         let payload = req.body;
-        // TODO: make relationship of section
-        
+        // relationship of section
+        if (payload.section) {
+            let section = await TableSection.findOne({ 
+                _id: payload.section
+            });
+            if (section) {
+                payload = { ...payload, section: section._id }
+                code = section.code
+            } else {
+                delete payload.section
+            }
+        }
         // store data
         let table = new Table(payload);
-        table.name = payload.number;
+        table.name = code + '-' + payload.number;
         await table.save();
         return res.status(201).json({
             message: 'Table Stored Successfully!',
@@ -52,12 +64,23 @@ async function store(req, res, next) {
 async function update(req, res, next) {
     try {
         // request 
+        let code;
         let payload = req.body;
-        // TODO: make relationship of section
-
+        // relationship of section
+        if (payload.section) {
+            let section = await TableSection.findOne({ 
+                _id: payload.section
+            });
+            if (section) {
+                payload = { ...payload, section: section._id }
+                code = section.code
+            } else {
+                delete payload.section
+            }
+        }
         // check number updated
-        if (payload.number) {
-            payload.name = payload.number
+        if (payload.number || payload.section) {
+            payload.name = code + '-' + payload.number
         }
         // update data
         let table = await Table.findOneAndUpdate(

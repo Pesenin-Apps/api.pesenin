@@ -14,9 +14,12 @@ const tableSchema = Schema({
     used: {
         type: Boolean,
         default: false
+    },
+    section: {
+        type: Schema.Types.ObjectId,
+        ref: 'TableSection',
+        required: [ true, 'is required.' ]
     }
-    // TODO: make relationship of section
-
 }, { timestamps: true });
 
 module.exports = model('Table', tableSchema);
