@@ -17,7 +17,12 @@ const customerSchema = Schema({
         required: [ true, 'is required.' ],
         minlength: [ 3, 'must be at least 3 characters in length.' ]
     },
-    token_checkin: {
+    checkin_number: {
+        type: String,
+        required: [ true, 'is required.' ],
+        minlength: [ 3, 'must be at least 3 characters in length.' ]
+    },
+    checkin_token: {
         type: String,
         required: [ true, 'is required.' ]
     },

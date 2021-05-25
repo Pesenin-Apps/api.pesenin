@@ -20,6 +20,7 @@ async function checkIn(req, res, next) {
     try {
         // request
         let payload = req.body;
+        payload.checkin_number = 'CHECKIN#' + Date.now();
         // relationship of table
         let table = await Table.findOne({ 
             _id: req.params.tableId
@@ -32,7 +33,7 @@ async function checkIn(req, res, next) {
         let customer = new Customer(payload);
         let checkedIn = jwt.sign(payload, config.secretkey);
         customer.status = STATUS.CHECK_IN;
-        customer.token_checkin = checkedIn;
+        customer.checkin_token = checkedIn;
         if (customer.save()) {
             let table = await Table.findOne({ _id: payload.table });
             table.used = true;

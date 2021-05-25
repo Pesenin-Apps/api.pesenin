@@ -15,7 +15,7 @@ function authorize() {
             let user = await User.findOne({ token: {$in: [token]} });
             // for customer
             req.customer = jwt.verify(token, config.secretkey);
-            let customer = await Customer.findOne({ token_checkin: {$in: token} });
+            let customer = await Customer.findOne({ checkin_token: {$in: token} });
             // if user token expired or with sign in
             if (!user && !customer) {
                 return res.status(404).json({
@@ -50,14 +50,14 @@ function hasRole(...roles) {
 function hasCustomer() {
     return async function(req, res, next) {
         try {
-            let token = getToken(req);
-            let customer = await Customer.findOne({ token_checkin: {$in: token} });
+            let customer = await Customer.findOne({ checkin_number: {$in: req.customer.checkin_number} });
             if (customer && customer.status === STATUS.CHECK_OUT) {
                 res.status(403).json({
                     message: 'You\'re Checked Out'
                 });
+            } else {
+                next();
             }
-            next();
         } catch (err) {
             next(err);
         }        
