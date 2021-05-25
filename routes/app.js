@@ -18,6 +18,7 @@ const tableSectionController = require('../app/controllers/tables/section');
 // customer
 router.post('/customers/check-in/:tableId', multer().none(), customerController.checkIn);
 router.get('/customers/me', hasCustomer(), customerController.me);
+router.post('/customers/check-out', hasCustomer(), customerController.checkOut);
 
 passport.use(new LocalStrategy({ usernameField: 'email' }, authController.localStrategy));
 

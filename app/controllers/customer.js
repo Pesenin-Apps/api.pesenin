@@ -2,18 +2,14 @@ const jwt = require('jsonwebtoken');
 const config = require('../config/app');
 const { STATUS, Customer } = require('../models/customer');
 const Table = require('../models/tables/tabel');
+const { getToken } = require('../utils/get-token');
 
 async function me(req, res, next) {
-    try {
-        let customer = req.customer;
-        let table = await Table.findOne({ _id: req.customer.table }).select('name');
-        customer.table = table;
-        return res.status(200).json({
-            customer: customer
-        });
-    } catch (err) {
-        next(err);
-    }
+    let customer = await Customer.findOne({ checkin_number: req.customer.checkin_number }).populate('table', 'name');
+    return res.status(200).json({
+        message: 'MyData Retrived Successfully!',
+        customer: customer
+    });
 }
 
 async function checkIn(req, res, next) {
@@ -25,11 +21,19 @@ async function checkIn(req, res, next) {
         let table = await Table.findOne({ 
             _id: req.params.tableId
         });
+        // check table used or not
+        if (table.used === true) {
+            return res.status(404).json({
+                message: 'This table is already occupied by other customers, please choose another'
+            });
+        }
+        // add table to payload 
         if (table) {
             payload = { ...payload, table: table._id }
         } else {
             delete payload.table
         }
+        // save data
         let customer = new Customer(payload);
         let checkedIn = jwt.sign(payload, config.secretkey);
         customer.status = STATUS.CHECK_IN;
@@ -54,7 +58,30 @@ async function checkIn(req, res, next) {
     }
 }
 
+async function checkOut(req, res, next) {
+    let token = getToken(req);
+    let customer = await Customer.findOneAndUpdate(
+        { checkin_token: token },
+        { status: STATUS.CHECK_OUT },
+        { useFindAndModify: false }
+    );
+    let table = await Table.findOneAndUpdate(
+        { _id: customer.table },
+        { used: false },
+        { useFindAndModify: false }
+    );
+    if (!token || !customer || !table) {
+        return res.status(403).json({
+            message: 'Customer Not Found'
+        });
+    }
+    return res.status(200).json({
+        message: 'Checked Out Successfully!'
+    });
+}
+
 module.exports = {
     me,
-    checkIn
+    checkIn,
+    checkOut
 }
