@@ -29,8 +29,9 @@ async function checkIn(req, res, next) {
         } else {
             delete payload.table
         }
-        let checkedIn = jwt.sign(payload, config.secretkey);
         let customer = new Customer(payload);
+        let checkedIn = jwt.sign(payload, config.secretkey);
+        customer.status = STATUS.CHECK_IN;
         customer.token_checkin = checkedIn;
         if (customer.save()) {
             let table = await Table.findOne({ _id: payload.table });

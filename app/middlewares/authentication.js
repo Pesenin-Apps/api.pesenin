@@ -22,11 +22,6 @@ function authorize() {
                     message: 'Sorry, You\'re Unauthorized or Token Expired'
                 });
             }
-            if (customer && customer.status === STATUS.CHECK_OUT) {
-                return res.status(404).json({
-                    message: 'Sorry, You\'re Checked Out'
-                });
-            }
         } catch (err) {
             if (err && err.name === 'JsonWebTokenError') {
                 return res.status(403).json({
@@ -52,7 +47,25 @@ function hasRole(...roles) {
     }
 }
 
+function hasCustomer() {
+    return async function(req, res, next) {
+        try {
+            let token = getToken(req);
+            let customer = await Customer.findOne({ token_checkin: {$in: token} });
+            if (customer && customer.status === STATUS.CHECK_OUT) {
+                res.status(403).json({
+                    message: 'You\'re Checked Out'
+                });
+            }
+            next();
+        } catch (err) {
+            next(err);
+        }        
+    }
+}
+
 module.exports = {
     authorize,
-    hasRole
+    hasRole,
+    hasCustomer
 }

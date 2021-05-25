@@ -23,7 +23,7 @@ const customerSchema = Schema({
     },
     status: {
         type: Number,
-        default: 1
+        default: 0
     },
     table: {
         type: Schema.Types.ObjectId,
