@@ -26,11 +26,19 @@ async function checkIn(req, res, next) {
         let table = await Table.findOne({ 
             _id: req.params.tableId
         });
+        // check table used or not
+        if (table.used === true) {
+            return res.status(404).json({
+                message: 'This table is already occupied by other customers, please choose another'
+            });
+        }
+        // add table to payload 
         if (table) {
             payload = { ...payload, table: table._id }
         } else {
             delete payload.table
         }
+        // save data
         let customer = new Customer(payload);
         let checkedIn = jwt.sign(payload, config.secretkey);
         customer.status = STATUS.CHECK_IN;
