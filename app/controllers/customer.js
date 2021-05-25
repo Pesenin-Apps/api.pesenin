@@ -5,16 +5,11 @@ const Table = require('../models/tables/tabel');
 const { getToken } = require('../utils/get-token');
 
 async function me(req, res, next) {
-    try {
-        let customer = req.customer;
-        let table = await Table.findOne({ _id: req.customer.table }).select('name');
-        customer.table = table;
-        return res.status(200).json({
-            customer: customer
-        });
-    } catch (err) {
-        next(err);
-    }
+    let customer = await Customer.findOne({ checkin_number: req.customer.checkin_number }).populate('table', 'name');
+    return res.status(200).json({
+        message: 'MyData Retrived Successfully!',
+        customer: customer
+    });
 }
 
 async function checkIn(req, res, next) {
