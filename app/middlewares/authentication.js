@@ -49,18 +49,14 @@ function hasRole(...roles) {
 
 function hasCustomer() {
     return async function(req, res, next) {
-        try {
-            let customer = await Customer.findOne({ checkin_number: {$in: req.customer.checkin_number} });
-            if (customer && customer.status === STATUS.CHECK_OUT) {
-                res.status(403).json({
-                    message: 'You\'re Checked Out'
-                });
-            } else {
-                next();
-            }
-        } catch (err) {
-            next(err);
-        }        
+        let customer = await Customer.findOne({ checkin_number: {$in: req.customer.checkin_number} });
+        if (customer && customer.status === STATUS.CHECK_OUT) {
+            res.status(403).json({
+                message: 'You\'re Checked Out'
+            });
+        } else {
+            next();
+        } 
     }
 }
 
