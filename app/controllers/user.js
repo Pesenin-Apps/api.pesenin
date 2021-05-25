@@ -1,9 +1,15 @@
-const { ROLE } = require('../models/user');
+const { ROLE, User } = require('../models/user');
 
-function me(req, res, next) {
-    return res.status(200).json({
-        user: req.user
-    });
+async function me(req, res, next) {
+    try {
+        let user = await User.findById(req.user._id);
+        return res.status(200).json({
+            message: 'MyData Retrived Successfully!',
+            user: user
+        });
+    } catch (err) {
+        next(err);
+    }
 }
 
 // TODO: create ENDPOINT for change password for user (cashier, chef, waiter)

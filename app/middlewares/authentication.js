@@ -2,6 +2,7 @@ const jwt = require('jsonwebtoken');
 
 const config = require('../config/app');
 const { User } = require('../models/user');
+const { STATUS, Customer } = require('../models/customer');
 const { getToken } = require('../utils/get-token');
 
 function authorize() {
@@ -9,10 +10,14 @@ function authorize() {
         try {
             let token = getToken(req);
             if (!token) return next();
+            // for user
             req.user = jwt.verify(token, config.secretkey);
             let user = await User.findOne({ token: {$in: [token]} });
+            // for customer
+            req.customer = jwt.verify(token, config.secretkey);
+            let customer = await Customer.findOne({ checkin_token: {$in: token} });
             // if user token expired or with sign in
-            if (!user) {
+            if (!user && !customer) {
                 return res.status(404).json({
                     message: 'Sorry, You\'re Unauthorized or Token Expired'
                 });
@@ -42,7 +47,25 @@ function hasRole(...roles) {
     }
 }
 
+function hasCustomer() {
+    return async function(req, res, next) {
+        try {
+            let customer = await Customer.findOne({ checkin_number: {$in: req.customer.checkin_number} });
+            if (customer && customer.status === STATUS.CHECK_OUT) {
+                res.status(403).json({
+                    message: 'You\'re Checked Out'
+                });
+            } else {
+                next();
+            }
+        } catch (err) {
+            next(err);
+        }        
+    }
+}
+
 module.exports = {
     authorize,
-    hasRole
+    hasRole,
+    hasCustomer
 }
