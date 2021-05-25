@@ -2,6 +2,7 @@ const jwt = require('jsonwebtoken');
 
 const config = require('../config/app');
 const { User } = require('../models/user');
+const { STATUS, Customer } = require('../models/customer');
 const { getToken } = require('../utils/get-token');
 
 function authorize() {
@@ -9,12 +10,21 @@ function authorize() {
         try {
             let token = getToken(req);
             if (!token) return next();
+            // for user
             req.user = jwt.verify(token, config.secretkey);
             let user = await User.findOne({ token: {$in: [token]} });
+            // for customer
+            req.customer = jwt.verify(token, config.secretkey);
+            let customer = await Customer.findOne({ token_checkin: {$in: token} });
             // if user token expired or with sign in
-            if (!user) {
+            if (!user && !customer) {
                 return res.status(404).json({
                     message: 'Sorry, You\'re Unauthorized or Token Expired'
+                });
+            }
+            if (customer && customer.status === STATUS.CHECK_OUT) {
+                return res.status(404).json({
+                    message: 'Sorry, You\'re Checked Out'
                 });
             }
         } catch (err) {

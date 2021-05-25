@@ -4,8 +4,9 @@ const router = require('express').Router();
 const passport = require('passport');
 const LocalStrategy = require('passport-local').Strategy;
 
-const { hasRole } = require('../app/middlewares/authentication');
+const { hasRole, hasCustomer } = require('../app/middlewares/authentication');
 
+const customerController = require('../app/controllers/customer');
 const authController = require('../app/controllers/auth');
 const userController = require('../app/controllers/user');
 const productCategoryController = require('../app/controllers/products/category');
@@ -13,6 +14,10 @@ const productController = require('../app/controllers/products/product');
 const productTypeController = require('../app/controllers/products/type');
 const tableController = require('../app/controllers/tables/table');
 const tableSectionController = require('../app/controllers/tables/section');
+
+// customer
+router.post('/customers/check-in/:tableId', multer().none(), customerController.checkIn);
+router.get('/customers/me', customerController.me);
 
 passport.use(new LocalStrategy({ usernameField: 'email' }, authController.localStrategy));
 
