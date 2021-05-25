@@ -2,6 +2,7 @@ const jwt = require('jsonwebtoken');
 const config = require('../config/app');
 const { STATUS, Customer } = require('../models/customer');
 const Table = require('../models/tables/tabel');
+const { getToken } = require('../utils/get-token');
 
 async function me(req, res, next) {
     try {
@@ -54,7 +55,30 @@ async function checkIn(req, res, next) {
     }
 }
 
+async function checkOut(req, res, next) {
+    let token = getToken(req);
+    let customer = await Customer.findOneAndUpdate(
+        { checkin_token: token },
+        { status: STATUS.CHECK_OUT },
+        { useFindAndModify: false }
+    );
+    let table = await Table.findOneAndUpdate(
+        { _id: customer.table },
+        { used: false },
+        { useFindAndModify: false }
+    );
+    if (!token || !customer || !table) {
+        return res.status(403).json({
+            message: 'Customer Not Found'
+        });
+    }
+    return res.status(200).json({
+        message: 'Checked Out Successfully!'
+    });
+}
+
 module.exports = {
     me,
-    checkIn
+    checkIn,
+    checkOut
 }
