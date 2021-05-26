@@ -1,7 +1,8 @@
 const jwt = require('jsonwebtoken');
-const config = require('../config/app');
 const { STATUS, Customer } = require('../models/customer');
 const Table = require('../models/tables/tabel');
+const config = require('../config/app');
+const { getNumbering } = require('../utils/get-anything');
 const { getToken } = require('../utils/get-token');
 
 async function me(req, res, next) {
@@ -16,7 +17,7 @@ async function checkIn(req, res, next) {
     try {
         // request
         let payload = req.body;
-        payload.checkin_number = 'CHECKIN#' + Date.now();
+        payload.checkin_number = getNumbering('checkin');
         // relationship of table
         let table = await Table.findOne({ 
             _id: req.params.tableId
@@ -34,14 +35,16 @@ async function checkIn(req, res, next) {
             delete payload.table
         }
         // save data
-        let customer = new Customer(payload);
         let checkedIn = jwt.sign(payload, config.secretkey);
+        let customer = new Customer(payload);
         customer.status = STATUS.CHECK_IN;
         customer.checkin_token = checkedIn;
-        if (customer.save()) {
-            let table = await Table.findOne({ _id: payload.table });
-            table.used = true;
-            table.save();
+        if (await customer.save()) {
+            await Table.findOneAndUpdate(
+                { _id: payload.table },
+                { used: true },
+                { useFindAndModify: false }
+            );
         }
         return res.status(201).json({
             message: 'Customer Checked In Successfully!',
