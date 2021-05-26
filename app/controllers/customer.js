@@ -1,7 +1,7 @@
 const jwt = require('jsonwebtoken');
-const config = require('../config/app');
 const { STATUS, Customer } = require('../models/customer');
 const Table = require('../models/tables/tabel');
+const config = require('../config/app');
 const { getNumbering } = require('../utils/get-anything');
 const { getToken } = require('../utils/get-token');
 
