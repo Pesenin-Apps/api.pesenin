@@ -6,7 +6,6 @@ var logger = require('morgan');
 
 const router = require('./routes/app');
 
-// const { decodeToken } = require('./app/middlewares/auth');
 const { authorize } = require('./app/middlewares/authentication');
 
 var app = express();
