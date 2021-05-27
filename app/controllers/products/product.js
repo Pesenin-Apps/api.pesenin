@@ -8,8 +8,10 @@ const config = require('../../config/app')
 async function index(req, res, next) {
     try {
         let products = await Product.find().populate('category', 'name').populate('type', 'name');
+        let count = await Product.find().countDocuments();
         return res.status(200).json({
             message: "Products Retrived Successfully!",
+            count: count,
             products: products
         });
     } catch (err) {
