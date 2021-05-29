@@ -22,6 +22,6 @@ const orderSchema = Schema({
 });
 
 module.exports = {
-    STATUS: STATUS,
+    STATUS_ORDER: STATUS,
     Order: model('Order', orderSchema)
 }
