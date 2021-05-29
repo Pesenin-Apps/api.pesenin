@@ -10,6 +10,9 @@ function getNumbering(options) {
         case 'checkin':
             option = 'CHECKIN';
             break;
+        case 'order':
+            option = 'ORDER';
+            break;
         default:
             option = '';
     }
