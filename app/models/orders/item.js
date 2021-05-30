@@ -24,7 +24,7 @@ const orderItemSchema = Schema({
         type: Number, 
         required: [ true, 'is required.' ]
     },
-    products: {
+    product: {
         type: Schema.Types.ObjectId,
         ref: 'Product'
     },

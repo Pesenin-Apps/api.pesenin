@@ -38,6 +38,11 @@ orderSchema.virtual('items_count').get(function(){
     return this.order_items.reduce((total, item) => { return total + parseInt(item.qty)}, 0)
 });
 
+orderSchema.pre('save', function(next){
+    this.total_price = this.order_items.reduce((sum, item) => sum += item.total, 0);
+    next();
+});
+
 module.exports = {
     STATUS_ORDER: STATUS,
     Order: model('Order', orderSchema)
