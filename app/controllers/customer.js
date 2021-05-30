@@ -1,5 +1,5 @@
 const jwt = require('jsonwebtoken');
-const { STATUS, Customer } = require('../models/customer');
+const { STATUS_CUSTOMER, Customer } = require('../models/customer');
 const Table = require('../models/tables/tabel');
 const config = require('../config/app');
 const { getNumbering } = require('../utils/get-anything');
@@ -37,7 +37,7 @@ async function checkIn(req, res, next) {
         // save data
         let checkedIn = jwt.sign(payload, config.secretkey);
         let customer = new Customer(payload);
-        customer.status = STATUS.CHECK_IN;
+        customer.status = STATUS_CUSTOMER.CHECK_IN;
         customer.checkin_token = checkedIn;
         if (await customer.save()) {
             await Table.findOneAndUpdate(
@@ -65,7 +65,7 @@ async function checkOut(req, res, next) {
     let token = getToken(req);
     let customer = await Customer.findOneAndUpdate(
         { checkin_token: token },
-        { status: STATUS.CHECK_OUT },
+        { status: STATUS_CUSTOMER.CHECK_OUT },
         { useFindAndModify: false }
     );
     let table = await Table.findOneAndUpdate(

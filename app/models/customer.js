@@ -37,6 +37,6 @@ const customerSchema = Schema({
 }, { timestamps: true });
 
 module.exports = {
-    Customer: model('Customer', customerSchema),
-    STATUS: STATUS
+    STATUS_CUSTOMER: STATUS,
+    Customer: model('Customer', customerSchema)
 }

@@ -14,11 +14,13 @@ const productController = require('../app/controllers/products/product');
 const productTypeController = require('../app/controllers/products/type');
 const tableController = require('../app/controllers/tables/table');
 const tableSectionController = require('../app/controllers/tables/section');
+const orderController = require('../app/controllers/order');
 
 // customer
 router.post('/customers/check-in/:tableId', multer().none(), customerController.checkIn);
 router.get('/customers/me', hasCustomer(), customerController.me);
 router.post('/customers/check-out', hasCustomer(), customerController.checkOut);
+router.post('/customers/orders', hasCustomer(), orderController.store);
 
 passport.use(new LocalStrategy({ usernameField: 'email' }, authController.localStrategy));
 
