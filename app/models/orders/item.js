@@ -1,6 +1,16 @@
 const { model, Schema } = require('mongoose');
 
+const STATUS = {
+    IN_QUEUE: 1,
+    IN_PROCESS: 2,
+    FINISH: 3
+}
+
 const orderItemSchema = Schema({
+    status: {
+        type: Number, 
+        default: 0
+    },
     price: {
         type: Number, 
         required: [ true, 'is required.' ]
@@ -9,6 +19,10 @@ const orderItemSchema = Schema({
         type: Number, 
         required: [ true, 'is required.' ],
         min: [ 1, 'must be a minimum value of 1.' ]
+    },
+    total: {
+        type: Number, 
+        required: [ true, 'is required.' ]
     },
     products: {
         type: Schema.Types.ObjectId,
@@ -20,4 +34,7 @@ const orderItemSchema = Schema({
     }
 });
 
-module.exports = model('OrderItem', orderItemSchema);
+module.exports = {
+    STATUS_ORDER_ITEM: STATUS,
+    OrderItem: model('OrderItem', orderItemSchema)
+}

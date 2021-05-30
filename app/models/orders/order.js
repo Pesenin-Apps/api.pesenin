@@ -1,9 +1,10 @@
 const { model, Schema } = require('mongoose');
-const { getNumbering } = require('../utils/get-anything');
+const { getNumbering } = require('../../utils/get-anything');
 
 const STATUS = {
-    NOT_YET_PAID: 1,
-    ALREADY_PAID: 2
+    STORE_ORDER: 1,
+    NOT_YET_PAID: 2,
+    ALREADY_PAID: 3
 }
 
 const orderSchema = Schema({
@@ -15,10 +16,26 @@ const orderSchema = Schema({
         type: Number,
         default: 0
     },
+    total_price: {
+        type: Number,
+        default: 0
+    },
     customer: {
         type: Schema.Types.ObjectId, 
         ref: 'Customer'
-    }
+    },
+    table: {
+        type: Schema.Types.ObjectId, 
+        ref: 'Table'
+    },
+    order_items: [{
+        type: Schema.Types.ObjectId, 
+        ref: 'OrderItem'
+    }]
+});
+
+orderSchema.virtual('items_count').get(function(){
+    return this.order_items.reduce((total, item) => { return total + parseInt(item.qty)}, 0)
 });
 
 module.exports = {
