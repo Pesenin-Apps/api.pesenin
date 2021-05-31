@@ -20,7 +20,7 @@ const orderController = require('../app/controllers/order');
 router.post('/customers/check-in/:tableId', multer().none(), customerController.checkIn);
 router.get('/customers/me', hasCustomer(), customerController.me);
 router.post('/customers/check-out', hasCustomer(), customerController.checkOut);
-router.post('/customers/orders', hasCustomer(), orderController.store);
+router.post('/customers/orders', hasCustomer(), orderController.storeForCustomer);
 
 passport.use(new LocalStrategy({ usernameField: 'email' }, authController.localStrategy));
 
