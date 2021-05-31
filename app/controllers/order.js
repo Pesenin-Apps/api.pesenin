@@ -4,6 +4,11 @@ const { STATUS_ORDER_ITEM, OrderItem } = require('../models/orders/item');
 const Product = require('../models/products/product');
 const { getCustomerCheckedIn } = require('../utils/get-anything');
 
+// TODO: get data and make filters (query params)
+async function getCustomerOrders(req, res, next) {
+
+}
+
 async function storeForCustomer(req, res, next) {
     try {
         // req body declaration
@@ -69,6 +74,16 @@ async function storeForCustomer(req, res, next) {
     } catch (err) {
         next(err)
     }
+}
+
+// TODO: verify customer orders
+async function verifyCustomerOrders(req, res, next) {
+
+}
+
+// TODO: store for waiter (orders are forwarded directly to the kitchen)
+async function storeForWaiter(req, res, next){
+
 }
 
 module.exports = {
