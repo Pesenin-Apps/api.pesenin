@@ -15,16 +15,16 @@ async function storeForCustomer(req, res, next) {
         const products = await Product.find({ _id: {$in: productIds} });
         // check customer has been ordered or not
         let customerOrders = await Order.findOne({ customer: customer._id });
+        // if customerOrders is null then save order and order item, else only order items will be saved
         if (customerOrders === null) {
-            // TODO: store data order and order item
-            // save order
+            // order
             let order = new Order({
                 _id: new mongoose.Types.ObjectId(),
                 customer: customer._id,
                 status: STATUS_ORDER.STORE_ORDER,
                 table: customer.table
             });
-            // save items
+            //  order items
             let orderItems = items.map(item => {
                 let relatedProduct = products.find(product => product._id.toString() === item.product);
                 return {
@@ -45,8 +45,7 @@ async function storeForCustomer(req, res, next) {
                 order: order
             });
         } else {
-            // TODO: store data only order item
-            // save items
+            // order items
             let orderItems = items.map(item => {
                 let relatedProduct = products.find(product => product._id.toString() === item.product);
                 return {
