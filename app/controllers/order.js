@@ -4,7 +4,7 @@ const { STATUS_ORDER_ITEM, OrderItem } = require('../models/orders/item');
 const Product = require('../models/products/product');
 const { getCustomerCheckedIn } = require('../utils/get-anything');
 
-async function store(req, res, next) {
+async function storeForCustomer(req, res, next) {
     try {
         // req body declaration
         const { items } = req.body;
@@ -73,5 +73,5 @@ async function store(req, res, next) {
 }
 
 module.exports = {
-    store
+    storeForCustomer
 }
