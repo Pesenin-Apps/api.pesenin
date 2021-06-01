@@ -22,6 +22,8 @@ router.get('/customers/me', hasCustomer(), customerController.me);
 router.post('/customers/check-out', hasCustomer(), customerController.checkOut);
 router.post('/customers/orders', hasCustomer(), orderController.storeForCustomer);
 
+/* ========= FOR WAITER ========= */
+
 passport.use(new LocalStrategy({ usernameField: 'email' }, authController.localStrategy));
 
 // auth
