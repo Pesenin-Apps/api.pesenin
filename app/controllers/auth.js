@@ -1,7 +1,8 @@
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 const passport = require('passport');
-const { User } = require('../models/user');
+const { ROLE, User } = require('../models/user');
+const { Waiter } = require('../models/waiter');
 const config = require('../config/app');
 const { getToken } = require('../utils/get-token');
 
@@ -10,6 +11,12 @@ async function signUp(req, res, next) {
         const payload = req.body;
         let user = new User(payload);
         await user.save();
+        if (payload.role === ROLE.WAITER) {
+            let waiter = new Waiter({
+                waiter: user._id
+            });
+            await waiter.save();
+        }
         return res.status(201).json({
             message: 'User Registered Successfully!',
             user: user
