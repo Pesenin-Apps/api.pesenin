@@ -1,4 +1,5 @@
 const { Customer } = require('../models/customer');
+const { User } = require('../models/user');
 
 function getInitial(str) {
     let initial = str.split(/\s/).reduce((response,word)=> response+=word.slice(0,1),'');
@@ -21,12 +22,19 @@ function getNumbering(options) {
     return option + '#' + dateNow;
 }
 
-function getCustomerCheckedIn(checkin_number) {
-    let customer = Customer.findOne({ checkin_number: {$in: checkin_number} });
+function getCustomerCheckedIn(checkinNumber) {
+    let customer = Customer.findOne({ checkin_number: {$in: checkinNumber} });
     return customer;
+}
+
+function getUserSignedIn(userId) {
+    let user = User.findOne({ _id: userId });
+    return user;
 }
 
 module.exports = {
     getInitial,
-    getNumbering,getCustomerCheckedIn
+    getNumbering,
+    getCustomerCheckedIn,
+    getUserSignedIn
 }
