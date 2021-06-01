@@ -29,7 +29,10 @@ router.post('/auth/signup', multer().none(), authController.signUp);
 router.post('/auth/signin', multer().none(), authController.signIn);
 router.post('/auth/signout', authController.signOut);
 
-// user
+/* ========= FOR WAITER ========= */
+router.post('/waiters/change-status', userController.changeStatus);
+
+// user (cashier, kitchen, waiter)
 router.get('/user/me', userController.me);
 
 /* ========= START PRODUCT ENDPOINT ========= */
