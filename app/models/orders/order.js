@@ -25,6 +25,10 @@ const orderSchema = Schema({
         type: Schema.Types.ObjectId, 
         ref: 'Customer'
     },
+    waiter: {
+        type: Schema.Types.ObjectId, 
+        ref: 'Waiter'
+    },
     table: {
         type: Schema.Types.ObjectId, 
         ref: 'Table'

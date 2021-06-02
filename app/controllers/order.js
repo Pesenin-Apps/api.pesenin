@@ -1,8 +1,32 @@
 const mongoose = require('mongoose');
 const { STATUS_ORDER, Order } = require('../models/orders/order');
 const { STATUS_ORDER_ITEM, OrderItem } = require('../models/orders/item');
+const { STATUS_WAITER, Waiter } = require('../models/waiter');
 const Product = require('../models/products/product');
-const { getCustomerCheckedIn } = require('../utils/get-anything');
+const { getCustomerCheckedIn, getUserSignedIn, getWaiterReadyToServe } = require('../utils/get-anything');
+
+// TODO: get data and make filters (query params)
+async function getCustomerOrdersForWaiters(req, res, next) {
+    try {
+        const payload = req.params;
+        let user = await getUserSignedIn(req.user._id);
+        let orders = await Order.find({ waiter: user.waiter._id })
+            .populate({
+                path: 'order_items',
+                populate: {
+                    path: 'product'
+                }
+            })
+            .populate('customer', 'name checkin_number')
+            .populate('table', 'name section number');
+        return res.status(200).json({
+            message: "CustomerOrders Retrived Successfully!",
+            orders: orders
+        });
+    } catch (err) {
+        next(err);
+    }
+}
 
 async function storeForCustomer(req, res, next) {
     try {
@@ -13,16 +37,25 @@ async function storeForCustomer(req, res, next) {
         // product who ordered
         const productIds = items.map(item => item.product);
         const products = await Product.find({ _id: {$in: productIds} });
+        // get waiter is on duty
+        let waiter = await getWaiterReadyToServe();
         // check customer has been ordered or not
         let customerOrders = await Order.findOne({ customer: customer._id });
         // if customerOrders is null then save order and order item, else only order items will be saved
         if (customerOrders === null) {
+            // update waiter
+            await Waiter.findOneAndUpdate(
+                { _id: waiter },
+                { $push: {served: customer.table } },
+                { useFindAndModify: false }
+            );
             // order
             let order = new Order({
                 _id: new mongoose.Types.ObjectId(),
                 customer: customer._id,
                 status: STATUS_ORDER.STORE_ORDER,
-                table: customer.table
+                table: customer.table,
+                waiter: waiter
             });
             //  order items
             let orderItems = items.map(item => {
@@ -71,6 +104,17 @@ async function storeForCustomer(req, res, next) {
     }
 }
 
+// TODO: verify customer orders
+async function verifyCustomerOrders(req, res, next) {
+
+}
+
+// TODO: store for waiter (orders are forwarded directly to the kitchen)
+async function storeForWaiter(req, res, next){
+
+}
+
 module.exports = {
+    getCustomerOrdersForWaiters,
     storeForCustomer
 }
