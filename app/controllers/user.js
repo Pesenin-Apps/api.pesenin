@@ -1,6 +1,5 @@
 const { ROLE, User } = require('../models/user');
 const { STATUS_WAITER,Waiter } = require('../models/waiter');
-const { getUserSignedIn } = require('../utils/get-anything');
 
 async function me(req, res, next) {
     let user = await User.findById(req.user._id);

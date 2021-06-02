@@ -1,8 +1,9 @@
 const mongoose = require('mongoose');
 const { STATUS_ORDER, Order } = require('../models/orders/order');
 const { STATUS_ORDER_ITEM, OrderItem } = require('../models/orders/item');
+const { STATUS_WAITER, Waiter } = require('../models/waiter');
 const Product = require('../models/products/product');
-const { getCustomerCheckedIn } = require('../utils/get-anything');
+const { getCustomerCheckedIn, getWaiterReadyToServe } = require('../utils/get-anything');
 
 // TODO: get data and make filters (query params)
 async function getCustomerOrders(req, res, next) {
@@ -18,10 +19,18 @@ async function storeForCustomer(req, res, next) {
         // product who ordered
         const productIds = items.map(item => item.product);
         const products = await Product.find({ _id: {$in: productIds} });
+        // get waiter is on duty
+        let waiter = await getWaiterReadyToServe();
         // check customer has been ordered or not
         let customerOrders = await Order.findOne({ customer: customer._id });
         // if customerOrders is null then save order and order item, else only order items will be saved
         if (customerOrders === null) {
+            // update waiter
+            await Waiter.findOneAndUpdate(
+                { _id: waiter },
+                { $push: {served: customer.table } },
+                { useFindAndModify: false }
+            );
             // order
             let order = new Order({
                 _id: new mongoose.Types.ObjectId(),

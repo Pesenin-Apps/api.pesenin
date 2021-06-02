@@ -1,5 +1,6 @@
 const { Customer } = require('../models/customer');
 const { User } = require('../models/user');
+const { STATUS_WAITER, Waiter } = require('../models/waiter');
 
 function getInitial(str) {
     let initial = str.split(/\s/).reduce((response,word)=> response+=word.slice(0,1),'');
@@ -32,9 +33,25 @@ function getUserSignedIn(userId) {
     return user;
 }
 
+async function getWaiterReadyToServe() {
+    let waiterIds = [];
+    let waiterServed = [];
+    let waiter = await Waiter.find({ status: STATUS_WAITER.ON_DUTY });
+    waiter.every(element => waiterServed.push(element.served.length));
+    let minServe = Math.min.apply(null, waiterServed);
+    waiter.forEach(element => {
+        if (element.served.length === minServe) {
+            waiterIds.push(element._id);
+        }
+    });
+    let waiterElected = waiterIds[Math.floor(Math.random() * waiterIds.length)];
+    return waiterElected.toString();
+}
+
 module.exports = {
     getInitial,
     getNumbering,
     getCustomerCheckedIn,
-    getUserSignedIn
+    getUserSignedIn,
+    getWaiterReadyToServe
 }

@@ -16,7 +16,7 @@ const waiterSchema = Schema({
     },
     served: [{
         type: Schema.Types.ObjectId, 
-        ref: 'Customer'
+        ref: 'Table'
     }]
 });
 
