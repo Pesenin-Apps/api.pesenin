@@ -53,7 +53,8 @@ async function storeForCustomer(req, res, next) {
                 _id: new mongoose.Types.ObjectId(),
                 customer: customer._id,
                 status: STATUS_ORDER.STORE_ORDER,
-                table: customer.table
+                table: customer.table,
+                waiter: waiter
             });
             //  order items
             let orderItems = items.map(item => {
