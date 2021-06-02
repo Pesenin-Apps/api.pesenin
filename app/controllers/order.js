@@ -6,8 +6,25 @@ const Product = require('../models/products/product');
 const { getCustomerCheckedIn, getWaiterReadyToServe } = require('../utils/get-anything');
 
 // TODO: get data and make filters (query params)
-async function getCustomerOrders(req, res, next) {
-
+async function getCustomerOrdersForWaiters(req, res, next) {
+    try {
+        const payload = req.params;
+        let orders = await Order.find()
+            .populate({
+                path: 'order_items',
+                populate: {
+                    path: 'product'
+                }
+            })
+            .populate('customer', 'name checkin_number')
+            .populate('table', 'name section number');
+        return res.status(200).json({
+            message: "CustomerOrders Retrived Successfully!",
+            orders: orders
+        });
+    } catch (err) {
+        next(err);
+    }
 }
 
 async function storeForCustomer(req, res, next) {
@@ -96,5 +113,6 @@ async function storeForWaiter(req, res, next){
 }
 
 module.exports = {
+    getCustomerOrdersForWaiters,
     storeForCustomer
 }

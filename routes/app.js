@@ -30,6 +30,7 @@ router.post('/auth/signin', multer().none(), authController.signIn);
 router.post('/auth/signout', authController.signOut);
 
 /* ========= FOR WAITER ========= */
+router.get('/waiters/customer-orders', hasRole('waiter'), orderController.getCustomerOrdersForWaiters);
 router.post('/waiters/change-status', hasRole('waiter'), userController.changeStatus);
 
 // user (cashier, kitchen, waiter)
