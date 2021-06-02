@@ -1,5 +1,5 @@
 const { Customer } = require('../models/customer');
-const { User } = require('../models/user');
+const { ROLE, User } = require('../models/user');
 const { STATUS_WAITER, Waiter } = require('../models/waiter');
 
 function getInitial(str) {
@@ -28,8 +28,15 @@ function getCustomerCheckedIn(checkinNumber) {
     return customer;
 }
 
-function getUserSignedIn(userId) {
-    let user = User.findOne({ _id: userId });
+async function getUserSignedIn(userId) {
+    let user = await User.findOne({ _id: userId });
+    switch (user.role) {
+        case ROLE.WAITER:
+            let waiter = (await Waiter.findOne({ waiter: user._id })).toJSON();
+            user = { ...user.toJSON(), waiter };
+            break;
+        default:
+    }
     return user;
 }
 

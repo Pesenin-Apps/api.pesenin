@@ -3,13 +3,14 @@ const { STATUS_ORDER, Order } = require('../models/orders/order');
 const { STATUS_ORDER_ITEM, OrderItem } = require('../models/orders/item');
 const { STATUS_WAITER, Waiter } = require('../models/waiter');
 const Product = require('../models/products/product');
-const { getCustomerCheckedIn, getWaiterReadyToServe } = require('../utils/get-anything');
+const { getCustomerCheckedIn, getUserSignedIn, getWaiterReadyToServe } = require('../utils/get-anything');
 
 // TODO: get data and make filters (query params)
 async function getCustomerOrdersForWaiters(req, res, next) {
     try {
         const payload = req.params;
-        let orders = await Order.find()
+        let user = await getUserSignedIn(req.user._id);
+        let orders = await Order.find({ waiter: user.waiter._id })
             .populate({
                 path: 'order_items',
                 populate: {
