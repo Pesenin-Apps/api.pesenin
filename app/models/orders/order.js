@@ -4,8 +4,11 @@ const { getNumbering } = require('../../utils/get-anything');
 
 const STATUS = {
     STORE_ORDER: 1,
-    NOT_YET_PAID: 2,
-    ALREADY_PAID: 3
+    PROCESSED: 2,
+    NOT_YET_PAID: 3,
+    ALREADY_PAID: 4,
+    FINISH: 5,
+    CANCEL: 6
 }
 
 const orderSchema = Schema({
