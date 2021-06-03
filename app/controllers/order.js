@@ -10,7 +10,13 @@ async function getCustomerOrdersForWaiters(req, res, next) {
     try {
         const payload = req.params;
         let user = await getUserSignedIn(req.user._id);
-        let orders = await Order.find({ waiter: user.waiter._id })
+        let orders = await Order.find({ 
+                waiter: user.waiter._id,
+                status: {
+                    $gte: STATUS_ORDER.STORE_ORDER,
+                    $lte: STATUS_ORDER.ALREADY_PAID
+                }
+            })
             .populate({
                 path: 'order_items',
                 populate: {
