@@ -72,7 +72,7 @@ async function storeForCustomer(req, res, next) {
                     price: relatedProduct.price,
                     qty: item.qty,
                     total: relatedProduct.price * item.qty,
-                    status: STATUS_ORDER_ITEM.IN_QUEUE
+                    status: STATUS_ORDER_ITEM.NEW
                 }
             });
             let orderedItems = await OrderItem.insertMany(orderItems);
@@ -93,7 +93,7 @@ async function storeForCustomer(req, res, next) {
                     price: relatedProduct.price,
                     qty: item.qty,
                     total: relatedProduct.price * item.qty,
-                    status: STATUS_ORDER_ITEM.IN_QUEUE
+                    status: STATUS_ORDER_ITEM.NEW
                 }
             });
             let orderedItems = await OrderItem.insertMany(orderItems);
@@ -112,7 +112,36 @@ async function storeForCustomer(req, res, next) {
 
 // TODO: verify customer orders
 async function verifyCustomerOrders(req, res, next) {
-
+    try {
+        let orderItemIds = [];
+        let user = await getUserSignedIn(req.user._id);
+        let order = await Order.findOne({ 
+            _id: req.params.id, 
+            waiter: user.waiter._id
+        }).populate({
+            path: 'order_items',
+            match: { 
+                status: STATUS_ORDER_ITEM.NEW
+            }
+        });
+        if (order.order_items.length == 0) {
+            return res.status(400).json({
+                message: 'Order In Process!'
+            });
+        }
+        await order.updateOne({ status: STATUS_ORDER.PROCESSED });
+        order.order_items.every(element => orderItemIds.push(element._id.toString()));
+        await OrderItem.updateMany(
+            { _id: { $in: orderItemIds } },
+            { status: STATUS_ORDER_ITEM.IN_QUEUE }
+        );
+        // response
+        return res.status(200).json({
+            message: 'Order Verified Successfully!'
+        });
+    } catch (err) {
+        next(err);
+    }
 }
 
 // TODO: store for waiter (orders are forwarded directly to the kitchen)
@@ -122,5 +151,6 @@ async function storeForWaiter(req, res, next){
 
 module.exports = {
     getCustomerOrdersForWaiters,
-    storeForCustomer
+    storeForCustomer,
+    verifyCustomerOrders
 }
