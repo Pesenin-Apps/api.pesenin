@@ -8,22 +8,29 @@ const { getCustomerCheckedIn, getUserSignedIn, getWaiterReadyToServe } = require
 // TODO: get data and make filters (query params)
 async function getCustomerOrdersForWaiters(req, res, next) {
     try {
-        const payload = req.params;
+        let queryOrder = req.query.order;
+        let queryOrderItem = req.query.order_items;
         let user = await getUserSignedIn(req.user._id);
-        let orders = await Order.find({ 
-                waiter: user.waiter._id,
-                status: {
-                    $gte: STATUS_ORDER.STORE_ORDER,
-                    $lte: STATUS_ORDER.ALREADY_PAID
+        queryOrder = {
+            ...queryOrder,
+            waiter: user.waiter._id
+        }
+        console.log(queryOrder);
+        let orders = await Order.find(
+            queryOrder ?? {
+                    waiter: user.waiter._id,
+                    status: {
+                        $gte: STATUS_ORDER.STORE_ORDER,
+                        $lte: STATUS_ORDER.ALREADY_PAID
+                    }
                 }
-            })
-            .populate({
-                path: 'order_items',
-                populate: {
-                    path: 'product'
-                }
-            })
-            .populate('customer', 'name checkin_number')
+        ).populate({
+            path: 'order_items',
+            match: queryOrderItem,
+            populate: {
+                path: 'product'
+            }
+        }).populate('customer', 'name checkin_number')
             .populate('table', 'name section number');
         return res.status(200).json({
             message: "CustomerOrders Retrived Successfully!",
