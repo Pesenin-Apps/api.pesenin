@@ -52,7 +52,13 @@ async function storeForCustomer(req, res, next) {
         const products = await Product.find({ _id: {$in: productIds} });
         // get waiter is on duty
         let waiter = await getWaiterReadyToServe();
-        // check customer has been ordered or not
+        // check if waiter exist or not
+        if (waiter === false) {
+            return res.status(201).json({
+                message: 'Waiter not found, no one is onduty yet!'
+            });
+        }
+        // get customer has been ordered
         let customerOrders = await Order.findOne({ customer: customer._id });
         // if customerOrders is null then save order and order item, else only order items will be saved
         if (customerOrders === null) {

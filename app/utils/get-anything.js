@@ -52,7 +52,11 @@ async function getWaiterReadyToServe() {
         }
     });
     let waiterElected = waiterIds[Math.floor(Math.random() * waiterIds.length)];
-    return waiterElected.toString();
+    if (waiterElected) {
+        return waiterElected.toString();
+    } else {
+        return false;
+    }
 }
 
 module.exports = {
