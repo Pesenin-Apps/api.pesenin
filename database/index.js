@@ -1,9 +1,19 @@
 const mongoose = require('mongoose');
 
-const { dbHost, dbUser, dbPassword, dbPort, dbName, mDBuser, mDBpassword, mDBname } = require('../app/config/app');
+const { 
+  dbLocalHost, dbLocalUser, dbLocalPassword, dbLocalPort, dbLocalName,
+  dbAtlasUser, dbAtlasPassword, dbAtlasName,
+  dbOptionUsed
+} = require('../app/config/app');
 
-const uriLocal = `mongodb://${dbUser}:${dbPassword}@${dbHost}:${dbPort}/${dbName}?authSource=admin`;
-const uriAtlas = `mongodb://${mDBuser}:${mDBpassword}@pesenin-shard-00-00.xsgm8.mongodb.net:27017,pesenin-shard-00-01.xsgm8.mongodb.net:27017,pesenin-shard-00-02.xsgm8.mongodb.net:27017/${mDBname}?ssl=true&replicaSet=atlas-14jbaj-shard-0&authSource=admin&retryWrites=true&w=majority`;
+let uri;
+
+if (dbOptionUsed === 'ATLAS') {
+  uri = `mongodb://${dbAtlasUser}:${dbAtlasPassword}@peseninv0-shard-00-00.tcc5y.mongodb.net:27017,peseninv0-shard-00-01.tcc5y.mongodb.net:27017,peseninv0-shard-00-02.tcc5y.mongodb.net:27017/${dbAtlasName}?ssl=true&replicaSet=atlas-14jbaj-shard-0&authSource=admin&retryWrites=true&w=majority`;
+} else {
+  uri = `mongodb://${dbLocalUser}:${dbLocalPassword}@${dbLocalHost}:${dbLocalPort}/${dbLocalName}?authSource=admin`;
+}
+
 const options = {
     useNewUrlParser: true,
     useUnifiedTopology:true,
@@ -12,7 +22,7 @@ const options = {
 };
 
 // check connections
-mongoose.connect(uriAtlas, options)
+mongoose.connect(uri, options)
   .then(() => {
       console.info(`MongoDB Connected Successfully!`);
   })
