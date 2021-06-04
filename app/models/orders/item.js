@@ -1,9 +1,10 @@
 const { model, Schema } = require('mongoose');
 
 const STATUS = {
-    IN_QUEUE: 1,
-    IN_PROCESS: 2,
-    FINISH: 3
+    NEW: 1,
+    IN_QUEUE: 2,
+    IN_PROCESS: 3,
+    FINISH: 4
 }
 
 const orderItemSchema = Schema({

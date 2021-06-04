@@ -1,8 +1,10 @@
 const jwt = require('jsonwebtoken');
 const { STATUS_CUSTOMER, Customer } = require('../models/customer');
+const { Waiter } = require('../models/waiter');
+const { STATUS_ORDER, Order } = require('../models/orders/order');
 const Table = require('../models/tables/tabel');
 const config = require('../config/app');
-const { getNumbering } = require('../utils/get-anything');
+const { getNumbering, getCustomerCheckedIn } = require('../utils/get-anything');
 const { getToken } = require('../utils/get-token');
 
 async function me(req, res, next) {
@@ -62,7 +64,27 @@ async function checkIn(req, res, next) {
 }
 
 async function checkOut(req, res, next) {
-    let token = getToken(req);
+    const token = getToken(req);
+    const customerCheckedIn = await getCustomerCheckedIn(req.customer.checkin_number);
+    const order = await Order.findOne({ 
+        customer: customerCheckedIn._id
+    });
+    // check if order exist
+    if (order) {
+        if (order.status <= STATUS_ORDER.STORE_ORDER) {
+            await Waiter.findOneAndUpdate(
+                { _id: order.waiter },
+                { $pull: { "served": customerCheckedIn.table } },
+                { useFindAndModify: false }
+            );
+            await order.updateOne({ status: STATUS_ORDER.CANCEL })
+        } else {
+            return res.status(400).json({
+                message: 'Your order has been processed, you cannot cancel it or checkout!'
+            });
+        }
+    }
+    // update some model
     let customer = await Customer.findOneAndUpdate(
         { checkin_token: token },
         { status: STATUS_CUSTOMER.CHECK_OUT },

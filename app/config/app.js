@@ -7,12 +7,13 @@ module.exports = {
     rootPath: path.resolve(__dirname, '../../'),
     serviceName: process.env.SERVICE_NAME,
     secretkey: process.env.SECRET_KEY,
-    dbHost: process.env.DB_HOST,
-    dbUser: process.env.DB_USER,
-    dbPassword: process.env.DB_PASSWORD,
-    dbPort: process.env.DB_PORT,
-    dbName: process.env.DB_NAME,
-    mDBuser: process.env.MDB_USER,
-    mDBpassword: process.env.MDB_PASSWORD,
-    mDBname: process.env.MDB_NAME
+    dbOptionUsed: process.env.DB_OPTION,
+    dbLocalHost: process.env.DB_LOCAL_HOST,
+    dbLocalUser: process.env.DB_LOCAL_USER,
+    dbLocalPassword: process.env.DB_LOCAL_PASSWORD,
+    dbLocalPort: process.env.DB_LOCAL_PORT,
+    dbLocalName: process.env.DB_LOCAL_NAME,
+    dbAtlasUser: process.env.DB_ATLAS_USER,
+    dbAtlasPassword: process.env.DB_ATLAS_PASSWORD,
+    dbAtlasName: process.env.DB_ATLAS_NAME
 }

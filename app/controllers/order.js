@@ -8,16 +8,29 @@ const { getCustomerCheckedIn, getUserSignedIn, getWaiterReadyToServe } = require
 // TODO: get data and make filters (query params)
 async function getCustomerOrdersForWaiters(req, res, next) {
     try {
-        const payload = req.params;
+        let queryOrder = req.query.order;
+        let queryOrderItem = req.query.order_items;
         let user = await getUserSignedIn(req.user._id);
-        let orders = await Order.find({ waiter: user.waiter._id })
-            .populate({
-                path: 'order_items',
-                populate: {
-                    path: 'product'
+        queryOrder = {
+            ...queryOrder,
+            waiter: user.waiter._id
+        }
+        console.log(queryOrder);
+        let orders = await Order.find(
+            queryOrder ?? {
+                    waiter: user.waiter._id,
+                    status: {
+                        $gte: STATUS_ORDER.STORE_ORDER,
+                        $lte: STATUS_ORDER.ALREADY_PAID
+                    }
                 }
-            })
-            .populate('customer', 'name checkin_number')
+        ).populate({
+            path: 'order_items',
+            match: queryOrderItem,
+            populate: {
+                path: 'product'
+            }
+        }).populate('customer', 'name checkin_number')
             .populate('table', 'name section number');
         return res.status(200).json({
             message: "CustomerOrders Retrived Successfully!",
@@ -39,7 +52,13 @@ async function storeForCustomer(req, res, next) {
         const products = await Product.find({ _id: {$in: productIds} });
         // get waiter is on duty
         let waiter = await getWaiterReadyToServe();
-        // check customer has been ordered or not
+        // check if waiter exist or not
+        if (waiter === false) {
+            return res.status(201).json({
+                message: 'Waiter not found, no one is onduty yet!'
+            });
+        }
+        // get customer has been ordered
         let customerOrders = await Order.findOne({ customer: customer._id });
         // if customerOrders is null then save order and order item, else only order items will be saved
         if (customerOrders === null) {
@@ -66,7 +85,7 @@ async function storeForCustomer(req, res, next) {
                     price: relatedProduct.price,
                     qty: item.qty,
                     total: relatedProduct.price * item.qty,
-                    status: STATUS_ORDER_ITEM.IN_QUEUE
+                    status: STATUS_ORDER_ITEM.NEW
                 }
             });
             let orderedItems = await OrderItem.insertMany(orderItems);
@@ -87,7 +106,7 @@ async function storeForCustomer(req, res, next) {
                     price: relatedProduct.price,
                     qty: item.qty,
                     total: relatedProduct.price * item.qty,
-                    status: STATUS_ORDER_ITEM.IN_QUEUE
+                    status: STATUS_ORDER_ITEM.NEW
                 }
             });
             let orderedItems = await OrderItem.insertMany(orderItems);
@@ -106,7 +125,36 @@ async function storeForCustomer(req, res, next) {
 
 // TODO: verify customer orders
 async function verifyCustomerOrders(req, res, next) {
-
+    try {
+        let orderItemIds = [];
+        let user = await getUserSignedIn(req.user._id);
+        let order = await Order.findOne({ 
+            _id: req.params.id, 
+            waiter: user.waiter._id
+        }).populate({
+            path: 'order_items',
+            match: { 
+                status: STATUS_ORDER_ITEM.NEW
+            }
+        });
+        if (order.order_items.length == 0) {
+            return res.status(400).json({
+                message: 'Order In Process!'
+            });
+        }
+        await order.updateOne({ status: STATUS_ORDER.PROCESSED });
+        order.order_items.every(element => orderItemIds.push(element._id.toString()));
+        await OrderItem.updateMany(
+            { _id: { $in: orderItemIds } },
+            { status: STATUS_ORDER_ITEM.IN_QUEUE }
+        );
+        // response
+        return res.status(200).json({
+            message: 'Order Verified Successfully!'
+        });
+    } catch (err) {
+        next(err);
+    }
 }
 
 // TODO: store for waiter (orders are forwarded directly to the kitchen)
@@ -116,5 +164,6 @@ async function storeForWaiter(req, res, next){
 
 module.exports = {
     getCustomerOrdersForWaiters,
-    storeForCustomer
+    storeForCustomer,
+    verifyCustomerOrders
 }

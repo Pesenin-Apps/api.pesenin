@@ -16,7 +16,7 @@ async function me(req, res, next) {
     });
 }
 
-// TODO: create ENDPOINT for change password for user (cashier, chef, waiter)
+// TODO: create ENDPOINT for change password for user (cashier, kitchen, waiter)
 async function changePassword(req, res, next) {
 
 }

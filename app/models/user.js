@@ -3,7 +3,7 @@ const bcrypt = require('bcrypt');
 
 const ROLE = {
     CASHIER: 'cashier',
-    CHEF: 'chef',
+    KITCHEN: 'kitchen',
     WAITER: 'waiter'
 }
 
@@ -28,7 +28,7 @@ const userSchema = Schema({
     },
     role: {
         type: String, 
-        enum: [ 'cashier', 'chef', 'waiter' ],
+        enum: [ 'cashier', 'kitchen', 'waiter' ],
         default: 'waiter'
     },
     token: [String]
