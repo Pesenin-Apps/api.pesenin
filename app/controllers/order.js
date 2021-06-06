@@ -194,7 +194,7 @@ async function storeForWaiter(req, res, next){
             order: order
         });
     } catch (err) {
-        
+        next(err);
     }
 }
 
