@@ -159,11 +159,48 @@ async function verifyCustomerOrders(req, res, next) {
 
 // TODO: store for waiter (orders are forwarded directly to the kitchen)
 async function storeForWaiter(req, res, next){
-
+    try {
+        const { table, items } = req.body;
+        // product who ordered
+        const productIds = items.map(item => item.product);
+        const products = await Product.find({ _id: {$in: productIds} });
+        // waiter serve
+        let user = await getUserSignedIn(req.user._id);
+        // order
+        let order = new Order({
+            _id: new mongoose.Types.ObjectId(),
+            customer: null,
+            status: STATUS_ORDER.STORE_ORDER,
+            table: table,
+            waiter: user.waiter
+        });
+        let orderItems = items.map(item => {
+            let relatedProduct = products.find(product => product._id.toString() === item.product);
+            return {
+                order: order._id,
+                product: relatedProduct.id,
+                price: relatedProduct.price,
+                qty: item.qty,
+                total: relatedProduct.price * item.qty,
+                status: STATUS_ORDER_ITEM.NEW
+            }
+        });
+        let orderedItems = await OrderItem.insertMany(orderItems);
+        orderedItems.forEach(item => order.order_items.push(item));
+        await order.save();
+        // response
+        return res.status(201).json({
+            message: 'Order and OrderItem Stored Successfully!',
+            order: order
+        });
+    } catch (err) {
+        next(err);
+    }
 }
 
 module.exports = {
     getCustomerOrdersForWaiters,
     storeForCustomer,
+    storeForWaiter,
     verifyCustomerOrders
 }
