@@ -193,8 +193,6 @@ async function storeForWaiter(req, res, next){
             message: 'Order and OrderItem Stored Successfully!',
             order: order
         });
-        console.log(table);
-        console.log(items);
     } catch (err) {
         
     }
