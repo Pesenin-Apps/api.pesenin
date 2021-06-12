@@ -41,8 +41,7 @@ async function getUserSignedIn(userId) {
 }
 
 async function getWaiterReadyToServe() {
-    let waiterIds = [];
-    let waiterServed = [];
+    let waiterIds = [], waiterServed = [];
     let waiter = await Waiter.find({ status: STATUS_WAITER.ON_DUTY });
     waiter.every(element => waiterServed.push(element.served.length));
     let minServe = Math.min.apply(null, waiterServed);
