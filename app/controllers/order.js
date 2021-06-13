@@ -5,7 +5,6 @@ const { STATUS_WAITER, Waiter } = require('../models/waiter');
 const Product = require('../models/products/product');
 const { getCustomerCheckedIn, getUserSignedIn, getWaiterReadyToServe } = require('../utils/get-anything');
 
-// TODO: get data and make filters (query params)
 async function getCustomerOrdersForWaiters(req, res, next) {
     try {
         let queryOrder = req.query.order, queryOrderItem = req.query.order_items;
@@ -104,7 +103,6 @@ async function storeForCustomer(req, res, next) {
     }
 }
 
-// TODO: verify customer orders
 async function verifyCustomerOrders(req, res, next) {
     try {
 
@@ -149,7 +147,6 @@ async function verifyCustomerOrders(req, res, next) {
     }
 }
 
-// TODO: store for waiter (orders are forwarded directly to the kitchen)
 async function storeForWaiter(req, res, next){
     try {
 
