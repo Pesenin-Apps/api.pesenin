@@ -8,8 +8,7 @@ const { getCustomerCheckedIn, getUserSignedIn, getWaiterReadyToServe } = require
 // TODO: get data and make filters (query params)
 async function getCustomerOrdersForWaiters(req, res, next) {
     try {
-        let queryOrder = req.query.order;
-        let queryOrderItem = req.query.order_items;
+        let queryOrder = req.query.order, queryOrderItem = req.query.order_items;
         let user = await getUserSignedIn(req.user._id);
         queryOrder = {
             ...queryOrder,
