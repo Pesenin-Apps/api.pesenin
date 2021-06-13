@@ -159,12 +159,15 @@ async function verifyCustomerOrders(req, res, next) {
 // TODO: store for waiter (orders are forwarded directly to the kitchen)
 async function storeForWaiter(req, res, next){
     try {
+
+        // req body
         const { table, items } = req.body;
         // waiter serve
         const user = await getUserSignedIn(req.user._id);
         // product who ordered
         const productIds = items.map(item => item.product);
         const products = await Product.find({ _id: {$in: productIds} });
+
         // set new order
         let newOrder = {
             customer: null,
@@ -172,12 +175,14 @@ async function storeForWaiter(req, res, next){
             table: table,
             waiter: user.waiter
         }
-        // table (if dont found then insert else update)
+
+        // order (if dont found then insert else update)
         let order = await Order.findOneAndUpdate(
             { table: table },
             { $setOnInsert: newOrder },
             { upsert: true, new: true, runValidators: true, setDefaultsOnInsert: true }
         );
+
         // order items
         let orderItems = items.map(item => {
             let relatedProduct = products.find(product => product._id.toString() === item.product);
@@ -190,14 +195,18 @@ async function storeForWaiter(req, res, next){
                 status: STATUS_ORDER_ITEM.IN_QUEUE
             }
         });
+
+        // save order and order items
         let orderedItems = await OrderItem.insertMany(orderItems);
         orderedItems.forEach(item => order.order_items.push(item));
         await order.save();
+
         // response
         return res.status(201).json({
             message: 'Order and OrderItem Stored Successfully!',
             order: order
         });
+        
     } catch (err) {
         next(err);
     }
