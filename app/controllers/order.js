@@ -42,81 +42,63 @@ async function getCustomerOrdersForWaiters(req, res, next) {
 
 async function storeForCustomer(req, res, next) {
     try {
-        // req body declaration
+
+        // req body
         const { items } = req.body;
+        // get waiter is on duty
+        const waiter = await getWaiterReadyToServe();
         // customer active
         const customer = await getCustomerCheckedIn(req.customer.checkin_number);
         // product who ordered
         const productIds = items.map(item => item.product);
         const products = await Product.find({ _id: {$in: productIds} });
-        // get waiter is on duty
-        let waiter = await getWaiterReadyToServe();
+
         // check if waiter exist or not
         if (waiter === false) {
             return res.status(201).json({
                 message: 'Waiter not found, no one is onduty yet!'
             });
         }
-        // get customer has been ordered
-        let customerOrders = await Order.findOne({ customer: customer._id });
-        // if customerOrders is null then save order and order item, else only order items will be saved
-        if (customerOrders === null) {
-            // update waiter
-            await Waiter.findOneAndUpdate(
-                { _id: waiter },
-                { $push: {served: customer.table } },
-                { useFindAndModify: false }
-            );
-            // order
-            let order = new Order({
-                _id: new mongoose.Types.ObjectId(),
-                customer: customer._id,
-                status: STATUS_ORDER.STORE_ORDER,
-                table: customer.table,
-                waiter: waiter
-            });
-            //  order items
-            let orderItems = items.map(item => {
-                let relatedProduct = products.find(product => product._id.toString() === item.product);
-                return {
-                    order: order._id,
-                    product: relatedProduct.id,
-                    price: relatedProduct.price,
-                    qty: item.qty,
-                    total: relatedProduct.price * item.qty,
-                    status: STATUS_ORDER_ITEM.NEW
-                }
-            });
-            let orderedItems = await OrderItem.insertMany(orderItems);
-            orderedItems.forEach(item => order.order_items.push(item));
-            await order.save();
-            // response
-            return res.status(201).json({
-                message: 'Order and OrderItem Stored Successfully!',
-                order: order
-            });
-        } else {
-            // order items
-            let orderItems = items.map(item => {
-                let relatedProduct = products.find(product => product._id.toString() === item.product);
-                return {
-                    order: customerOrders.customer,
-                    product: relatedProduct.id,
-                    price: relatedProduct.price,
-                    qty: item.qty,
-                    total: relatedProduct.price * item.qty,
-                    status: STATUS_ORDER_ITEM.NEW
-                }
-            });
-            let orderedItems = await OrderItem.insertMany(orderItems);
-            orderedItems.forEach(item => customerOrders.order_items.push(item));
-            await customerOrders.save();
-            // response
-            return res.status(201).json({
-                message: 'OrderItem Stored Successfully!',
-                order: customerOrders
-            });
+
+        // new order
+        let newOrder = {
+            customer: customer._id,
+            status: STATUS_ORDER.STORE_ORDER,
+            table: customer.table,
+            waiter: waiter
         }
+
+        // table (if dont found then insert else update)
+        let order = await Order.findOneAndUpdate(
+            { customer: customer._id },
+            { $setOnInsert: newOrder },
+            { upsert: true, new: true, runValidators: true, setDefaultsOnInsert: true }
+        );
+
+        //  order items
+        let orderItems = items.map(item => {
+            let relatedProduct = products.find(product => product._id.toString() === item.product);
+            return {
+                order: order._id,
+                product: relatedProduct.id,
+                price: relatedProduct.price,
+                qty: item.qty,
+                total: relatedProduct.price * item.qty,
+                status: STATUS_ORDER_ITEM.NEW
+            }
+        });
+
+        // save order and order items
+        let orderedItems = await OrderItem.insertMany(orderItems);
+        orderedItems.forEach(item => order.order_items.push(item));
+        await order.save();
+        
+        // response
+        return res.status(201).json({
+            message: 'Order and OrderItem Stored Successfully!',
+            order: order
+        });
+        
     } catch (err) {
         next(err)
     }
