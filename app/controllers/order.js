@@ -98,7 +98,7 @@ async function storeForCustomer(req, res, next) {
             message: 'Order and OrderItem Stored Successfully!',
             order: order
         });
-        
+
     } catch (err) {
         next(err)
     }
@@ -107,8 +107,13 @@ async function storeForCustomer(req, res, next) {
 // TODO: verify customer orders
 async function verifyCustomerOrders(req, res, next) {
     try {
+
+        // waiter serve
+        const user = await getUserSignedIn(req.user._id);
+        // variable for save order item ids
         let orderItemIds = [];
-        let user = await getUserSignedIn(req.user._id);
+
+        // get order
         let order = await Order.findOne({ 
             _id: req.params.id, 
             waiter: user.waiter._id
@@ -118,21 +123,27 @@ async function verifyCustomerOrders(req, res, next) {
                 status: STATUS_ORDER_ITEM.NEW
             }
         });
+
+        // check if order items empty
         if (order.order_items.length == 0) {
             return res.status(400).json({
                 message: 'Order In Process!'
             });
         }
+
+        // update order and order items
         await order.updateOne({ status: STATUS_ORDER.PROCESSED });
         order.order_items.every(element => orderItemIds.push(element._id.toString()));
         await OrderItem.updateMany(
             { _id: { $in: orderItemIds } },
             { status: STATUS_ORDER_ITEM.IN_QUEUE }
         );
+
         // response
         return res.status(200).json({
             message: 'Order Verified Successfully!'
         });
+
     } catch (err) {
         next(err);
     }
