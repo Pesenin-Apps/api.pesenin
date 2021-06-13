@@ -7,13 +7,19 @@ const { getCustomerCheckedIn, getUserSignedIn, getWaiterReadyToServe } = require
 
 async function getCustomerOrdersForWaiters(req, res, next) {
     try {
+
+        // customer checked in
+        const user = await getUserSignedIn(req.user._id);
+        // req params
         let queryOrder = req.query.order, queryOrderItem = req.query.order_items;
-        let user = await getUserSignedIn(req.user._id);
+
+        // add property waiter
         queryOrder = {
             ...queryOrder,
             waiter: user.waiter._id
         }
-        console.log(queryOrder);
+
+        // get order
         let orders = await Order.find(
             queryOrder ?? {
                     waiter: user.waiter._id,
@@ -30,10 +36,13 @@ async function getCustomerOrdersForWaiters(req, res, next) {
             }
         }).populate('customer', 'name checkin_number')
             .populate('table', 'name section number');
+
+        // response
         return res.status(200).json({
             message: "CustomerOrders Retrived Successfully!",
             orders: orders
         });
+
     } catch (err) {
         next(err);
     }
