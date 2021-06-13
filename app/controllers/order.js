@@ -160,19 +160,25 @@ async function verifyCustomerOrders(req, res, next) {
 async function storeForWaiter(req, res, next){
     try {
         const { table, items } = req.body;
+        // waiter serve
+        const user = await getUserSignedIn(req.user._id);
         // product who ordered
         const productIds = items.map(item => item.product);
         const products = await Product.find({ _id: {$in: productIds} });
-        // waiter serve
-        let user = await getUserSignedIn(req.user._id);
-        // order
-        let order = new Order({
-            _id: new mongoose.Types.ObjectId(),
+        // set new order
+        let newOrder = {
             customer: null,
-            status: STATUS_ORDER.STORE_ORDER,
+            status: STATUS_ORDER.PROCESSED,
             table: table,
             waiter: user.waiter
-        });
+        }
+        // table (if dont found then insert else update)
+        let order = await Order.findOneAndUpdate(
+            { table: table },
+            { $setOnInsert: newOrder },
+            { upsert: true, new: true, runValidators: true, setDefaultsOnInsert: true }
+        );
+        // order items
         let orderItems = items.map(item => {
             let relatedProduct = products.find(product => product._id.toString() === item.product);
             return {
@@ -181,7 +187,7 @@ async function storeForWaiter(req, res, next){
                 price: relatedProduct.price,
                 qty: item.qty,
                 total: relatedProduct.price * item.qty,
-                status: STATUS_ORDER_ITEM.NEW
+                status: STATUS_ORDER_ITEM.IN_QUEUE
             }
         });
         let orderedItems = await OrderItem.insertMany(orderItems);
