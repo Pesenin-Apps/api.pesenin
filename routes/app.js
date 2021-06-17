@@ -21,6 +21,7 @@ router.post('/customers/check-in/:tableId', multer().none(), customerController.
 router.get('/customers/me', hasCustomer(), customerController.me);
 router.post('/customers/check-out', hasCustomer(), customerController.checkOut);
 router.post('/customers/orders', hasCustomer(), orderController.storeForCustomer);
+router.post('/customers/orders/update', hasCustomer(), orderController.updateForCustomer);
 
 passport.use(new LocalStrategy({ usernameField: 'email' }, authController.localStrategy));
 
