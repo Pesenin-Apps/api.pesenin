@@ -232,6 +232,13 @@ async function updateForCustomer(req, res, next) {
                 message: 'Order Items Not Found!'
             });
         }
+        
+        // check if order more than store status
+        if (order.status > STATUS_ORDER.STORE_ORDER) {
+            return res.status(400).json({
+                message: 'You Can\'t Change It Anymore, Only The Waiter Can Change!'
+            });
+        }
 
         orders.forEach(async (element) => {
             updatedItems.push(element);
