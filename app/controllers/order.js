@@ -282,10 +282,68 @@ async function updateForCustomer(req, res, next) {
     }
 }
 
+async function updateForWaiter(req, res, next) {
+    try {
+        
+        // request body
+        const { items } = req.body;
+        // waiter who serve
+        const user = await getUserSignedIn(req.user._id);
+
+        // check if orders is empty
+        if (!items || items.length === 0) {
+            return res.status(400).json({
+                message: 'Order Items Not Found!'
+            });
+        }
+
+        // variable for the item to be changed
+        let changedItems = [];
+        // get order
+        let order = await Order.findOne({ _id: req.params.id }).populate('order_items');
+        // order item
+        const updatedItemIds = items.map(e => e.item);
+        const updatedItems = await OrderItem.find({ _id: { $in: updatedItemIds } });
+
+        // check order who serve
+        if (order.waiter !== user.waiter) {
+            return res.status(403).json({
+                message: 'You Can\'t Change It, Only The Waiter Who Serves Can Change!'
+            });
+        }
+
+        // check if order more than store status
+        if (order.status > STATUS_ORDER.PROCESSED && order.status <= STATUS_ORDER.PROCESSED) {
+            return res.status(400).json({
+                message: 'You Can\'t Change It Anymore, Only The Waiter Can Change!'
+            });
+        }
+
+        orders.forEach(async (element) => {
+            updatedItems.push(element);
+            if (element.qty === 0) {
+                await order.updateOne(
+                    { $pull: { "order_items": element.item } },
+                    { useFindAndModify: false }
+                );
+                await OrderItem.findByIdAndDelete({ _id: element.item });
+            }
+        });
+
+
+        console.log(user);
+        console.log(order);
+
+    } catch (err) {
+        next(err);
+    }
+}
+
 module.exports = {
     getCustomerOrdersForWaiters,
     storeForCustomer,
     storeForWaiter,
     verifyCustomerOrders,
-    updateForCustomer
+    updateForCustomer,
+    updateForWaiter
 }

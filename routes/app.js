@@ -35,6 +35,7 @@ router.get('/waiters/orders/customers', hasRole('waiter'), orderController.getCu
 router.post('/waiters/orders/customers', hasRole('waiter'), orderController.storeForWaiter);
 router.post('/waiters/change-status', hasRole('waiter'), userController.changeStatus);
 router.post('/waiters/orders/verify/:id', hasRole('waiter'), orderController.verifyCustomerOrders);
+router.patch('/waiters/orders/:id', hasRole('waiter'), orderController.updateForWaiter);
 
 // user (cashier, kitchen, waiter)
 router.get('/user/me', userController.me);
