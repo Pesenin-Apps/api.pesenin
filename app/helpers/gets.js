@@ -1,4 +1,6 @@
-const { Customer } = require('../models/customer')
+const { Customer } = require('../models/customer');
+const { User, ROLE } = require('../models/user');
+const { Waiter } = require('../models/waiter');
 
 // get initial based on `params`, ex: params = `Tiyan Attirmdzi` then return `TA`
 function getInitial(str) {
@@ -27,4 +29,18 @@ function getNumbering(options) {
 async function getCustomerCheckedIn(checkInNumber) {
     const customer = await Customer.findOne({ checkin_number: {$in: checkInNumber} });
     return customer;
+}
+
+// get user who signed in
+async function getUserSignedIn(id) {
+    let user = await User.findOne({ _id: id });
+    switch (user.role) {
+        case ROLE.WAITER:
+            let waiter = (await Waiter.findOne({ waiter: user._id})).toJSON();
+            user = { ...user.toJSON(), waiter };
+            break;
+        default: // do nothing
+            break;
+    }
+    return user;
 }
