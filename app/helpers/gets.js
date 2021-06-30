@@ -47,7 +47,7 @@ async function getUserSignedIn(id) {
 
 // TODO: look for more efficient code
 // get a waiter who is ready to serve
-module.exports.getWaiterReadyToServe = async function () {
+async function getWaiterReadyToServe() {
     let waiterIds = [], countServed = [];
     const waiter = await Waiter.find({ status: STATUS_WAITER.ON_DUTY });
     waiter.every(element => countServed.push(element.served.length));
@@ -66,4 +66,13 @@ module.exports.getWaiterReadyToServe = async function () {
     } else {
         return false;
     }
+}
+
+// exports all method / module
+module.exports = {
+    getInitial,
+    getNumbering,
+    getCustomerCheckedIn,
+    getUserSignedIn,
+    getWaiterReadyToServe
 }
