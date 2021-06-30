@@ -44,3 +44,26 @@ async function getUserSignedIn(id) {
     }
     return user;
 }
+
+// TODO: look for more efficient code
+// get a waiter who is ready to serve
+module.exports.getWaiterReadyToServe = async function () {
+    let waiterIds = [], countServed = [];
+    const waiter = await Waiter.find({ status: STATUS_WAITER.ON_DUTY });
+    waiter.every(element => countServed.push(element.served.length));
+    const smallestServe = Math.min.apply(null, countServed);
+
+    waiter.forEach(element => {
+        if (element.served.length === smallestServe) {
+            waiterIds.push(element._id);
+        }
+    });
+
+    let waiterElected = waiterIds[Math.floor(Math.random() * waiterIds.length)];
+    
+    if (waiterElected) {
+        return waiterElected.toString();
+    } else {
+        return false;
+    }
+}
