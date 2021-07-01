@@ -3,7 +3,7 @@ const { STATUS_ORDER, Order } = require('../models/orders/order');
 const { STATUS_ORDER_ITEM, OrderItem } = require('../models/orders/item');
 const { STATUS_WAITER, Waiter } = require('../models/waiter');
 const Product = require('../models/products/product');
-const { getCustomerCheckedIn, getUserSignedIn, getWaiterReadyToServe } = require('../utils/get-anything');
+const { getCustomerCheckedIn, getUserSignedIn, getWaiterReadyToServe } = require('../helpers/gets');
 
 async function getCustomerOrdersForWaiters(req, res, next) {
     try {
