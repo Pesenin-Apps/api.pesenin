@@ -1,5 +1,5 @@
 const TableSection = require('../../models/tables/section');
-const { getInitial } = require('../../utils/get-anything');
+const { getInitial } = require('../../helpers/gets');
 
 async function index(req, res, next) {
     try {
