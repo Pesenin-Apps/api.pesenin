@@ -1,6 +1,6 @@
 const { model, Schema } = require('mongoose');
 const { OrderItem } = require('./item');
-const { getNumbering } = require('../../utils/get-anything');
+const { getNumbering } = require('../../helpers/gets');
 
 const STATUS = {
     STORE_ORDER: 1,
