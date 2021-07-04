@@ -7,6 +7,11 @@
 var app = require('../app');
 var debug = require('debug')('api.pesenin:server');
 var http = require('http');
+
+/**
+ * currently using MongoDB Atlas, if you want to use Locally change to local configuration
+ */
+
 const db = require('../database/atlas');
 
 /**
