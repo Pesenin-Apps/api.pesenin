@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-const { dbLocalHost, dbLocalUser, dbLocalPassword, dbLocalPort, dbLocalName } = require('../app/config/config');
+const { dbLocalHost, dbLocalUser, dbLocalPassword, dbLocalPort, dbLocalName } = require('../app/config/database');
 
 const uri = `mongodb://${dbLocalUser}:${dbLocalPassword}@${dbLocalHost}:${dbLocalPort}/${dbLocalName}?authSource=admin`;
 const options = {
