@@ -3,7 +3,7 @@ const bcrypt = require('bcrypt');
 const passport = require('passport');
 const { ROLE, User } = require('../models/user');
 const { Waiter } = require('../models/waiter');
-const config = require('../config/app');
+const config = require('../config/config');
 const { getToken } = require('../utils/get-token');
 
 async function signUp(req, res, next) {
