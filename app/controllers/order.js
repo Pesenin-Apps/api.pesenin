@@ -68,6 +68,13 @@ async function storeForCustomer(req, res, next) {
             });
         }
 
+        // update waiter
+        await Waiter.findOneAndUpdate(
+            { _id: waiter },
+            { $push: {served: customer.table } },
+            { useFindAndModify: false }
+        );
+
         // new order
         let newOrder = {
             customer: customer._id,
