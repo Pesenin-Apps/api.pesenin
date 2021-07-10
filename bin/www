@@ -4,6 +4,7 @@
  * Module dependencies.
  */
 
+var db;
 var app = require('../app');
 var debug = require('debug')('api.pesenin:server');
 var http = require('http');
@@ -12,7 +13,11 @@ var http = require('http');
  * currently using MongoDB Atlas, if you want to use Locally change to local configuration
  */
 
-const db = require('../database/atlas');
+if (process.env.DB_OPTION === 'ATLAS') {
+  db = require('../database/atlas');
+} else {
+  db = require('../database/local');
+}
 
 /**
  * Get port from environment and store in Express.
