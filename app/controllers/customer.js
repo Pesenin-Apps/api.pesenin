@@ -3,7 +3,7 @@ const { STATUS_CUSTOMER, Customer } = require('../models/customer');
 const { Waiter } = require('../models/waiter');
 const { STATUS_ORDER, Order } = require('../models/orders/order');
 const Table = require('../models/tables/tabel');
-const config = require('../config/app');
+const config = require('../config/config');
 const { getNumbering, getCustomerCheckedIn } = require('../helpers/gets');
 const { getToken } = require('../utils/get-token');
 

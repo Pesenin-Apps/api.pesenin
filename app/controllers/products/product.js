@@ -3,7 +3,7 @@ const path = require('path');
 const Product = require('../../models/products/product');
 const ProductCategory = require('../../models/products/category');
 const ProductType = require('../../models/products/type');
-const config = require('../../config/app')
+const config = require('../../config/config')
 
 async function index(req, res, next) {
     try {

@@ -68,6 +68,13 @@ async function storeForCustomer(req, res, next) {
             });
         }
 
+        // update waiter
+        await Waiter.findOneAndUpdate(
+            { _id: waiter },
+            { $push: {served: customer.table } },
+            { useFindAndModify: false }
+        );
+
         // new order
         let newOrder = {
             customer: customer._id,
@@ -122,6 +129,13 @@ async function storeForWaiter(req, res, next){
         // product who ordered
         const productIds = items.map(item => item.product);
         const products = await Product.find({ _id: {$in: productIds} });
+
+        // update waiter
+        await Waiter.findOneAndUpdate(
+            { _id: user.waiter },
+            { $push: {served: table } },
+            { useFindAndModify: false }
+        );
 
         // set new order
         let newOrder = {
