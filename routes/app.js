@@ -12,7 +12,7 @@ const userController = require('../app/controllers/user');
 const productCategoryController = require('../app/controllers/products/category.controller');
 const productController = require('../app/controllers/products/product.controller');
 const productTypeController = require('../app/controllers/products/type.controller');
-const tableController = require('../app/controllers/tables/table');
+const tableController = require('../app/controllers/tables/table.controller');
 const tableSectionController = require('../app/controllers/tables/section.controller');
 const orderController = require('../app/controllers/order');
 
