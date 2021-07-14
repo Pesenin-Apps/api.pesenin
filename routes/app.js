@@ -9,6 +9,7 @@ const { hasRole, hasCustomer } = require('../app/middlewares/authentication');
 const customerController = require('../app/controllers/customer');
 const authController = require('../app/controllers/auth');
 const userController = require('../app/controllers/user');
+const staffController = require('../app/controllers/staff.controller');
 const productCategoryController = require('../app/controllers/products/category.controller');
 const productController = require('../app/controllers/products/product.controller');
 const productTypeController = require('../app/controllers/products/type.controller');
@@ -38,7 +39,7 @@ router.post('/waiters/orders/verify/:id', hasRole('waiter'), orderController.ver
 router.patch('/waiters/orders/:id', hasRole('waiter'), orderController.updateForWaiter);
 
 // user (cashier, kitchen, waiter)
-router.get('/user/me', userController.me);
+router.get('/user/me', staffController.me);
 
 /* ========= START PRODUCT ENDPOINT ========= */
 
