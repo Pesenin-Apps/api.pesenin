@@ -34,7 +34,7 @@ router.post('/auth/signout', authController.signOut);
 /* ========= FOR WAITER ========= */
 router.get('/waiters/orders/customers', hasRole('waiter'), orderController.getCustomerOrdersForWaiters);
 router.post('/waiters/orders/customers', hasRole('waiter'), orderController.storeForWaiter);
-router.post('/waiters/change-status', hasRole('waiter'), userController.changeStatus);
+router.post('/waiters/change-status', hasRole('waiter'), staffController.changeStatus);
 router.post('/waiters/orders/verify/:id', hasRole('waiter'), orderController.verifyCustomerOrders);
 router.patch('/waiters/orders/:id', hasRole('waiter'), orderController.updateForWaiter);
 

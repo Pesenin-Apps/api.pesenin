@@ -1,5 +1,5 @@
 const { ROLE, User } = require('../models/user');
-const { Waiter } = require('../models/waiter');
+const { STATUS_WAITER, Waiter } = require('../models/waiter');
 
 async function me(req, res, next) {
 
@@ -26,6 +26,40 @@ async function me(req, res, next) {
 
 }
 
+/* =========  [ S T A R T ]  F O R  W A I T E R  ========= */
+
+async function changeStatus(req, res, next) {
+
+    try {
+
+        let message;
+        let waiter = await Waiter.findOne({ waiter: req.user._id});
+
+        if (waiter.status === STATUS_WAITER.OFF_DUTY) {
+            waiter.status = STATUS_WAITER.ON_DUTY;
+            message = 'Now, You\'re On Duty';
+        } else {
+            waiter.status = STATUS_WAITER.OFF_DUTY;
+            message = 'Now, You\'re Off Duty';
+        }
+
+        await waiter.save();
+
+        return res.status(200).json({
+            message: message,
+            waiter: waiter
+        });
+
+    } catch (err) {
+        next(err);
+    }
+
+}
+
+/* =========  [ E N D ]  F O R  W A I T E R  ========= */
+
 module.exports = {
-    me
+    me,
+    // for waiter
+    changeStatus
 }
