@@ -9,11 +9,12 @@ const { hasRole, hasCustomer } = require('../app/middlewares/authentication');
 const customerController = require('../app/controllers/customer');
 const authController = require('../app/controllers/auth');
 const userController = require('../app/controllers/user');
-const productCategoryController = require('../app/controllers/products/category');
-const productController = require('../app/controllers/products/product');
-const productTypeController = require('../app/controllers/products/type');
-const tableController = require('../app/controllers/tables/table');
-const tableSectionController = require('../app/controllers/tables/section');
+const staffController = require('../app/controllers/staff.controller');
+const productCategoryController = require('../app/controllers/products/category.controller');
+const productController = require('../app/controllers/products/product.controller');
+const productTypeController = require('../app/controllers/products/type.controller');
+const tableController = require('../app/controllers/tables/table.controller');
+const tableSectionController = require('../app/controllers/tables/section.controller');
 const orderController = require('../app/controllers/order');
 
 // customer
@@ -33,12 +34,12 @@ router.post('/auth/signout', authController.signOut);
 /* ========= FOR WAITER ========= */
 router.get('/waiters/orders/customers', hasRole('waiter'), orderController.getCustomerOrdersForWaiters);
 router.post('/waiters/orders/customers', hasRole('waiter'), orderController.storeForWaiter);
-router.post('/waiters/change-status', hasRole('waiter'), userController.changeStatus);
+router.post('/waiters/change-status', hasRole('waiter'), staffController.changeStatus);
 router.post('/waiters/orders/verify/:id', hasRole('waiter'), orderController.verifyCustomerOrders);
 router.patch('/waiters/orders/:id', hasRole('waiter'), orderController.updateForWaiter);
 
 // user (cashier, kitchen, waiter)
-router.get('/user/me', userController.me);
+router.get('/user/me', staffController.me);
 
 /* ========= START PRODUCT ENDPOINT ========= */
 
