@@ -26,6 +26,16 @@ async function me(req, res, next) {
 
 }
 
+// TODO : add ENDPOINT for edit personal account staff (cashier, kitchen, waiter) 
+async function updateData(req, res, next) {
+
+}
+
+// TODO : add ENDPOINT for change password for staff (cashier, kitchen, waiter)
+async function changePassword(req, res, next) {
+
+}
+
 /* =========  [ S T A R T ]  F O R  W A I T E R  ========= */
 
 async function changeStatus(req, res, next) {
@@ -60,6 +70,8 @@ async function changeStatus(req, res, next) {
 
 module.exports = {
     me,
+    updateData,
+    changePassword,
     // for waiter
     changeStatus
 }
