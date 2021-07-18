@@ -16,6 +16,7 @@ const productTypeController = require('../app/controllers/products/type.controll
 const tableController = require('../app/controllers/tables/table.controller');
 const tableSectionController = require('../app/controllers/tables/section.controller');
 const orderController = require('../app/controllers/order');
+const ordersController = require('../app/controllers/order.controller');
 
 // customer
 router.post('/customers/check-in/:tableId', multer().none(), customerController.checkIn);
@@ -33,6 +34,8 @@ router.post('/auth/signout', authController.signOut);
 
 /* ========= FOR WAITER ========= */
 router.get('/waiters/orders/customers', hasRole('waiter'), orderController.getCustomerOrdersForWaiters);
+router.get('/waiters/orders/all', hasRole('waiter'), ordersController.getAllOrders);
+router.get('/waiters/orders', hasRole('waiter'), ordersController.getOrderForWaiter);
 router.post('/waiters/orders/customers', hasRole('waiter'), orderController.storeForWaiter);
 router.post('/waiters/change-status', hasRole('waiter'), staffController.changeStatus);
 router.post('/waiters/orders/verify/:id', hasRole('waiter'), orderController.verifyCustomerOrders);
