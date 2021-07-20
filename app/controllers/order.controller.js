@@ -70,6 +70,12 @@ async function getOrderForWaiter(req, res, next) {
 
 }
 
+// TODO : add ENDPOINT order for Kitchen and manage queue
+async function getOrderForKitchen(req, res, next) {
+    
+}
+
+
 module.exports = {
     getAllOrders,
     getOrderForWaiter
