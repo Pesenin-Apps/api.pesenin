@@ -150,5 +150,6 @@ async function createOrderForCustomer(req, res, next) {
 
 module.exports = {
     getAllOrders,
-    getOrderForWaiter
+    getOrderForWaiter,
+    createOrderForCustomer
 }
