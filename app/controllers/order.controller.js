@@ -1,5 +1,7 @@
 const { STATUS_ORDER, Order } = require('../models/orders/order');
 const { STATUS_ORDER_ITEM, OrderItem } = require('../models/orders/item');
+const { Waiter } = require('../models/waiter');
+const Product = require('../models/products/product');
 const { getUserSignedIn, getCustomerCheckedIn, getWaiterReadyToServe } = require('../helpers/gets');
 
 async function getAllOrders(req, res, next) {
