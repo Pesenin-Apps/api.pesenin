@@ -105,7 +105,7 @@ async function createOrderForCustomer(req, res, next) {
         );
 
         // new order
-        let newOrder = {
+        const newOrder = {
             customer: customer._id,
             status: STATUS_ORDER.STORE_ORDER,
             table: customer.table,
