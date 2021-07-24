@@ -56,6 +56,7 @@ router.post('/waiters/change-status', hasStaff('waiter'), staffController.change
 
 // order
 router.get('/waiters/orders', hasStaff('waiter'), orderController.getOrderForWaiter);
+router.post('/waiters/orders', hasStaff('waiter'), orderController.createOrderForWaiter);
 router.post('/waiters/orders/customers', hasStaff('waiter'), orderControllerOld.storeForWaiter);
 router.post('/waiters/orders/verify/:id', hasStaff('waiter'), orderControllerOld.verifyCustomerOrders);
 router.patch('/waiters/orders/:id', hasStaff('waiter'), orderControllerOld.updateForWaiter);

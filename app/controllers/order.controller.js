@@ -149,9 +149,72 @@ async function createOrderForCustomer(req, res, next) {
 
 }
 
+async function createOrderForWaiter(req, res, next) {
+    try {
+        
+        // request body
+        const { table, items } = req.body;
+        // waiter serve
+        const user = await getUserSignedIn(req.user._id);
+        // product who ordered
+        const productIds = items.map(item => item.product);
+        const products = await Product.find({ _id: {$in: productIds} });
+
+        // update waiter
+        await Waiter.findOneAndUpdate(
+            { _id: user.waiter },
+            { $push: {served: table } },
+            { useFindAndModify: false }
+        );
+
+        // set new order
+        const newOrder = {
+            customer: null,
+            status: STATUS_ORDER.PROCESSED,
+            table: table,
+            waiter: user.waiter
+        }
+
+        // order (if dont found then insert else update)
+        let order = await Order.findOneAndUpdate(
+            { table: table },
+            { $setOnInsert: newOrder },
+            { upsert: true, new: true, runValidators: true, setDefaultsOnInsert: true }
+        );
+
+        // order items
+        let orderItems = items.map(item => {
+            let relatedProduct = products.find(product => product._id.toString() === item.product);
+            return {
+                order: order._id,
+                product: relatedProduct.id,
+                price: relatedProduct.price,
+                qty: item.qty,
+                total: relatedProduct.price * item.qty,
+                status: STATUS_ORDER_ITEM.IN_QUEUE
+            }
+        });
+
+        // save order and order items
+        let orderedItems = await OrderItem.insertMany(orderItems);
+        orderedItems.forEach(item => order.order_items.push(item));
+        await order.save();
+
+        // response
+        return res.status(201).json({
+            message: 'Order and OrderItem Stored Successfully!',
+            order: order
+        });
+
+    } catch (err) {
+        next(err);
+    }
+}
+
 
 module.exports = {
     getAllOrders,
     getOrderForWaiter,
-    createOrderForCustomer
+    createOrderForCustomer,
+    createOrderForWaiter
 }
