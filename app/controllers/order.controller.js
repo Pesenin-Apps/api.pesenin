@@ -5,7 +5,6 @@ const Product = require('../models/products/product');
 const { getUserSignedIn, getCustomerCheckedIn, getWaiterReadyToServe } = require('../helpers/gets');
 
 async function getAllOrders(req, res, next) {
-
     try {
         
         let filters = req.query.filters;
@@ -30,11 +29,9 @@ async function getAllOrders(req, res, next) {
     } catch (err) {
         next(err);
     }
-
 }
 
 async function getOrderForWaiter(req, res, next) {
-
     try {
 
         let filters = req.query.filters;
@@ -68,7 +65,6 @@ async function getOrderForWaiter(req, res, next) {
     } catch (err) {
         next(err);
     }
-
 }
 
 // TODO : add ENDPOINT order for Kitchen and manage queue
@@ -77,7 +73,6 @@ async function getOrderForKitchen(req, res, next) {
 }
 
 async function createOrderForCustomer(req, res, next) {
-
     try {
         
         // req body
@@ -146,7 +141,6 @@ async function createOrderForCustomer(req, res, next) {
     } catch (err) {
         next(err);
     }
-
 }
 
 async function createOrderForWaiter(req, res, next) {
