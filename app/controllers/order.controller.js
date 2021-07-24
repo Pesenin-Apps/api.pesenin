@@ -100,7 +100,7 @@ async function createOrderForCustomer(req, res, next) {
         // update waiter
         await Waiter.findOneAndUpdate(
             { _id: waiter },
-            { $push: {served: customer.table } },
+            { $push: { served: customer.table } },
             { useFindAndModify: false }
         );
 
