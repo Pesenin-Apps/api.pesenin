@@ -8,7 +8,6 @@ const { hasRole, hasCustomer } = require('../app/middlewares/authentication');
 
 const customerController = require('../app/controllers/customer.controller');
 const authController = require('../app/controllers/auth.controller');
-const userController = require('../app/controllers/user');
 const staffController = require('../app/controllers/staff.controller');
 const productCategoryController = require('../app/controllers/products/category.controller');
 const productController = require('../app/controllers/products/product.controller');
@@ -18,21 +17,39 @@ const tableSectionController = require('../app/controllers/tables/section.contro
 const orderController = require('../app/controllers/order');
 const ordersController = require('../app/controllers/order.controller');
 
-// customer
+passport.use(new LocalStrategy({ usernameField: 'email' }, authController.localStrategy));
+
+/* ========= START ENDPOINT FOR CUSTOMER ========= */
+
+// authentication
 router.post('/customers/check-in/:tableId', multer().none(), customerController.checkIn);
-router.get('/customers/me', hasCustomer(), customerController.me);
 router.post('/customers/check-out', hasCustomer(), customerController.checkOut);
+
+// customer checked in info
+router.get('/customers/me', hasCustomer(), customerController.me);
+
+// order
 router.post('/customers/orders', hasCustomer(), orderController.storeForCustomer);
 router.post('/customers/orders/update', hasCustomer(), orderController.updateForCustomer);
 
-passport.use(new LocalStrategy({ usernameField: 'email' }, authController.localStrategy));
+/* ========= END ENDPOINT FOR CUSTOMER ========= */
 
-// auth
+
+/* ========= START ENDPOINT FOR STAFF (WAITER, KITCHEN, CASHIER) ========= */
+
+// authentication
 router.post('/auth/signup', multer().none(), authController.signUp);
 router.post('/auth/signin', multer().none(), authController.signIn);
 router.post('/auth/signout', authController.signOut);
 
-/* ========= FOR WAITER ========= */
+// staff signed in info
+router.get('/user/me', staffController.me);
+
+/* ========= END ENDPOINT FOR STAFF (WAITER, KITCHEN, CASHIER) ========= */
+
+
+/* ========= START ENDPOINT FOR WAITER ========= */
+
 router.get('/waiters/orders/customers', hasRole('waiter'), orderController.getCustomerOrdersForWaiters);
 router.get('/waiters/orders/all', hasRole('waiter'), ordersController.getAllOrders);
 router.get('/waiters/orders', hasRole('waiter'), ordersController.getOrderForWaiter);
@@ -41,8 +58,8 @@ router.post('/waiters/change-status', hasRole('waiter'), staffController.changeS
 router.post('/waiters/orders/verify/:id', hasRole('waiter'), orderController.verifyCustomerOrders);
 router.patch('/waiters/orders/:id', hasRole('waiter'), orderController.updateForWaiter);
 
-// user (cashier, kitchen, waiter)
-router.get('/user/me', staffController.me);
+/* ========= END ENDPOINT FOR WAITER ========= */
+
 
 /* ========= START PRODUCT ENDPOINT ========= */
 
@@ -68,6 +85,7 @@ router.patch('/products/:id', [ hasRole('cashier'), multer({dest: os.tmpdir()}).
 router.delete('/products/:id', hasRole('cashier'), productController.destroy);
 
 /* ========= END PRODUCT ENDPOINT ========= */
+
 
 /* ========= START TABLE ENDPOINT ========= */
 
