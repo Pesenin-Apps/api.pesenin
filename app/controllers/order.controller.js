@@ -249,10 +249,82 @@ async function verifyCustomerOrder(req, res, next) {
     }
 }
 
+async function updateOrderForCustomer(req, res, next) {
+    try {
+        
+        // variable set will be updated
+        let updatedItems = [];
+        // req body
+        const { orders } = req.body;
+        // customer active
+        const customer = await getCustomerCheckedIn(req.customer.checkin_number);
+        // product who ordered
+        const orderItemIds = orders.map(e => e.item);
+        const orderItems = await OrderItem.find({ _id: {$in: orderItemIds} });
+        // get order
+        let order = await Order.findOne({ table: customer.table });
+
+        // check if orders is empty
+        if (!orders || orders.length === 0) {
+            return res.status(400).json({
+                message: 'Order Items Not Found!'
+            });
+        }
+        
+        // check if order more than store status
+        if (order.status > STATUS_ORDER.STORE_ORDER) {
+            return res.status(400).json({
+                message: 'You Can\'t Change It Anymore, Only The Waiter Can Change!'
+            });
+        }
+
+        orders.forEach(async (element) => {
+            updatedItems.push(element);
+            if (element.qty === 0) {
+                await order.updateOne(
+                    { $pull: { "order_items": element.item } },
+                    { useFindAndModify: false }
+                );
+                await OrderItem.findByIdAndDelete({ _id: element.item });
+            }
+        });
+
+        // order items
+        let orderedItems = updatedItems.map(element => {
+            let relatedItem = orderItems.find(orderItem => orderItem._id.toString() === element.item);
+            return {
+                "updateOne": { 
+                    "filter": { 
+                        "_id": relatedItem._id,
+                    },              
+                    "update": { "$set": { 
+                        "qty": element.qty,
+                        "total": relatedItem.price * element.qty
+                    } } 
+                }
+            }
+        });
+
+        // save order and order items
+        await OrderItem.bulkWrite(orderedItems);
+        await order.save();
+
+        // response
+        return res.status(200).json({
+            message: 'Order Updated Successfully!',
+            order: order
+        });
+
+    } catch (err) {
+        next(err);
+    }
+}
+
 module.exports = {
     getAllOrders,
     getOrderForWaiter,
     createOrderForCustomer,
     createOrderForWaiter,
-    verifyCustomerOrder
+    verifyCustomerOrder,
+    updateOrderForCustomer
 }
