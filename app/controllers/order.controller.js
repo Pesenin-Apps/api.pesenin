@@ -205,10 +205,54 @@ async function createOrderForWaiter(req, res, next) {
     }
 }
 
+async function verifyCustomerOrder(req, res, next) {
+    try {
+        
+        // waiter serve
+        const user = await getUserSignedIn(req.user._id);
+        // variable for save order item ids
+        let orderItemIds = [];
+
+        // get order
+        let order = await Order.findOne({ 
+            _id: req.params.id, 
+            waiter: user.waiter._id
+        }).populate({
+            path: 'order_items',
+            match: { 
+                status: STATUS_ORDER_ITEM.NEW
+            }
+        });
+
+        // check if order items empty
+        if (order.order_items.length == 0) {
+            return res.status(400).json({
+                message: 'Order In Process!'
+            });
+        }
+
+        // update order and order items
+        await order.updateOne({ status: STATUS_ORDER.PROCESSED });
+        order.order_items.every(element => orderItemIds.push(element._id.toString()));
+        await OrderItem.updateMany(
+            { _id: { $in: orderItemIds } },
+            { status: STATUS_ORDER_ITEM.IN_QUEUE }
+        );
+
+        // response
+        return res.status(200).json({
+            message: 'Order Verified Successfully!'
+        });
+
+    } catch (err) {
+        next(err);
+    }
+}
 
 module.exports = {
     getAllOrders,
     getOrderForWaiter,
     createOrderForCustomer,
-    createOrderForWaiter
+    createOrderForWaiter,
+    verifyCustomerOrder
 }
