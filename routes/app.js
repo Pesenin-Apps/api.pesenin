@@ -29,8 +29,8 @@ router.post('/customers/check-out', hasCustomer(), customerController.checkOut);
 router.get('/customers/me', hasCustomer(), customerController.me);
 
 // order
-router.post('/customers/orders', hasCustomer(), orderControllerOld.storeForCustomer);
-router.post('/customers/orders/update', hasCustomer(), orderControllerOld.updateForCustomer);
+router.post('/customers/orders', hasCustomer(), orderController.createOrderForCustomer);
+router.post('/customers/orders/update', hasCustomer(), orderController.updateOrderForCustomer);
 
 /* ========= END ENDPOINT FOR CUSTOMER ========= */
 
@@ -51,15 +51,14 @@ router.get('/orders', orderController.getAllOrders);
 
 /* ========= START ENDPOINT FOR WAITER ========= */
 
-router.get('/waiters/orders/customers', hasStaff('waiter'), orderControllerOld.getCustomerOrdersForWaiters);
+// profile
 router.post('/waiters/change-status', hasStaff('waiter'), staffController.changeStatus);
 
 // order
 router.get('/waiters/orders', hasStaff('waiter'), orderController.getOrderForWaiter);
 router.post('/waiters/orders', hasStaff('waiter'), orderController.createOrderForWaiter);
-router.patch('/waiters/orders/:id', hasStaff('waiter'), orderController.updateOrderForCustomer);
+router.patch('/waiters/orders/:id', hasStaff('waiter'), orderController.updateOrderForWaiter);
 router.post('/waiters/orders/verify/:id', hasStaff('waiter'), orderController.verifyCustomerOrder);
-router.post('/waiters/orders/customers', hasStaff('waiter'), orderControllerOld.storeForWaiter);
 
 /* ========= END ENDPOINT FOR WAITER ========= */
 

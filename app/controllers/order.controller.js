@@ -320,11 +320,93 @@ async function updateOrderForCustomer(req, res, next) {
     }
 }
 
+/*
+ * story: 
+ */
+async function updateOrderForWaiter(req, res, next) {
+    try {
+        
+        // request body
+        const { items } = req.body;
+        // waiter who serve
+        const staff = await getUserSignedIn(req.user._id);
+
+        // check if orders is empty
+        if (!items || items.length === 0) {
+            return res.status(400).json({
+                message: 'Order Items Not Found!'
+            });
+        }
+
+        // variable for the item to be changed
+        let changedItems = [];
+        // get order
+        let order = await Order.findOne({ _id: req.params.id }).populate('order_items');
+        // order item to chenged
+        const updatedItemIds = items.map(e => e.item);
+        const updatedItems = await OrderItem.find({ _id: { $in: updatedItemIds } });
+
+        console.log(staff.waiter._id);
+        console.log(order.waiter);
+
+        // check order who serve
+        if (order.waiter !== staff.waiter._id) {
+            return res.status(403).json({
+                message: 'You Can\'t Change It, Only The Waiter Who Serves Can Change!'
+            });
+        }
+
+        orders.forEach(async (element) => {
+            const orderedItem = await OrderItem.find({ _id: element.item });
+            if (orderedItem.status > STATUS_ORDER_ITEM.IN_QUEUE) {
+                return true;
+            } else {
+                updatedItems.push(element);
+                if (element.qty === 0) {
+                    await order.updateOne(
+                        { $pull: { "order_items": element.item } },
+                        { useFindAndModify: false }
+                    );
+                    await OrderItem.findByIdAndDelete({ _id: element.item });
+                }
+            }
+        });
+
+        // order items
+        let orderedItems = changedItems.map(element => {
+            let relatedItem = orderItems.find(orderItem => orderItem._id.toString() === element.item);
+            return {
+                "updateOne": { 
+                    "filter": { 
+                        "_id": relatedItem._id,
+                    },              
+                    "update": { "$set": { 
+                        "qty": element.qty,
+                        "total": relatedItem.price * element.qty
+                    } } 
+                }
+            }
+        });
+
+        // save order and order items
+        await OrderItem.bulkWrite(orderedItems);
+        await order.save();
+
+
+        // console.log(user);
+        // console.log(order);
+
+    } catch (err) {
+        next(err);
+    }
+}
+
 module.exports = {
     getAllOrders,
     getOrderForWaiter,
     createOrderForCustomer,
     createOrderForWaiter,
     verifyCustomerOrder,
-    updateOrderForCustomer
+    updateOrderForCustomer,
+    updateOrderForWaiter
 }
