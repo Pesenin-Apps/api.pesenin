@@ -39,7 +39,6 @@ async function changePassword(req, res, next) {
 /* =========  [ S T A R T ]  F O R  W A I T E R  ========= */
 
 async function changeStatus(req, res, next) {
-
     try {
 
         let message;
@@ -63,7 +62,6 @@ async function changeStatus(req, res, next) {
     } catch (err) {
         next(err);
     }
-
 }
 
 /* =========  [ E N D ]  F O R  W A I T E R  ========= */

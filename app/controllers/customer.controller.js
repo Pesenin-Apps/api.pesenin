@@ -8,7 +8,6 @@ const { getNumbering, getCustomerCheckedIn } = require('../helpers/gets');
 const { getToken } = require('../utils/get-token');
 
 async function me(req, res, next) {
-
     try {
 
         let customer = await Customer.findOne({ checkin_number: req.customer.checkin_number }).populate('table', 'name');
@@ -20,11 +19,9 @@ async function me(req, res, next) {
     } catch (err) {
         next(err);
     }
-
 }
 
 async function checkIn(req, res, next) {
-
     try {
 
         // request
@@ -71,22 +68,18 @@ async function checkIn(req, res, next) {
 
     } catch (err) {
 
-        
         if (err && err.name === 'ValidationError') {
             return res.status(400).json({
                 message: err.message,
                 fields: err.errors
             });
         }
-
         next(err);
 
     }
-
 }
 
 async function checkOut(req, res, next) {
-
     try {
 
         const token = getToken(req);
@@ -135,7 +128,6 @@ async function checkOut(req, res, next) {
     } catch (err) {
         next(err);
     }
-
 }
 
 module.exports = {

@@ -34,7 +34,7 @@ function authorize() {
     }
 }
 
-function hasRole(...roles) {
+function hasStaff(...roles) {
     return async function(req, res, next) {
         const { user } = req;
         if (user && roles.includes(user.role)) {
@@ -62,6 +62,6 @@ function hasCustomer() {
 
 module.exports = {
     authorize,
-    hasRole,
+    hasStaff,
     hasCustomer
 }

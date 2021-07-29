@@ -7,7 +7,6 @@ const config = require('../config/config');
 const { getToken } = require('../utils/get-token');
 
 async function signUp(req, res, next) {
-
     try {
 
         const payload = req.body;
@@ -34,15 +33,12 @@ async function signUp(req, res, next) {
                 fields: err.errors
             });
         }
-
         next(err);
 
     }
-
 }
 
 async function localStrategy(email, password, done) {
-
     try {
 
         let user = await User.findOne({ email }).select('-__v -createdAt -updatedAt -token');
@@ -53,6 +49,7 @@ async function localStrategy(email, password, done) {
         }
 
         return done(null, userWithoutPassword);
+        
     } catch (err) {
         done(err, null);
     }
