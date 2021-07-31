@@ -14,7 +14,6 @@ const productController = require('../app/controllers/products/product.controlle
 const productTypeController = require('../app/controllers/products/type.controller');
 const tableController = require('../app/controllers/tables/table.controller');
 const tableSectionController = require('../app/controllers/tables/section.controller');
-const orderControllerOld = require('../app/controllers/order');
 const orderController = require('../app/controllers/order.controller');
 
 passport.use(new LocalStrategy({ usernameField: 'email' }, authController.localStrategy));
