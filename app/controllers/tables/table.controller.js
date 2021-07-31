@@ -3,11 +3,13 @@ const TableSection = require('../../models/tables/section');
 
 async function index(req, res, next) {
     try {
+
         let tables = await Table.find().populate('section', 'name');
         return res.status(200).json({
             message: "Tables Retrived Successfully!",
             tables: tables
         });
+
     } catch (err) {
         next(error);
     }
@@ -15,11 +17,13 @@ async function index(req, res, next) {
 
 async function show(req, res, next) {
     try {
+
         let table = await Table.findById(req.params.id).populate('section', 'name');
         return res.status(200).json({
             message: "Table Retrived Successfully!",
             table: table
         });
+
     } catch (err) {
         next(err);
     }
@@ -27,9 +31,11 @@ async function show(req, res, next) {
 
 async function store(req, res, next) {
     try {
+
         // request
         let code;
         let payload = req.body;
+
         // relationship of section
         if (payload.section) {
             let section = await TableSection.findOne({ 
@@ -42,15 +48,19 @@ async function store(req, res, next) {
                 delete payload.section
             }
         }
+
         // store data
         let table = new Table(payload);
         table.name = code + '-' + payload.number;
         await table.save();
+
         return res.status(201).json({
             message: 'Table Stored Successfully!',
             table: table
         });
+
     } catch (err) {
+
         if (err && err.name === 'ValidationError') {
             return res.status(400).json({
                 message: err.message,
@@ -58,14 +68,17 @@ async function store(req, res, next) {
             });
         }
         next(err);
+
     }
 }
 
 async function update(req, res, next) {
     try {
+
         // request 
         let code;
         let payload = req.body;
+
         // relationship of section
         if (payload.section) {
             let section = await TableSection.findOne({ 
@@ -78,21 +91,26 @@ async function update(req, res, next) {
                 delete payload.section
             }
         }
+
         // check number updated
         if (payload.number || payload.section) {
             payload.name = code + '-' + payload.number
         }
+
         // update data
         let table = await Table.findOneAndUpdate(
             { _id: req.params.id },
             payload,
             { new: true, runValidators: true}
         );
+
         res.status(200).json({
             message: 'Table Updated Successfully!',
             table: table
         });
+
     } catch (err) {
+
         if (err && err.name === 'ValidationError') {
             return res.status(400).json({
                 message: err.message,
@@ -100,16 +118,19 @@ async function update(req, res, next) {
             });
         }
         next(err);
+
     }
 }
 
 async function destroy(req, res, next) {
     try {
+
         let table = await Table.findByIdAndDelete({ _id: req.params.id });
         return res.status(200).json({
             message: 'Table Deleted Successfully!',
             table: table
         });
+        
     } catch (err) {
         next(err);
     }
