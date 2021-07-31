@@ -320,9 +320,6 @@ async function updateOrderForCustomer(req, res, next) {
     }
 }
 
-/*
- * story: 
- */
 async function updateOrderForWaiter(req, res, next) {
     try {
         
@@ -346,35 +343,35 @@ async function updateOrderForWaiter(req, res, next) {
         const updatedItemIds = items.map(e => e.item);
         const updatedItems = await OrderItem.find({ _id: { $in: updatedItemIds } });
 
-        console.log(staff.waiter._id);
-        console.log(order.waiter);
+        // remove item when status more than status IN_QUEUE
+        updatedItems.forEach((element, index, object) => {
+            if (element.status > STATUS_ORDER_ITEM.IN_QUEUE) {
+                object.splice(index, 1);
+                items.splice(index, 1)
+            }
+        });
 
         // check order who serve
-        if (order.waiter !== staff.waiter._id) {
+        if (order.waiter.toString() !== staff.waiter._id.toString()) {
             return res.status(403).json({
                 message: 'You Can\'t Change It, Only The Waiter Who Serves Can Change!'
             });
         }
 
-        orders.forEach(async (element) => {
-            const orderedItem = await OrderItem.find({ _id: element.item });
-            if (orderedItem.status > STATUS_ORDER_ITEM.IN_QUEUE) {
-                return true;
-            } else {
-                updatedItems.push(element);
-                if (element.qty === 0) {
-                    await order.updateOne(
-                        { $pull: { "order_items": element.item } },
-                        { useFindAndModify: false }
-                    );
-                    await OrderItem.findByIdAndDelete({ _id: element.item });
-                }
+        items.forEach(async (element) => {
+            changedItems.push(element);
+            if (element.qty === 0) {
+                await order.updateOne(
+                    { $pull: { "order_items": element.item } },
+                    { useFindAndModify: false }
+                );
+                await OrderItem.findByIdAndDelete({ _id: element.item });
             }
         });
 
         // order items
         let orderedItems = changedItems.map(element => {
-            let relatedItem = orderItems.find(orderItem => orderItem._id.toString() === element.item);
+            let relatedItem = updatedItems.find(orderItem => orderItem._id.toString() === element.item);
             return {
                 "updateOne": { 
                     "filter": { 
@@ -392,9 +389,11 @@ async function updateOrderForWaiter(req, res, next) {
         await OrderItem.bulkWrite(orderedItems);
         await order.save();
 
-
-        // console.log(user);
-        // console.log(order);
+        // response
+        return res.status(200).json({
+            message: 'Order Updated Successfully!',
+            order: order
+        });
 
     } catch (err) {
         next(err);
