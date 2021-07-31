@@ -320,9 +320,6 @@ async function updateOrderForCustomer(req, res, next) {
     }
 }
 
-/*
- * story: 
- */
 async function updateOrderForWaiter(req, res, next) {
     try {
         
