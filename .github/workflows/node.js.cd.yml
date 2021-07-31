@@ -6,7 +6,7 @@ name: CD
 on:
   # Triggers the workflow on push or pull request events but only for the main branch
   push:
-    branches: [ main ]
+    branches: [main]
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
@@ -26,9 +26,8 @@ jobs:
           key: ${{ secrets.PRIVATE_KEY }}
           port: 22
           script: |
-            cd ~/root/apps/api.pesenin
+            cd ~/apps/api.pesenin
             git pull origin main
             git status
             npm install --only=prod
             pm2 restart ApiPesenin
-            
