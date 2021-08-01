@@ -3,11 +3,13 @@ const { getInitial } = require('../../helpers/gets');
 
 async function index(req, res, next) {
     try {
+
         let tableSections = await TableSection.find();
         return res.status(200).json({
             message: "TableSections Retrived Successfully!",
             tableSections: tableSections
         });
+
     } catch (err) {
         next(err);
     }
@@ -15,11 +17,13 @@ async function index(req, res, next) {
 
 async function show(req, res, next) {
     try {
+
         let tableSection = await TableSection.findById(req.params.id).populate('tables');
         return res.status(200).json({
             message: "TableSection Retrived Successfully!",
             tableSection: tableSection
         });
+
     } catch (err) {
         next(err);
     }
@@ -27,17 +31,22 @@ async function show(req, res, next) {
 
 async function store(req, res, next) {
     try {
+
         // request
-        let payload = req.body;        
+        let payload = req.body;
+
         // store data
         let tableSection = new TableSection(payload);
         tableSection.code = getInitial(payload.name);
         await tableSection.save();
+        
         return res.status(201).json({
             message: 'TableSection Stored Successfully!',
             tableSection: tableSection
         });
+
     } catch (err) {
+        
         if (err && err.name === 'ValidationError') {
             return res.status(400).json({
                 message: err.message,
@@ -45,13 +54,16 @@ async function store(req, res, next) {
             });
         }
         next(err);
+
     }
 }
 
 async function update(req, res, next) {
     try {
+
         // request
-        let payload = req.body;        
+        let payload = req.body;
+
         // update data
         payload.code  = getInitial(payload.name);
         let tableSection = await TableSection.findOneAndUpdate(
@@ -59,11 +71,14 @@ async function update(req, res, next) {
             payload,
             { new: true, runValidators: true}
         );
+
         res.status(200).json({
             message: 'TableSection Updated Successfully!',
             tableSection: tableSection
         });
+
     } catch (err) {
+
         if (err && err.name === 'ValidationError') {
             return res.status(400).json({
                 message: err.message,
@@ -71,16 +86,19 @@ async function update(req, res, next) {
             });
         }
         next(err);
+
     }
 }
 
 async function destroy(req, res, next) {
     try {
+
         let tableSection = await TableSection.findByIdAndDelete({ _id: req.params.id });
         return res.status(200).json({
             message: 'TableSection Deleted Successfully!',
             tableSection: tableSection
         });
+        
     } catch (err) {
         next(err);
     }
