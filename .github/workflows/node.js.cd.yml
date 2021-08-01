@@ -27,6 +27,8 @@ jobs:
           port: 22
           script: |
             cd ~/apps/api.pesenin
+            export NVM_DIR=~/.nvm
+            source ~/.nvm/nvm.sh
             git pull origin main
             git status
             npm install --only=prod
