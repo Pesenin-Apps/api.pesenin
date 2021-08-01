@@ -2,11 +2,13 @@ const ProductType = require('../../models/products/type');
 
 async function index(req, res, next) {
     try {
+
         let productTypes = await ProductType.find();
         return res.status(200).json({
             message: "ProductTypes Retrived Successfully!",
             productTypes: productTypes
         });
+
     } catch (err) {
         next(err);
     }
@@ -14,11 +16,13 @@ async function index(req, res, next) {
 
 async function show(req, res, next) {
     try {
+
         let productType = await ProductType.findById(req.params.id).populate('products');
         return res.status(200).json({
             message: "ProductType Retrived Successfully!",
             productType: productType
         });
+
     } catch (err) {
         next(err);
     }
@@ -26,14 +30,19 @@ async function show(req, res, next) {
 
 async function store(req, res, next) {
     try {
+
         let payload = req.body;
         let productType = new ProductType(payload);
+
         await productType.save();
+
         return res.status(201).json({
             message: 'ProductType Stored Successfully!',
             productType: productType
         });
+
     } catch (err) {
+
         if (err && err.name === 'ValidationError') {
             return res.status(404).json({
                 message: err.message,
@@ -41,22 +50,27 @@ async function store(req, res, next) {
             });
         }
         next(err);
+
     }
 }
 
 async function update(req, res, next) {
     try {
+
         let payload = req.body;
         let productType = await ProductType.findByIdAndUpdate(
             { _id: req.params.id },
             payload,
             { new: true, runValidators: true }
         );
+
         return res.status(200).json({
             message: 'ProductType Updated Successfully!',
             productType: productType
         });
+
     } catch (err) {
+
         if (err && err.name === 'ValidationError') {
             return res.status(404).json({
                 message: err.message,
@@ -64,16 +78,19 @@ async function update(req, res, next) {
             });
         }
         next(err);
+
     }
 }
 
 async function destroy(req, res, next) {
     try {
+
         let productType = await ProductType.findOneAndDelete({ _id: req.params.id });
         return res.status(200).json({
             message: 'ProductType Deleted Successfully!',
             productType: productType
         });
+        
     } catch (err) {
         next(err);
     }
