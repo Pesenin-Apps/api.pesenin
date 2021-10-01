@@ -400,6 +400,18 @@ async function updateOrderForWaiter(req, res, next) {
     }
 }
 
+async function updateOrderForKitchen(req, res, next) {
+    try {
+        
+        const { item } = req.body;
+
+        let orderItem = await OrderItem.findOne({ _id: item });
+
+    } catch (err) {
+        next(err);
+    }
+}
+
 module.exports = {
     getAllOrders,
     getOrderForWaiter,
