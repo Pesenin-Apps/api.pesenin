@@ -36,6 +36,19 @@ async function store(req, res, next) {
         let code;
         let payload = req.body;
 
+        const existTable = await Table.findOne({
+            'number': payload.number
+        }).populate({
+            path: 'section',
+            match: payload.section
+        });
+
+        if (existTable) {
+            return res.status(400).json({
+                message: 'Table Already Exist!'
+            });
+        }
+
         // relationship of section
         if (payload.section) {
             let section = await TableSection.findOne({ 
