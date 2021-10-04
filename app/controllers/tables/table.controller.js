@@ -45,7 +45,7 @@ async function store(req, res, next) {
             }
         });
         
-        if (existTable.section != null) {
+        if (existTable?.section != null) {
             return res.status(400).json({
                 message: 'Table Already Exist!'
             });
