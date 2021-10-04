@@ -40,10 +40,12 @@ async function store(req, res, next) {
             'number': payload.number
         }).populate({
             path: 'section',
-            match: payload.section
+            match: {
+                _id: payload.section
+            }
         });
-
-        if (existTable) {
+        
+        if (existTable.section != null) {
             return res.status(400).json({
                 message: 'Table Already Exist!'
             });
