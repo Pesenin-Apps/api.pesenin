@@ -7,12 +7,26 @@ const config = require('../../config/config')
 
 async function index(req, res, next) {
     try {
-        let products = await Product.find().populate('category', 'name').populate('type', 'name');
-        let count = await Product.find().countDocuments();
+        let { limit = 10, skip = 0, search = '' } = req.query;
+        let criteria = {};
+
+        if(search.length){
+			criteria = {
+				...criteria, 
+				name: {$regex: `${search}`, $options: 'i'}
+			}
+		}
+
+        let products = await Product.find(criteria)
+            .limit(parseInt(limit))
+            .skip(parseInt(skip))
+            .populate('category', 'name')
+            .populate('type', 'name');
+        
         return res.status(200).json({
             message: "Products Retrived Successfully!",
-            count: count,
-            products: products
+            count: products.length,
+            data: products
         });
     } catch (err) {
         next(error);
@@ -24,7 +38,7 @@ async function show(req, res, next) {
         let product = await Product.findById(req.params.id).populate('category').populate('type');
         return res.status(200).json({
             message: "Product Retrived Successfully!",
-            product: product
+            data: product
         });
     } catch (err) {
         next(err);
@@ -101,7 +115,7 @@ async function store(req, res, next) {
             await product.save();
             return res.status(201).json({
                 message: 'Product Stored Successfully!',
-                product: product
+                data: product
             });
         }
     } catch (err) {
@@ -198,7 +212,7 @@ async function update(req, res, next) {
             );
             res.status(200).json({
                 message: 'Product Updated Successfully!',
-                product: product
+                data: product
             });
         }
     } catch (err) {
@@ -223,7 +237,7 @@ async function destroy(req, res, next) {
         }
         res.status(200).json({
             message: 'Product Deleted Successfully!',
-            product: product
+            data: product
         });
     } catch (err) {
         next(err);   

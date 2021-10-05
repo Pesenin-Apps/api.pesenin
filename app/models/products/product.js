@@ -25,7 +25,14 @@ const productSchema = Schema({
         ref: 'ProductType',
         required: [ true, 'is required.' ]
     },
-    image_url: String
+    is_ready: {
+        type: Boolean,
+        default: false
+    },
+    image_url: {
+        type: String,
+        default: null,
+    }
 }, { timestamps: true });
 
 module.exports = model('Product', productSchema);
