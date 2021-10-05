@@ -44,11 +44,15 @@ async function localStrategy(email, password, done) {
         let user = await User.findOne({ email }).select('-__v -createdAt -updatedAt -token');
 
         if (!user) return done();
-        if (bcrypt.compareSync(password, user.password)) {
-            ( { password, ...userWithoutPassword } = user.toJSON() );
-        }
 
-        return done(null, userWithoutPassword);
+        const checkPassword = bcrypt.compareSync(password, user.password);
+
+        if (checkPassword) {
+            ( { password, ...userWithoutPassword } = user.toJSON() );
+            return done(null, userWithoutPassword);
+        } else {
+            return done(null, false, { message: 'Incorrect password.' });
+        }
         
     } catch (err) {
         done(err, null);
