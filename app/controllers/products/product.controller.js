@@ -7,7 +7,7 @@ const config = require('../../config/config')
 
 async function index(req, res, next) {
     try {
-        let { limit = 10, skip = 0, search = '' } = req.query;
+        let { page = 1, limit = 10, skip = 0, search = '' } = req.query;
         let criteria = {};
 
         if(search.length){
@@ -18,16 +18,19 @@ async function index(req, res, next) {
 		}
 
         let products = await Product.find(criteria)
+            .skip((parseInt(page) - 1) * parseInt(limit))
             .limit(parseInt(limit))
-            .skip(parseInt(skip))
             .populate('category', 'name')
-            .populate('type', 'name');
+            .populate('type', 'name')
+            .sort('name');
         let countAll = await Product.find().countDocuments();
         
         return res.status(200).json({
             message: "Products Retrived Successfully!",
             countAll: countAll,
             countDisplay: products.length,
+            pageCurrent: page,
+            pageMaximum: Math.ceil(countAll / limit),
             data: products
         });
     } catch (err) {
