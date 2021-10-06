@@ -2,7 +2,7 @@ const ProductCategory = require('../../models/products/category');
 
 async function index(req, res, next) {
     try {
-        let categories = await ProductCategory.find();
+        let categories = await ProductCategory.find().sort('name');
         return res.status(200).json({
             message: "Categories Retrived Successfully!",
             data: categories

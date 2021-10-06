@@ -3,10 +3,10 @@ const ProductType = require('../../models/products/type');
 async function index(req, res, next) {
     try {
 
-        let productTypes = await ProductType.find();
+        let productTypes = await ProductType.find().sort('name');
         return res.status(200).json({
             message: "ProductTypes Retrived Successfully!",
-            productTypes: productTypes
+            data: productTypes
         });
 
     } catch (err) {
@@ -20,7 +20,7 @@ async function show(req, res, next) {
         let productType = await ProductType.findById(req.params.id).populate('products');
         return res.status(200).json({
             message: "ProductType Retrived Successfully!",
-            productType: productType
+            data: productType
         });
 
     } catch (err) {
@@ -38,7 +38,7 @@ async function store(req, res, next) {
 
         return res.status(201).json({
             message: 'ProductType Stored Successfully!',
-            productType: productType
+            data: productType
         });
 
     } catch (err) {
@@ -66,7 +66,7 @@ async function update(req, res, next) {
 
         return res.status(200).json({
             message: 'ProductType Updated Successfully!',
-            productType: productType
+            data: productType
         });
 
     } catch (err) {
@@ -88,7 +88,7 @@ async function destroy(req, res, next) {
         let productType = await ProductType.findOneAndDelete({ _id: req.params.id });
         return res.status(200).json({
             message: 'ProductType Deleted Successfully!',
-            productType: productType
+            data: productType
         });
         
     } catch (err) {
