@@ -22,10 +22,12 @@ async function index(req, res, next) {
             .skip(parseInt(skip))
             .populate('category', 'name')
             .populate('type', 'name');
+        let countAll = await Product.find().countDocuments();
         
         return res.status(200).json({
             message: "Products Retrived Successfully!",
-            count: products.length,
+            countAll: countAll,
+            countDisplay: products.length,
             data: products
         });
     } catch (err) {
