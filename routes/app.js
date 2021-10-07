@@ -62,6 +62,14 @@ router.post('/waiters/orders/verify/:id', hasStaff('waiter'), orderController.ve
 /* ========= END ENDPOINT FOR WAITER ========= */
 
 
+/* ========= START ENDPOINT USERS ========= */
+
+router.get('/users', hasStaff('cashier'), staffController.index);
+router.get('/users/:id', hasStaff('cashier'), staffController.show);
+
+/* ========= END ENDPOINT USERS ========= */
+
+
 /* ========= START PRODUCT ENDPOINT ========= */
 
 // type
