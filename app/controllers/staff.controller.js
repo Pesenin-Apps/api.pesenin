@@ -1,3 +1,4 @@
+const bcrypt = require('bcrypt');
 const { ROLE, User } = require('../models/user');
 const { STATUS_WAITER, Waiter } = require('../models/waiter');
 
@@ -125,6 +126,29 @@ async function store(req, res, next) {
     }
 }
 
+async function update(req, res, next) {
+    try {
+        let dataUpdate = {};
+        let { fullname, new_password } = req.body;
+
+        dataUpdate.fullname = fullname;
+        if(new_password.length) dataUpdate.password = bcrypt.hashSync(new_password, 10);
+
+        let user = await User.findByIdAndUpdate(
+            { _id: req.params.id },
+            dataUpdate,
+            { new: true, runValidators: true }
+        );
+
+        return res.status(200).json({
+            message: 'User Updated Successfully!',
+            data: user
+        });
+    } catch (err) {
+        next(err);
+    }
+}
+
 /* =========  [ E N D ]  R E S O U R C E  E N D P O I N T  F O R  A L L  U S E R S  ========= */
 
 
@@ -165,6 +189,7 @@ module.exports = {
     index,
     show,
     store,
+    update,
     // for waiter
     changeStatus
 }
