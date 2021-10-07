@@ -62,6 +62,17 @@ router.post('/waiters/orders/verify/:id', hasStaff('waiter'), orderController.ve
 /* ========= END ENDPOINT FOR WAITER ========= */
 
 
+/* ========= START ENDPOINT USERS ========= */
+
+router.get('/users', hasStaff('cashier'), staffController.index);
+router.get('/users/:id', hasStaff('cashier'), staffController.show);
+router.post('/users', [ hasStaff('cashier'), multer().none() ], staffController.store);
+router.patch('/users/:id', [ hasStaff('cashier'), multer().none() ], staffController.update);
+router.delete('/users/:id', hasStaff('cashier'), staffController.destroy);
+
+/* ========= END ENDPOINT USERS ========= */
+
+
 /* ========= START PRODUCT ENDPOINT ========= */
 
 // type

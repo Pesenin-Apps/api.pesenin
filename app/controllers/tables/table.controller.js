@@ -7,7 +7,7 @@ async function index(req, res, next) {
         let tables = await Table.find().populate('section', 'name');
         return res.status(200).json({
             message: "Tables Retrived Successfully!",
-            tables: tables
+            data: tables
         });
 
     } catch (err) {
@@ -21,7 +21,7 @@ async function show(req, res, next) {
         let table = await Table.findById(req.params.id).populate('section', 'name');
         return res.status(200).json({
             message: "Table Retrived Successfully!",
-            table: table
+            data: table
         });
 
     } catch (err) {
@@ -71,7 +71,7 @@ async function store(req, res, next) {
 
         return res.status(201).json({
             message: 'Table Stored Successfully!',
-            table: table
+            data: table
         });
 
     } catch (err) {
@@ -121,7 +121,7 @@ async function update(req, res, next) {
 
         res.status(200).json({
             message: 'Table Updated Successfully!',
-            table: table
+            data: table
         });
 
     } catch (err) {
@@ -143,7 +143,7 @@ async function destroy(req, res, next) {
         let table = await Table.findByIdAndDelete({ _id: req.params.id });
         return res.status(200).json({
             message: 'Table Deleted Successfully!',
-            table: table
+            data: table
         });
         
     } catch (err) {
