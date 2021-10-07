@@ -149,6 +149,19 @@ async function update(req, res, next) {
     }
 }
 
+async function destroy(req, res, next) {
+    try {
+        let user = await User.findOneAndDelete({ _id: req.params.id });
+        await Waiter.findOneAndDelete({ waiter: req.params.id });
+        return res.status(200).json({
+            message: 'User Deleted Successfully!',
+            data: user
+        });
+    } catch (err) {
+        next(err);
+    }
+}
+
 /* =========  [ E N D ]  R E S O U R C E  E N D P O I N T  F O R  A L L  U S E R S  ========= */
 
 
@@ -190,6 +203,7 @@ module.exports = {
     show,
     store,
     update,
+    destroy,
     // for waiter
     changeStatus
 }
