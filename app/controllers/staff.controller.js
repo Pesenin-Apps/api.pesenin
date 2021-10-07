@@ -92,7 +92,7 @@ async function show(req, res, next) {
         }
 
         return res.status(200).json({
-            message: "Product Retrived Successfully!",
+            message: "User Retrived Successfully!",
             data: user
         });
 
