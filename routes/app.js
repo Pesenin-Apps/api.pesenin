@@ -66,6 +66,7 @@ router.post('/waiters/orders/verify/:id', hasStaff('waiter'), orderController.ve
 
 router.get('/users', hasStaff('cashier'), staffController.index);
 router.get('/users/:id', hasStaff('cashier'), staffController.show);
+router.post('/users', [ hasStaff('cashier'), multer().none() ], staffController.store);
 
 /* ========= END ENDPOINT USERS ========= */
 

@@ -101,6 +101,30 @@ async function show(req, res, next) {
     }
 }
 
+async function store(req, res, next) {
+    try {
+        
+        let payload = req.body;
+        let user = new User(payload);
+        await user.save();
+
+        if (payload.role === ROLE.WAITER) {
+            let waiter = new Waiter({
+                waiter: user._id
+            });
+            await waiter.save();
+        }
+
+        return res.status(201).json({
+            message: 'User Registered Successfully!',
+            data: user
+        });
+
+    } catch (err) {
+        next(err);
+    }
+}
+
 /* =========  [ E N D ]  R E S O U R C E  E N D P O I N T  F O R  A L L  U S E R S  ========= */
 
 
@@ -140,6 +164,7 @@ module.exports = {
     changePassword,
     index,
     show,
+    store,
     // for waiter
     changeStatus
 }
