@@ -7,7 +7,7 @@ async function index(req, res, next) {
         let tableSections = await TableSection.find();
         return res.status(200).json({
             message: "TableSections Retrived Successfully!",
-            tableSections: tableSections
+            data: tableSections
         });
 
     } catch (err) {
@@ -21,7 +21,7 @@ async function show(req, res, next) {
         let tableSection = await TableSection.findById(req.params.id).populate('tables');
         return res.status(200).json({
             message: "TableSection Retrived Successfully!",
-            tableSection: tableSection
+            data: tableSection
         });
 
     } catch (err) {
@@ -42,7 +42,7 @@ async function store(req, res, next) {
         
         return res.status(201).json({
             message: 'TableSection Stored Successfully!',
-            tableSection: tableSection
+            data: tableSection
         });
 
     } catch (err) {
@@ -74,7 +74,7 @@ async function update(req, res, next) {
 
         res.status(200).json({
             message: 'TableSection Updated Successfully!',
-            tableSection: tableSection
+            data: tableSection
         });
 
     } catch (err) {
@@ -96,7 +96,7 @@ async function destroy(req, res, next) {
         let tableSection = await TableSection.findByIdAndDelete({ _id: req.params.id });
         return res.status(200).json({
             message: 'TableSection Deleted Successfully!',
-            tableSection: tableSection
+            data: tableSection
         });
         
     } catch (err) {
