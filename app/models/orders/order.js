@@ -24,6 +24,14 @@ const orderSchema = Schema({
         type: Number,
         default: 0
     },
+    tax: {
+        type : Number,
+        default: 0,
+    },
+    total_overall: {
+        type : Number,
+        default: 0,
+    },
     customer: {
         type: Schema.Types.ObjectId, 
         ref: 'Customer'
@@ -40,7 +48,7 @@ const orderSchema = Schema({
         type: Schema.Types.ObjectId, 
         ref: 'OrderItem'
     }]
-});
+}, { timestamps: true });
 
 orderSchema.virtual('items_count').get(function(){
     return this.order_items.reduce((total, item) => { return total + parseInt(item.qty)}, 0)
@@ -49,6 +57,8 @@ orderSchema.virtual('items_count').get(function(){
 orderSchema.pre('save', async function(next) {
     const orderItems = await OrderItem.find({ _id: {$in: this.order_items} });
     this.total_price = orderItems.reduce((sum, item) => sum += item.total, 0);
+    this.tax = (10 / 100) * this.total_price;
+    this.total_overall = this.total_price + this.tax;
     next();
 });
 

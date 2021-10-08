@@ -68,11 +68,25 @@ async function getWaiterReadyToServe() {
     }
 }
 
+function getDateNow() {
+    const dateNow = new Date();
+    const dateStr = `${
+        dateNow.getDate().toString().padStart(2, '0')}-${
+        (dateNow.getMonth()+1).toString().padStart(2, '0')}-${
+        dateNow.getFullYear().toString().padStart(4, '0')}${' '}${
+        dateNow.getHours().toString().padStart(2, '0')}:${
+        dateNow.getMinutes().toString().padStart(2, '0')}:${
+        dateNow.getSeconds().toString().padStart(2, '0')}
+    `;
+    return dateStr;
+}
+
 // exports all method / module
 module.exports = {
     getInitial,
     getNumbering,
     getCustomerCheckedIn,
     getUserSignedIn,
-    getWaiterReadyToServe
+    getWaiterReadyToServe,
+    getDateNow
 }
