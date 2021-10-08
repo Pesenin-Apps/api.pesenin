@@ -13,7 +13,14 @@ async function getAllOrders(req, res, next) {
             filters = new Object();
         }
 
-        let orders = await Order.find(filters).populate('customer', 'name checkin_number').populate('table', 'name section number').sort('-updatedAt');
+        let orders = await Order.find(filters).populate('customer', 'name checkin_number').populate({
+            path: 'table',
+            select: 'name section number',
+            populate: {
+                path: 'section',
+                select: 'name code'
+            }
+        }).sort('-updatedAt');
 
         return res.status(200).json({
             message: 'Orders Retrived Successfully!',
