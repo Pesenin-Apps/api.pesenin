@@ -13,17 +13,11 @@ async function getAllOrders(req, res, next) {
             filters = new Object();
         }
 
-        let orders = await Order.find(filters.order).populate({
-            path: 'order_items',
-            match: filters.order_item,
-            populate: {
-                path: 'product'
-            }
-        }).populate('customer', 'name checkin_number').populate('table', 'name section number');
+        let orders = await Order.find(filters).populate('customer', 'name checkin_number').populate('table', 'name section number').sort('-updatedAt');
 
         return res.status(200).json({
             message: 'Orders Retrived Successfully!',
-            orders: orders
+            data: orders
         });
 
     } catch (err) {
@@ -76,21 +70,22 @@ async function createOrderForCustomer(req, res, next) {
     try {
         
         // req body
-        const { items } = req.body;
-        // get waiter is on duty
-        const waiter = await getWaiterReadyToServe();
+        const { orders } = req.body;
         // customer active
         const customer = await getCustomerCheckedIn(req.customer.checkin_number);
-        // product who ordered
-        const productIds = items.map(item => item.product);
-        const products = await Product.find({ _id: {$in: productIds} });
 
+        // get waiter is on duty
+        const waiter = await getWaiterReadyToServe();
         // check if waiter exist or not
         if (waiter === false) {
             return res.status(201).json({
                 message: 'Waiter not found, no one is onduty yet!'
             });
         }
+
+        // product who ordered
+        const productIds = orders.map(e => e.item);
+        const products = await Product.find({ _id: {$in: productIds} });
 
         // update waiter
         await Waiter.findOneAndUpdate(
@@ -115,14 +110,14 @@ async function createOrderForCustomer(req, res, next) {
         );
 
         //  order items
-        let orderItems = items.map(item => {
-            let relatedProduct = products.find(product => product._id.toString() === item.product);
+        let orderItems = orders.map(element => {
+            let relatedProduct = products.find(product => product._id.toString() === element.item);
             return {
                 order: order._id,
                 product: relatedProduct.id,
                 price: relatedProduct.price,
-                qty: item.qty,
-                total: relatedProduct.price * item.qty,
+                qty: element.qty,
+                total: relatedProduct.price * element.qty,
                 status: STATUS_ORDER_ITEM.NEW
             }
         });
@@ -139,6 +134,12 @@ async function createOrderForCustomer(req, res, next) {
         });
 
     } catch (err) {
+        if (err && err.name === 'ValidationError') {
+            return res.status(400).json({
+                message: err.message,
+                fields: err.errors
+            });
+        }
         next(err);
     }
 }
@@ -147,11 +148,11 @@ async function createOrderForWaiter(req, res, next) {
     try {
         
         // request body
-        const { table, items } = req.body;
+        const { table, orders } = req.body;
         // waiter serve
         const user = await getUserSignedIn(req.user._id);
         // product who ordered
-        const productIds = items.map(item => item.product);
+        const productIds = orders.map(e => e.item);
         const products = await Product.find({ _id: {$in: productIds} });
 
         // update waiter
@@ -177,14 +178,14 @@ async function createOrderForWaiter(req, res, next) {
         );
 
         // order items
-        let orderItems = items.map(item => {
-            let relatedProduct = products.find(product => product._id.toString() === item.product);
+        let orderItems = orders.map(element => {
+            let relatedProduct = products.find(product => product._id.toString() === element.item);
             return {
                 order: order._id,
                 product: relatedProduct.id,
                 price: relatedProduct.price,
-                qty: item.qty,
-                total: relatedProduct.price * item.qty,
+                qty: element.qty,
+                total: relatedProduct.price * element.qty,
                 status: STATUS_ORDER_ITEM.IN_QUEUE
             }
         });
@@ -201,6 +202,12 @@ async function createOrderForWaiter(req, res, next) {
         });
 
     } catch (err) {
+        if (err && err.name === 'ValidationError') {
+            return res.status(400).json({
+                message: err.message,
+                fields: err.errors
+            });
+        }
         next(err);
     }
 }
@@ -208,10 +215,10 @@ async function createOrderForWaiter(req, res, next) {
 async function verifyCustomerOrder(req, res, next) {
     try {
         
-        // waiter serve
-        const user = await getUserSignedIn(req.user._id);
         // variable for save order item ids
         let orderItemIds = [];
+        // waiter serve
+        const user = await getUserSignedIn(req.user._id);
 
         // get order
         let order = await Order.findOne({ 
@@ -245,6 +252,12 @@ async function verifyCustomerOrder(req, res, next) {
         });
 
     } catch (err) {
+        if (err && err.name === 'ValidationError') {
+            return res.status(400).json({
+                message: err.message,
+                fields: err.errors
+            });
+        }
         next(err);
     }
 }
@@ -256,13 +269,6 @@ async function updateOrderForCustomer(req, res, next) {
         let updatedItems = [];
         // req body
         const { orders } = req.body;
-        // customer active
-        const customer = await getCustomerCheckedIn(req.customer.checkin_number);
-        // product who ordered
-        const orderItemIds = orders.map(e => e.item);
-        const orderItems = await OrderItem.find({ _id: {$in: orderItemIds} });
-        // get order
-        let order = await Order.findOne({ table: customer.table });
 
         // check if orders is empty
         if (!orders || orders.length === 0) {
@@ -270,6 +276,14 @@ async function updateOrderForCustomer(req, res, next) {
                 message: 'Order Items Not Found!'
             });
         }
+
+        // customer active
+        const customer = await getCustomerCheckedIn(req.customer.checkin_number);
+        // get order
+        let order = await Order.findOne({ 
+            customer: customer._id,
+            table: customer.table
+        });
         
         // check if order more than store status
         if (order.status > STATUS_ORDER.STORE_ORDER) {
@@ -277,6 +291,10 @@ async function updateOrderForCustomer(req, res, next) {
                 message: 'You Can\'t Change It Anymore, Only The Waiter Can Change!'
             });
         }
+
+        // // product who ordered
+        const orderItemIds = orders.map(e => e.item);
+        const orderItems = await OrderItem.find({ _id: {$in: orderItemIds} });
 
         orders.forEach(async (element) => {
             updatedItems.push(element);
@@ -289,7 +307,7 @@ async function updateOrderForCustomer(req, res, next) {
             }
         });
 
-        // order items
+        // // order items
         let orderedItems = updatedItems.map(element => {
             let relatedItem = orderItems.find(orderItem => orderItem._id.toString() === element.item);
             return {
@@ -316,6 +334,12 @@ async function updateOrderForCustomer(req, res, next) {
         });
 
     } catch (err) {
+        if (err && err.name === 'ValidationError') {
+            return res.status(400).json({
+                message: err.message,
+                fields: err.errors
+            });
+        }
         next(err);
     }
 }
@@ -396,6 +420,12 @@ async function updateOrderForWaiter(req, res, next) {
         });
 
     } catch (err) {
+        if (err && err.name === 'ValidationError') {
+            return res.status(400).json({
+                message: err.message,
+                fields: err.errors
+            });
+        }
         next(err);
     }
 }
