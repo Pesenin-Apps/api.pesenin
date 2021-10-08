@@ -43,7 +43,7 @@ router.post('/auth/signout', authController.signOut);
 
 // staff signed in info
 router.get('/user/me', staffController.me);
-router.get('/orders', orderController.getAllOrders);
+router.get('/orders', hasStaff('cashier'), orderController.getAllOrders);
 
 /* ========= END ENDPOINT FOR STAFF (WAITER, KITCHEN, CASHIER) ========= */
 
