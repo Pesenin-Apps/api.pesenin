@@ -7,8 +7,23 @@ const config = require('../../config/config')
 
 async function index(req, res, next) {
     try {
-        let { page = 1, limit = 10, search = '' } = req.query;
+
         let criteria = {};
+        let { page, limit, category = '' } = req.query;
+        const { search = '', period } = req.query;
+
+        if (period === "all") {
+            page = 0;
+            limit = 0;
+        } else {
+            if (!page || !limit) {
+                return res.status(400).json({
+                    message: 'Enter Params Page and Limit!'
+                });
+            }
+            page = (parseInt(page) - 1) * parseInt(limit);
+            limit = parseInt(limit);
+        }
 
         if(search.length){
 			criteria = {
@@ -17,9 +32,16 @@ async function index(req, res, next) {
 			}
 		}
 
+        if(category.length){
+            category = await ProductCategory.findById(category);
+			if(category) {
+                criteria = {...criteria, category: category._id}
+			}
+		}
+
         let products = await Product.find(criteria)
-            .skip((parseInt(page) - 1) * parseInt(limit))
-            .limit(parseInt(limit))
+            .skip(page)
+            .limit(limit)
             .populate('category', 'name')
             .populate('type', 'name')
             .sort('name');
@@ -33,7 +55,7 @@ async function index(req, res, next) {
             data: products
         });
     } catch (err) {
-        next(error);
+        next(err);
     }
 }
 

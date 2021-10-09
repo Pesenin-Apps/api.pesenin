@@ -8,24 +8,55 @@ const { getUserSignedIn, getCustomerCheckedIn, getWaiterReadyToServe } = require
 async function getAllOrders(req, res, next) {
     try {
         
-        // search, limit, page
-        let { filters } = req.query;
+        let criteria = {};
+        let { page, limit } = req.query;
+        const { filters, search = '', period } = req.query;
 
-        if (Object.keys(req.query).length === 0) {
-            filters = new Object();
+        if (period === "all") {
+            page = 0;
+            limit = 0;
+        } else {
+            if (!page || !limit) {
+                return res.status(400).json({
+                    message: 'Enter Params Page and Limit!'
+                });
+            }
+            page = (parseInt(page) - 1) * parseInt(limit);
+            limit = parseInt(limit);
         }
 
-        let orders = await Order.find(filters).populate('customer', 'name checkin_number').populate({
+        if(search.length){
+			criteria = {
+				...criteria,
+				order_number: {$regex: `${search}`, $options: 'i'}
+			};
+		}
+
+        if (filters) {
+            if (filters.status) {
+                criteria = {
+                    ...criteria,
+                    status: filters.status
+                };
+            }
+        }
+
+        let orders = await Order.find(criteria).populate('customer', 'name checkin_number').populate({
             path: 'table',
             select: 'name section number',
             populate: {
                 path: 'section',
-                select: 'name code'
+                select: 'name code',
             }
-        }).sort('-updatedAt');
+        }).sort('-createdAt').skip(page).limit(limit);
+
+        let count = await Order.find(criteria).countDocuments();
 
         return res.status(200).json({
             message: 'Orders Retrived Successfully!',
+            count: count,
+            pageCurrent: page,
+            pageMaximum: Math.ceil(count / limit),
             data: orders
         });
 
