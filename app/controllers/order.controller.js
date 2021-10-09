@@ -77,7 +77,7 @@ async function getAllOrder(req, res, next) {
                 path: 'product',
                 select: 'name price'
             }
-        }).populate('customer', 'name checkin_number').populate({
+        }).populate('customer', 'name checkin_number device_detection').populate({
             path: 'table',
             select: 'name section number',
             populate: {
