@@ -5,6 +5,32 @@ const Product = require('../models/products/product');
 const Table = require('../models/tables/tabel');
 const { getUserSignedIn, getCustomerCheckedIn, getWaiterReadyToServe } = require('../helpers/gets');
 
+async function getOrderCounts(req, res, next) {
+    try {
+
+        let data = {};
+        const processed = [1, 2, 3];
+        const finished = [4, 5, 6];
+        const all = [...processed, ...finished];
+
+        const allData = await Order.find({ status: {$in: all} }).countDocuments();
+        const processedData = await Order.find({ status: {$in: processed} }).countDocuments();
+        const finishedData = await Order.find({ status: {$in: finished} }).countDocuments();
+
+        data.all = allData;
+        data.processed = processedData;
+        data.finished = finishedData;
+
+        return res.status(200).json({
+            message: 'OrderCount Retrived Successfully!',
+            data: data
+        });
+
+    } catch (err) {
+        next(err);
+    }    
+}
+
 async function getAllOrders(req, res, next) {
     try {
         
@@ -526,6 +552,7 @@ async function updateOrderForKitchen(req, res, next) {
 }
 
 module.exports = {
+    getOrderCounts,
     getAllOrders,
     getAllOrder,
     getOrderForWaiter,
