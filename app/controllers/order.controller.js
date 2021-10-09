@@ -9,20 +9,18 @@ async function getAllOrders(req, res, next) {
     try {
         
         let criteria = {};
+        let skipCol, limitCol  = 0;
         let { page, limit } = req.query;
         const { filters, search = '', period } = req.query;
 
-        if (period === "all") {
-            page = 0;
-            limit = 0;
-        } else {
+        if (period !== "all") {
             if (!page || !limit) {
                 return res.status(400).json({
                     message: 'Enter Params Page and Limit!'
                 });
             }
-            page = (parseInt(page) - 1) * parseInt(limit);
-            limit = parseInt(limit);
+            skipCol = (parseInt(page) - 1) * parseInt(limit);
+            limitCol = parseInt(limit);
         }
 
         if(search.length){
@@ -48,14 +46,14 @@ async function getAllOrders(req, res, next) {
                 path: 'section',
                 select: 'name code',
             }
-        }).sort('-createdAt').skip(page).limit(limit);
+        }).sort('-createdAt').skip(skipCol).limit(limitCol);
 
         let count = await Order.find(criteria).countDocuments();
 
         return res.status(200).json({
             message: 'Orders Retrived Successfully!',
             count: count,
-            pageCurrent: page,
+            pageCurrent: parseInt(page),
             pageMaximum: Math.ceil(count / limit),
             data: orders
         });
@@ -77,7 +75,7 @@ async function getAllOrder(req, res, next) {
                 path: 'product',
                 select: 'name price'
             }
-        }).populate('customer', 'name checkin_number').populate({
+        }).populate('customer', 'name checkin_number device_detection').populate({
             path: 'table',
             select: 'name section number',
             populate: {
