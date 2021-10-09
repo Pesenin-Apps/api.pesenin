@@ -9,20 +9,18 @@ async function index(req, res, next) {
     try {
 
         let criteria = {};
+        let skipCol, limitCol  = 0;
         let { page, limit, category = '' } = req.query;
         const { search = '', period } = req.query;
 
-        if (period === "all") {
-            page = 0;
-            limit = 0;
-        } else {
+        if (period !== "all") {
             if (!page || !limit) {
                 return res.status(400).json({
                     message: 'Enter Params Page and Limit!'
                 });
             }
-            page = (parseInt(page) - 1) * parseInt(limit);
-            limit = parseInt(limit);
+            skipCol = (parseInt(page) - 1) * parseInt(limit);
+            limitCol = parseInt(limit);
         }
 
         if(search.length){
@@ -40,8 +38,8 @@ async function index(req, res, next) {
 		}
 
         let products = await Product.find(criteria)
-            .skip(page)
-            .limit(limit)
+            .skip(skipCol)
+            .limit(limitCol)
             .populate('category', 'name')
             .populate('type', 'name')
             .sort('name');
@@ -50,7 +48,7 @@ async function index(req, res, next) {
         return res.status(200).json({
             message: "Products Retrived Successfully!",
             count: count,
-            pageCurrent: page,
+            pageCurrent: parseInt(page),
             pageMaximum: Math.ceil(count / limit),
             data: products
         });
