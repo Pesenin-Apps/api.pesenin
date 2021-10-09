@@ -17,8 +17,18 @@ const waiterSchema = Schema({
     served: [{
         type: Schema.Types.ObjectId, 
         ref: 'Table'
-    }]
+    }],
 });
+
+waiterSchema.virtual('users', {
+    ref: 'User',
+    localField: 'waiter',
+    foreignField: '_id',
+    justOne: true
+});
+
+waiterSchema.set('toObject', { virtuals: true });
+waiterSchema.set('toJSON', { virtuals: true });
 
 module.exports = {
     STATUS_WAITER: STATUS,

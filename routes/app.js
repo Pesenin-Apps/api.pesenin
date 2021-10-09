@@ -44,6 +44,7 @@ router.post('/auth/signout', authController.signOut);
 // staff signed in info
 router.get('/user/me', staffController.me);
 router.get('/orders', hasStaff('cashier'), orderController.getAllOrders);
+router.get('/orders/:id', hasStaff('cashier'), orderController.getAllOrder);
 
 /* ========= END ENDPOINT FOR STAFF (WAITER, KITCHEN, CASHIER) ========= */
 

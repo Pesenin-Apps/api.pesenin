@@ -2,12 +2,15 @@ const { STATUS_ORDER, Order } = require('../models/orders/order');
 const { STATUS_ORDER_ITEM, OrderItem } = require('../models/orders/item');
 const { Waiter } = require('../models/waiter');
 const Product = require('../models/products/product');
+const Table = require('../models/tables/tabel');
+const { User } = require('../models/user');
 const { getUserSignedIn, getCustomerCheckedIn, getWaiterReadyToServe } = require('../helpers/gets');
 
 async function getAllOrders(req, res, next) {
     try {
         
-        let filters = req.query.filters;
+        // search, limit, page
+        let { filters } = req.query;
 
         if (Object.keys(req.query).length === 0) {
             filters = new Object();
@@ -25,6 +28,44 @@ async function getAllOrders(req, res, next) {
         return res.status(200).json({
             message: 'Orders Retrived Successfully!',
             data: orders
+        });
+
+    } catch (err) {
+        next(err);
+    }
+}
+
+async function getAllOrder(req, res, next) {
+    try {
+        
+        const { id } = req.params;
+
+        const order = await Order.findById(id).populate({
+            path: 'order_items',
+            select: '-order',
+            populate: {
+                path: 'product',
+                select: 'name price'
+            }
+        }).populate('customer', 'name checkin_number').populate({
+            path: 'table',
+            select: 'name section number',
+            populate: {
+                path: 'section',
+                select: 'name code'
+            }
+        }).populate({
+            path: 'waiter',
+            select: 'waiter',
+            populate: {
+                path: 'users',
+                select: 'fullname email'
+            }
+        });
+
+        return res.status(200).json({
+            message: 'Order Retrived Successfully!',
+            data: order,
         });
 
     } catch (err) {
@@ -200,7 +241,14 @@ async function createOrderForWaiter(req, res, next) {
         // save order and order items
         let orderedItems = await OrderItem.insertMany(orderItems);
         orderedItems.forEach(item => order.order_items.push(item));
-        await order.save();
+
+        if (await order.save()) {
+            await Table.findOneAndUpdate(
+                { _id: table },
+                { used: true },
+                { useFindAndModify: false }
+            );
+        }
 
         // response
         return res.status(201).json({
@@ -451,6 +499,7 @@ async function updateOrderForKitchen(req, res, next) {
 
 module.exports = {
     getAllOrders,
+    getAllOrder,
     getOrderForWaiter,
     createOrderForCustomer,
     createOrderForWaiter,
