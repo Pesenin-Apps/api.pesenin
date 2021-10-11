@@ -37,10 +37,12 @@ async function getOrderCounts(req, res, next) {
         const processed = [1, 2, 3];
         const finished = [4, 5, 6];
         const all = [...processed, ...finished];
+        let now = new Date();
+        let startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
 
-        const allData = await Order.find({ status: {$in: all} }).countDocuments();
-        const processedData = await Order.find({ status: {$in: processed} }).countDocuments();
-        const finishedData = await Order.find({ status: {$in: finished} }).countDocuments();
+        const allData = await Order.find({ status: {$in: all}, createdAt: {$gte: startOfToday} }).countDocuments();
+        const processedData = await Order.find({ status: {$in: processed}, createdAt: {$gte: startOfToday} }).countDocuments();
+        const finishedData = await Order.find({ status: {$in: finished}, createdAt: {$gte: startOfToday} }).countDocuments();
 
         data.all = allData;
         data.processed = processedData;
