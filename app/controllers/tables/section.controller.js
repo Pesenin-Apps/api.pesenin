@@ -18,7 +18,10 @@ async function index(req, res, next) {
 async function show(req, res, next) {
     try {
 
-        let tableSection = await TableSection.findById(req.params.id).populate('tables');
+        let tableSection = await TableSection.findById(req.params.id).populate({
+           path: 'tables',
+           options: { sort: { number: 1 } }
+        });
         return res.status(200).json({
             message: "TableSection Retrived Successfully!",
             data: tableSection

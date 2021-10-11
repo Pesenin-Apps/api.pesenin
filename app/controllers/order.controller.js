@@ -376,6 +376,8 @@ async function verifyCustomerOrder(req, res, next) {
             });
         }
 
+        // TODO: queue push to linkedList
+
         // update order and order items
         await order.updateOne({ status: STATUS_ORDER.PROCESSED });
         order.order_items.every(element => orderItemIds.push(element._id.toString()));
@@ -571,6 +573,7 @@ async function updateOrderForWaiter(req, res, next) {
 async function updateOrderForKitchen(req, res, next) {
     try {
         
+        // remove queue in linkedList
         const { item } = req.body;
 
         let orderItem = await OrderItem.findOne({ _id: item });
