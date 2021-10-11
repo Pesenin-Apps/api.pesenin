@@ -124,4 +124,11 @@ router.get('/orders/:id', hasStaff('cashier'), orderController.getAllOrder);
 
 /* ========= END ORDER ENDPOINT ========= */
 
+
+/* ========= START QUEUE ENDPOINT ========= */
+
+router.get('/queues/:idSection', hasStaff('cashier', 'kitchen'), orderController.getQueues);
+
+/* ========= END QUEUE ENDPOINT ========= */
+
 module.exports = router;

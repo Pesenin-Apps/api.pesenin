@@ -4,6 +4,31 @@ const { Waiter } = require('../models/waiter');
 const Product = require('../models/products/product');
 const Table = require('../models/tables/tabel');
 const { getUserSignedIn, getCustomerCheckedIn, getWaiterReadyToServe } = require('../helpers/gets');
+const linkedList = require('../helpers/queue');
+const queue = linkedList();
+
+async function getQueues(req, res, next) {
+    try {
+      const { idSection } = req.params;
+      const listQueues = queue.print(idSection);
+      const orderItems = await OrderItem.find({ _id: {$in: listQueues}}).populate({
+        path: 'order',
+        select: 'table',
+        populate: {
+            path: 'table',
+            select: 'name',
+        }
+      }).populate('product', 'name').select('-__v -price -total');
+  
+      return res.status(200).json({
+        message: 'Queues Retrived Successfully!',
+        count: orderItems.length,
+        data: orderItems
+      });
+    } catch (err) {
+      next(err);
+    }
+}
 
 async function getOrderCounts(req, res, next) {
     try {
@@ -294,7 +319,11 @@ async function createOrderForWaiter(req, res, next) {
 
         // save order and order items
         let orderedItems = await OrderItem.insertMany(orderItems);
-        orderedItems.forEach(item => order.order_items.push(item));
+        orderedItems.forEach(async (item) => {
+            order.order_items.push(item);
+            const product = await Product.findOne({_id: item.product}).populate('type', '_id');
+            queue.push(item._id, product.type._id);
+        });
 
         if (await order.save()) {
             await Table.findOneAndUpdate(
@@ -552,6 +581,7 @@ async function updateOrderForKitchen(req, res, next) {
 }
 
 module.exports = {
+    getQueues,
     getOrderCounts,
     getAllOrders,
     getAllOrder,
