@@ -127,7 +127,7 @@ router.get('/orders/:id', hasStaff('cashier'), orderController.getAllOrder);
 
 /* ========= START QUEUE ENDPOINT ========= */
 
-router.get('/queues/:idSection', hasStaff('cashier', 'kitchen'), orderController.getQueues);
+router.get('/queues', hasStaff('cashier', 'kitchen'), orderController.getQueues);
 
 /* ========= END QUEUE ENDPOINT ========= */
 

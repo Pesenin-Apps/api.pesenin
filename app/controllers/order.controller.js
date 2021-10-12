@@ -9,8 +9,8 @@ const queue = linkedList();
 
 async function getQueues(req, res, next) {
     try {
-      const { idSection } = req.params;
-      const listQueues = queue.print(idSection);
+      const { section } = req.query;
+      const listQueues = queue.print(section);
       const orderItems = await OrderItem.find({ _id: {$in: listQueues}}).populate({
         path: 'order',
         select: 'table',
