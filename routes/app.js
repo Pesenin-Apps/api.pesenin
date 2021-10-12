@@ -117,6 +117,13 @@ router.delete('/tables/:id', hasStaff('cashier'), tableController.destroy);
 
 /* ========= END TABLE ENDPOINT ========= */
 
+/* ========= START ORDER ITEM ENDPOINT ========= */
+
+router.patch('/orders/items/:id', [ hasStaff('cashier', 'kitchen'), multer().none() ], orderController.updateOrderItem);
+
+/* ========= END ORDER ITEM ENDPOINT ========= */
+
+
 /* ========= START ORDER ENDPOINT ========= */
 
 router.get('/orders', hasStaff('cashier'), orderController.getAllOrders);

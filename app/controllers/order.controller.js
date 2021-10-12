@@ -572,13 +572,26 @@ async function updateOrderForWaiter(req, res, next) {
     }
 }
 
-async function updateOrderForKitchen(req, res, next) {
+async function updateOrderItem(req, res, next) {
     try {
         
+        const payload = req.body;
+        
         // remove queue in linkedList
-        const { item } = req.body;
+        if (payload.status == STATUS_ORDER_ITEM.FINISH) {
+            console.log('ini finish');
+        }
 
-        let orderItem = await OrderItem.findOne({ _id: item });
+        let orderItem = await OrderItem.findByIdAndUpdate(
+            { _id: req.params.id },
+            payload,
+            { new: false, runValidators: true }
+        );
+
+        return res.status(200).json({
+            message: 'OrderItem Updated Successfully!',
+            data: orderItem
+        });
 
     } catch (err) {
         next(err);
@@ -595,5 +608,6 @@ module.exports = {
     createOrderForWaiter,
     verifyCustomerOrder,
     updateOrderForCustomer,
-    updateOrderForWaiter
+    updateOrderForWaiter,
+    updateOrderItem
 }
