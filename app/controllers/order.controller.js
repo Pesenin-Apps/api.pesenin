@@ -11,7 +11,7 @@ async function getQueues(req, res, next) {
     try {
       const { section } = req.query;
       const listQueues = queue.print(section);
-      const orderItems = await OrderItem.find({ _id: {$in: listQueues}}).populate({
+      const orderItems = await OrderItem.find({ _id: { $in: listQueues } }).populate({
         path: 'order',
         select: 'table',
         populate: {
@@ -19,8 +19,6 @@ async function getQueues(req, res, next) {
             select: 'name',
         }
       }).populate('product', 'name').select('-__v -price -total');
-  
-      console.log(queue.print('60d33a97d31e1a2a58076606'));
 
       return res.status(200).json({
         message: 'Queues Retrived Successfully!',
