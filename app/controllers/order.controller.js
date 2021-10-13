@@ -154,6 +154,7 @@ async function getOrder(req, res, next) {
     }
 }
 
+// TODO: NEED REVIEW
 async function getOrderForWaiter(req, res, next) {
     try {
 
@@ -190,11 +191,7 @@ async function getOrderForWaiter(req, res, next) {
     }
 }
 
-// TODO : add ENDPOINT order for Kitchen and manage queue
-async function getOrderForKitchen(req, res, next) {
-    
-}
-
+// TODO: NEED REVIEW
 async function createOrderForCustomer(req, res, next) {
     try {
         
@@ -273,6 +270,7 @@ async function createOrderForCustomer(req, res, next) {
     }
 }
 
+// TODO: NEED REVIEW
 async function createOrderForWaiter(req, res, next) {
     try {
         
@@ -352,6 +350,7 @@ async function createOrderForWaiter(req, res, next) {
     }
 }
 
+// TODO: NEED REVIEW
 async function verifyCustomerOrder(req, res, next) {
     try {
         
@@ -404,6 +403,7 @@ async function verifyCustomerOrder(req, res, next) {
     }
 }
 
+// TODO: NEED REVIEW
 async function updateOrderForCustomer(req, res, next) {
     try {
         
@@ -486,6 +486,7 @@ async function updateOrderForCustomer(req, res, next) {
     }
 }
 
+// TODO: NEED REVIEW
 async function updateOrderForWaiter(req, res, next) {
     try {
         
