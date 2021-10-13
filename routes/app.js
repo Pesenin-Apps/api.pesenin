@@ -43,7 +43,7 @@ router.post('/auth/signout', authController.signOut);
 
 // staff signed in info
 router.get('/user/me', staffController.me);
-router.get('/orders/count', hasStaff('cashier','kitchen'), orderController.getOrderCounts);
+router.get('/orders/count', hasStaff('cashier','kitchen'), orderController.getCountOrders);
 
 /* ========= END ENDPOINT FOR STAFF (WAITER, KITCHEN, CASHIER) ========= */
 
@@ -117,11 +117,25 @@ router.delete('/tables/:id', hasStaff('cashier'), tableController.destroy);
 
 /* ========= END TABLE ENDPOINT ========= */
 
+/* ========= START ORDER ITEM ENDPOINT ========= */
+
+router.patch('/orders/items/:id', [ hasStaff('cashier', 'kitchen'), multer().none() ], orderController.updateOrderItem);
+
+/* ========= END ORDER ITEM ENDPOINT ========= */
+
+
 /* ========= START ORDER ENDPOINT ========= */
 
 router.get('/orders', hasStaff('cashier'), orderController.getAllOrders);
-router.get('/orders/:id', hasStaff('cashier'), orderController.getAllOrder);
+router.get('/orders/:id', hasStaff('cashier'), orderController.getOrder);
 
 /* ========= END ORDER ENDPOINT ========= */
+
+
+/* ========= START QUEUE ENDPOINT ========= */
+
+router.get('/queues', hasStaff('cashier', 'kitchen'), orderController.getQueues);
+
+/* ========= END QUEUE ENDPOINT ========= */
 
 module.exports = router;

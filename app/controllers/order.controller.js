@@ -4,18 +4,45 @@ const { Waiter } = require('../models/waiter');
 const Product = require('../models/products/product');
 const Table = require('../models/tables/tabel');
 const { getUserSignedIn, getCustomerCheckedIn, getWaiterReadyToServe } = require('../helpers/gets');
+const linkedList = require('../helpers/queue');
+const queue = linkedList();
 
-async function getOrderCounts(req, res, next) {
+async function getQueues(req, res, next) {
+    try {
+      const { section } = req.query;
+      const listQueues = queue.print(section);
+      const orderItems = await OrderItem.find({ _id: { $in: listQueues } }).populate({
+        path: 'order',
+        select: 'table',
+        populate: {
+            path: 'table',
+            select: 'name',
+        }
+      }).populate('product', 'name').select('-__v -price -total');
+
+      return res.status(200).json({
+        message: 'Queues Retrived Successfully!',
+        count: orderItems.length,
+        data: orderItems
+      });
+    } catch (err) {
+      next(err);
+    }
+}
+
+async function getCountOrders(req, res, next) {
     try {
 
         let data = {};
         const processed = [1, 2, 3];
         const finished = [4, 5, 6];
         const all = [...processed, ...finished];
+        let now = new Date();
+        let startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
 
-        const allData = await Order.find({ status: {$in: all} }).countDocuments();
-        const processedData = await Order.find({ status: {$in: processed} }).countDocuments();
-        const finishedData = await Order.find({ status: {$in: finished} }).countDocuments();
+        const allData = await Order.find({ status: {$in: all}, createdAt: {$gte: startOfToday} }).countDocuments();
+        const processedData = await Order.find({ status: {$in: processed}, createdAt: {$gte: startOfToday} }).countDocuments();
+        const finishedData = await Order.find({ status: {$in: finished}, createdAt: {$gte: startOfToday} }).countDocuments();
 
         data.all = allData;
         data.processed = processedData;
@@ -89,7 +116,7 @@ async function getAllOrders(req, res, next) {
     }
 }
 
-async function getAllOrder(req, res, next) {
+async function getOrder(req, res, next) {
     try {
         
         const { id } = req.params;
@@ -127,6 +154,7 @@ async function getAllOrder(req, res, next) {
     }
 }
 
+// TODO: NEED REVIEW
 async function getOrderForWaiter(req, res, next) {
     try {
 
@@ -163,11 +191,7 @@ async function getOrderForWaiter(req, res, next) {
     }
 }
 
-// TODO : add ENDPOINT order for Kitchen and manage queue
-async function getOrderForKitchen(req, res, next) {
-    
-}
-
+// TODO: NEED REVIEW
 async function createOrderForCustomer(req, res, next) {
     try {
         
@@ -246,6 +270,7 @@ async function createOrderForCustomer(req, res, next) {
     }
 }
 
+// TODO: NEED REVIEW
 async function createOrderForWaiter(req, res, next) {
     try {
         
@@ -294,7 +319,11 @@ async function createOrderForWaiter(req, res, next) {
 
         // save order and order items
         let orderedItems = await OrderItem.insertMany(orderItems);
-        orderedItems.forEach(item => order.order_items.push(item));
+        orderedItems.forEach(async (item) => {
+            order.order_items.push(item);
+            const product = await Product.findOne({_id: item.product}).populate('type', '_id');
+            queue.push(item._id, product.type._id);
+        });
 
         if (await order.save()) {
             await Table.findOneAndUpdate(
@@ -321,6 +350,7 @@ async function createOrderForWaiter(req, res, next) {
     }
 }
 
+// TODO: NEED REVIEW
 async function verifyCustomerOrder(req, res, next) {
     try {
         
@@ -347,6 +377,8 @@ async function verifyCustomerOrder(req, res, next) {
             });
         }
 
+        // TODO: queue push to linkedList
+
         // update order and order items
         await order.updateOne({ status: STATUS_ORDER.PROCESSED });
         order.order_items.every(element => orderItemIds.push(element._id.toString()));
@@ -371,6 +403,7 @@ async function verifyCustomerOrder(req, res, next) {
     }
 }
 
+// TODO: NEED REVIEW
 async function updateOrderForCustomer(req, res, next) {
     try {
         
@@ -453,6 +486,7 @@ async function updateOrderForCustomer(req, res, next) {
     }
 }
 
+// TODO: NEED REVIEW
 async function updateOrderForWaiter(req, res, next) {
     try {
         
@@ -539,12 +573,26 @@ async function updateOrderForWaiter(req, res, next) {
     }
 }
 
-async function updateOrderForKitchen(req, res, next) {
+async function updateOrderItem(req, res, next) {
     try {
         
-        const { item } = req.body;
+        const { id } = req.params;
+        const payload = req.body;
+        
+        if (payload.status == STATUS_ORDER_ITEM.FINISH) {
+            queue.destroy(id);
+        }
 
-        let orderItem = await OrderItem.findOne({ _id: item });
+        let orderItem = await OrderItem.findByIdAndUpdate(
+            { _id: id },
+            payload,
+            { new: false, runValidators: true }
+        );
+
+        return res.status(200).json({
+            message: 'OrderItem Updated Successfully!',
+            data: orderItem
+        });
 
     } catch (err) {
         next(err);
@@ -552,13 +600,15 @@ async function updateOrderForKitchen(req, res, next) {
 }
 
 module.exports = {
-    getOrderCounts,
+    getQueues,
+    getCountOrders,
     getAllOrders,
-    getAllOrder,
+    getOrder,
     getOrderForWaiter,
     createOrderForCustomer,
     createOrderForWaiter,
     verifyCustomerOrder,
     updateOrderForCustomer,
-    updateOrderForWaiter
+    updateOrderForWaiter,
+    updateOrderItem
 }
