@@ -27,16 +27,19 @@ function linkedList() {
       return node;
     },
     destroy: function(item) {
-      let previous;
       let current = this.head;
-      if (current.order.item === item) {
+      let previous;
+      if (current.order.item == item) {
         this.head = current.next;
       } else {
-        while (current.order.item !== item) {
-          previous = current;
+        while (current) {
+          if (current.order.item == item) {
+            previous.next = current.next;
+          } else {
+            previous = current;
+          }
           current = current.next;
         }
-        previous.next = current.next;
       }
       this.length--;
     },

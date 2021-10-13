@@ -20,6 +20,8 @@ async function getQueues(req, res, next) {
         }
       }).populate('product', 'name').select('-__v -price -total');
   
+      console.log(queue.print('60d33a97d31e1a2a58076606'));
+
       return res.status(200).json({
         message: 'Queues Retrived Successfully!',
         count: orderItems.length,
@@ -575,15 +577,15 @@ async function updateOrderForWaiter(req, res, next) {
 async function updateOrderItem(req, res, next) {
     try {
         
+        const { id } = req.params;
         const payload = req.body;
         
-        // remove queue in linkedList
         if (payload.status == STATUS_ORDER_ITEM.FINISH) {
-            console.log('ini finish');
+            queue.destroy(id);
         }
 
         let orderItem = await OrderItem.findByIdAndUpdate(
-            { _id: req.params.id },
+            { _id: id },
             payload,
             { new: false, runValidators: true }
         );
