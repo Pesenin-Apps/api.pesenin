@@ -127,7 +127,7 @@ router.patch('/orders/items/:id', [ hasStaff('cashier', 'kitchen'), multer().non
 /* ========= START ORDER ENDPOINT ========= */
 
 router.get('/orders', hasStaff('cashier'), orderController.getAllOrders);
-router.get('/orders/:id', hasStaff('cashier'), orderController.getAllOrder);
+router.get('/orders/:id', hasStaff('cashier'), orderController.getOrder);
 
 /* ========= END ORDER ENDPOINT ========= */
 

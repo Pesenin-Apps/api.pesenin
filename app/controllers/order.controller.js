@@ -116,7 +116,7 @@ async function getAllOrders(req, res, next) {
     }
 }
 
-async function getAllOrder(req, res, next) {
+async function getOrder(req, res, next) {
     try {
         
         const { id } = req.params;
@@ -602,7 +602,7 @@ module.exports = {
     getQueues,
     getOrderCounts,
     getAllOrders,
-    getAllOrder,
+    getOrder,
     getOrderForWaiter,
     createOrderForCustomer,
     createOrderForWaiter,
