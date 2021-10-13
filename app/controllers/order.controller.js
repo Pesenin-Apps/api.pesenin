@@ -30,7 +30,7 @@ async function getQueues(req, res, next) {
     }
 }
 
-async function getOrderCounts(req, res, next) {
+async function getCountOrders(req, res, next) {
     try {
 
         let data = {};
@@ -600,7 +600,7 @@ async function updateOrderItem(req, res, next) {
 
 module.exports = {
     getQueues,
-    getOrderCounts,
+    getCountOrders,
     getAllOrders,
     getOrder,
     getOrderForWaiter,
