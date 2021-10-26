@@ -21,7 +21,7 @@ passport.use(new LocalStrategy({ usernameField: 'email' }, authController.localS
 /* ========= START ENDPOINT FOR CUSTOMER ========= */
 
 // authentication
-router.post('/customers/check-in/:tableId', multer().none(), customerController.checkIn);
+router.post('/customers/check-in', multer().none(), customerController.checkIn);
 router.post('/customers/check-out', hasCustomer(), customerController.checkOut);
 
 // customer checked in info

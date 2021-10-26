@@ -30,7 +30,7 @@ async function checkIn(req, res, next) {
 
         // relationship of table
         let table = await Table.findOne({ 
-            _id: req.params.tableId
+            _id: payload.table
         });
 
         // check table used or not
