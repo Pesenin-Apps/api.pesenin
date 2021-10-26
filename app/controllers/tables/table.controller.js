@@ -25,6 +25,11 @@ async function show(req, res, next) {
         });
 
     } catch (err) {
+        if (err && err.kind === 'ObjectId') {
+            return res.status(404).json({
+                message: "The code is not part of PeseninApps!",
+            });
+        }
         next(err);
     }
 }
