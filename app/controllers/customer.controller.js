@@ -63,7 +63,8 @@ async function checkIn(req, res, next) {
 
         return res.status(201).json({
             message: 'Customer Checked In Successfully!',
-            customer: customer
+            customer: customer,
+            token: checkedIn,
         });
 
     } catch (err) {
