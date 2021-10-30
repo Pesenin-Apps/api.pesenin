@@ -166,7 +166,7 @@ async function getOrderForCustomer(req, res, next) {
             select: '-order',
             populate: {
                 path: 'product',
-                select: 'name price'
+                select: 'name price image_url'
             }
         }).populate('customer', 'name checkin_number device_detection').populate({
             path: 'table',
