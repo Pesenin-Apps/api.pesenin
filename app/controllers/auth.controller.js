@@ -100,7 +100,7 @@ async function signOut(req, res, next) {
     );
 
     if (!user || !token) {
-        return res.status(403).json({
+        return res.status(404).json({
             message: 'User Not Found'
         });
     }

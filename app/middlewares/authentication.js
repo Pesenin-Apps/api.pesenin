@@ -18,13 +18,13 @@ function authorize() {
             let customer = await Customer.findOne({ checkin_token: {$in: token} });
             // if user token expired or with sign in
             if (!user && !customer) {
-                return res.status(404).json({
+                return res.status(401).json({
                     message: 'Sorry, You\'re Unauthorized or Token Expired'
                 });
             }
         } catch (err) {
             if (err && err.name === 'JsonWebTokenError') {
-                return res.status(403).json({
+                return res.status(401).json({
                     message: err.message
                 });
             }
@@ -51,7 +51,7 @@ function hasCustomer() {
     return async function(req, res, next) {
         let customer = await Customer.findOne({ checkin_number: {$in: req.customer.checkin_number} });
         if (customer && customer.status === STATUS_CUSTOMER.CHECK_OUT) {
-            res.status(403).json({
+            res.status(401).json({
                 message: 'You\'re Checked Out'
             });
         } else {

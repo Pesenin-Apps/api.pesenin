@@ -244,7 +244,7 @@ async function createOrderForCustomer(req, res, next) {
         const waiter = await getWaiterReadyToServe();
         // check if waiter exist or not
         if (waiter === false) {
-            return res.status(201).json({
+            return res.status(404).json({
                 message: 'Waiter not found, no one is onduty yet!'
             });
         }

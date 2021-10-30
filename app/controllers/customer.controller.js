@@ -126,7 +126,7 @@ async function checkOut(req, res, next) {
         );
 
         if (!token || !customer || !table) {
-            return res.status(403).json({
+            return res.status(404).json({
                 message: 'Customer Not Found'
             });
         }
