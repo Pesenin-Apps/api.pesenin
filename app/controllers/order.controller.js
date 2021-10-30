@@ -154,6 +154,46 @@ async function getOrder(req, res, next) {
     }
 }
 
+async function getOrderForCustomer(req, res, next) {
+    try {
+        
+        const customer = await getCustomerCheckedIn(req.customer.checkin_number);
+        
+        const order = await Order.findOne({
+            customer: customer._id
+        }).populate({
+            path: 'order_items',
+            select: '-order',
+            populate: {
+                path: 'product',
+                select: 'name price'
+            }
+        }).populate('customer', 'name checkin_number device_detection').populate({
+            path: 'table',
+            select: 'name section number',
+            populate: {
+                path: 'section',
+                select: 'name code'
+            }
+        }).populate({
+            path: 'waiter',
+            select: 'waiter',
+            populate: {
+                path: 'users',
+                select: 'fullname email'
+            }
+        });
+
+        return res.status(200).json({
+            message: 'Order Retrived Successfully!',
+            data: order,
+        });
+
+    } catch (err) {
+        next(err);
+    }
+}
+
 // TODO: NEED REVIEW
 async function getOrderForWaiter(req, res, next) {
     try {
@@ -604,6 +644,7 @@ module.exports = {
     getCountOrders,
     getAllOrders,
     getOrder,
+    getOrderForCustomer,
     getOrderForWaiter,
     createOrderForCustomer,
     createOrderForWaiter,
