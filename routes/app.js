@@ -28,6 +28,7 @@ router.post('/customers/check-out', hasCustomer(), customerController.checkOut);
 router.get('/customers/me', hasCustomer(), customerController.me);
 
 // order
+router.get('/customers/orders', hasCustomer(), orderController.getOrderForCustomer);
 router.post('/customers/orders', hasCustomer(), orderController.createOrderForCustomer);
 router.post('/customers/orders/update', hasCustomer(), orderController.updateOrderForCustomer);
 

@@ -10,7 +10,16 @@ const { getToken } = require('../utils/get-token');
 async function me(req, res, next) {
     try {
 
-        let customer = await Customer.findOne({ checkin_number: req.customer.checkin_number }).populate('table', 'name');
+        let customer = await Customer.findOne({
+            checkin_number: req.customer.checkin_number
+        }).populate({
+            path: 'table',
+            select: 'name section number',
+            populate: {
+                path: 'section',
+                select: 'name code'
+            }
+        });
 
         return res.status(200).json({
             customer: customer
