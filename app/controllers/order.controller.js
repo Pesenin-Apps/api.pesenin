@@ -198,31 +198,37 @@ async function getOrderForCustomer(req, res, next) {
 async function getOrderForWaiter(req, res, next) {
     try {
 
-        let filters = req.query.filters;
+        let criteria = {};
+        const { filters } = req.query;
+
         const waiter = await getUserSignedIn(req.user._id);
 
-        if (Object.keys(req.query).length === 0) {
-            filters = new Object();
-            filters.order = {};
-            filters.order_item = {};
-        }
-        
-        filters.order = {
-            ...filters.order,
-            waiter: waiter.waiter._id
+        if (filters) {
+            if (filters.status) {
+                criteria = {
+                    ...criteria,
+                    status: filters.status
+                };
+            }
         }
 
-        let orders = await Order.find(filters.order).populate({
-            path: 'order_items',
-            match: filters.order_item,
+        criteria = {
+            ...criteria,
+            waiter: waiter.waiter._id
+        };
+
+        const orders = await Order.find(criteria).populate('customer', 'name checkin_number').populate({
+            path: 'table',
+            select: 'name section number',
             populate: {
-                path: 'product'
+                path: 'section',
+                select: 'name code',
             }
-        }).populate('customer', 'name checkin_number').populate('table', 'name section number');
+        }).sort('-createdAt');
 
         return res.status(200).json({
             message: 'Orders Retrived Successfully!',
-            orders: orders
+            data: orders
         });
         
 
