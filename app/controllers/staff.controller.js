@@ -27,14 +27,52 @@ async function me(req, res, next) {
 
 }
 
-// TODO : add ENDPOINT for edit personal account staff (cashier, kitchen, waiter) 
-async function updateData(req, res, next) {
+async function changeProfile(req, res, next) {
+    try {
+        const payload = req.body;
+        const staff = await User.findById(req.user._id);
 
+        await User.findOneAndUpdate(
+            { _id: staff._id },
+            payload,
+            { new: false, runValidators: true}
+        );
+
+        return res.status(200).json({
+            message: 'User Change Data Successfully!',
+            data: staff,
+        });
+    } catch (err) {
+        next(err);
+    }
 }
 
-// TODO : add ENDPOINT for change password for staff (cashier, kitchen, waiter)
 async function changePassword(req, res, next) {
+    try {
+        const { oldpassword, newpassword } = req.body;
+        const staff = await User.findById(req.user._id);
 
+        const match = await bcrypt.compare(oldpassword, staff.password);
+
+        if (!match) {
+            return res.status(400).json({
+                message: 'The Old Password does NOT match!',
+            });
+        }
+
+        await User.findOneAndUpdate(
+            { _id: staff._id },
+            { password: bcrypt.hashSync(newpassword, 10) },
+            { new: false, runValidators: true}
+        );
+
+        return res.status(200).json({
+            message: 'User Change Password Successfully!',
+            data: staff,
+        });
+    } catch (err) {
+        next(err);
+    }
 }
 
 /* =========  [ S T A R T ]  R E S O U R C E  E N D P O I N T  F O R  A L L  U S E R S  ========= */
@@ -205,7 +243,7 @@ async function changeStatus(req, res, next) {
 
 module.exports = {
     me,
-    updateData,
+    changeProfile,
     changePassword,
     index,
     show,
