@@ -43,7 +43,9 @@ router.post('/auth/signin', multer().none(), authController.signIn);
 router.post('/auth/signout', authController.signOut);
 
 // staff signed in info
-router.get('/user/me', staffController.me);
+router.get('/user/me', hasStaff('cashier','kitchen','waiter'),  staffController.me);
+router.post('/user/change-password', hasStaff('cashier','kitchen','waiter'), staffController.changePassword);
+router.post('/user/change-profile', hasStaff('cashier','kitchen','waiter'), staffController.changeProfile);
 router.get('/orders/count', hasStaff('cashier','kitchen'), orderController.getCountOrders);
 
 /* ========= END ENDPOINT FOR STAFF (WAITER, KITCHEN, CASHIER) ========= */
