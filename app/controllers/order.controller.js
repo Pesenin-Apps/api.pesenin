@@ -224,7 +224,7 @@ async function getOrderForWaiter(req, res, next) {
                 path: 'section',
                 select: 'name code',
             }
-        }).select('-order_items').sort('-createdAt');
+        }).select('-order_items -waiter').sort('-createdAt');
 
         return res.status(200).json({
             message: 'Orders Retrived Successfully!',
