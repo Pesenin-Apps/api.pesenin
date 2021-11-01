@@ -259,13 +259,6 @@ async function createOrderForCustomer(req, res, next) {
         const productIds = orders.map(e => e.item);
         const products = await Product.find({ _id: {$in: productIds} });
 
-        // update waiter
-        await Waiter.findOneAndUpdate(
-            { _id: waiter },
-            { $push: { served: customer.table } },
-            { useFindAndModify: false }
-        );
-
         // new order
         const newOrder = {
             customer: customer._id,
@@ -327,13 +320,6 @@ async function createOrderForWaiter(req, res, next) {
         // product who ordered
         const productIds = orders.map(e => e.item);
         const products = await Product.find({ _id: {$in: productIds} });
-
-        // update waiter
-        await Waiter.findOneAndUpdate(
-            { _id: user.waiter },
-            { $push: {served: table } },
-            { useFindAndModify: false }
-        );
 
         // set new order
         const newOrder = {

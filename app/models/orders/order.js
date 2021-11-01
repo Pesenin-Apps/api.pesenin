@@ -1,6 +1,7 @@
 const { model, Schema } = require('mongoose');
 const { OrderItem } = require('./item');
 const { getNumbering } = require('../../helpers/gets');
+const { Waiter } = require('../waiter');
 
 const STATUS = {
     STORE_ORDER: 1,
@@ -14,7 +15,7 @@ const STATUS = {
 const orderSchema = Schema({
     order_number: {
         type: String,
-        default: getNumbering('order')
+        default: null
     },
     status: {
         type: Number,
@@ -55,6 +56,17 @@ orderSchema.virtual('items_count').get(function(){
 });
 
 orderSchema.pre('save', async function(next) {
+    // first time for save it
+    if (this.__v == 0) {
+        // generate order numbering
+        this.order_number = getNumbering('order');
+        // serving waiter
+        await Waiter.findOneAndUpdate(
+            { _id: this.waiter },
+            { $push: { served: this.table } },
+            { useFindAndModify: false }
+        );
+    }
     const orderItems = await OrderItem.find({ _id: {$in: this.order_items} });
     this.total_price = orderItems.reduce((sum, item) => sum += item.total, 0);
     this.tax = (10 / 100) * this.total_price;
