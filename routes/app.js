@@ -130,14 +130,14 @@ router.patch('/orders/items/:id', [ hasStaff('cashier', 'kitchen'), multer().non
 /* ========= START ORDER ENDPOINT ========= */
 
 router.get('/orders', hasStaff('cashier'), orderController.getAllOrders);
-router.get('/orders/:id', hasStaff('cashier'), orderController.getOrder);
+router.get('/orders/:id', hasStaff('cashier','waiter'), orderController.getOrder);
 
 /* ========= END ORDER ENDPOINT ========= */
 
 
 /* ========= START QUEUE ENDPOINT ========= */
 
-router.get('/queues', hasStaff('cashier', 'kitchen'), orderController.getQueues);
+router.get('/queues', hasStaff('cashier','kitchen'), orderController.getQueues);
 
 /* ========= END QUEUE ENDPOINT ========= */
 
