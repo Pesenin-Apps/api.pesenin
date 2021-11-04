@@ -37,6 +37,10 @@ const orderSchema = Schema({
         type: Schema.Types.ObjectId, 
         ref: 'Customer'
     },
+    is_paid: {
+        type: Boolean,
+        default: false,
+    },
     waiter: {
         type: Schema.Types.ObjectId, 
         ref: 'Waiter'
