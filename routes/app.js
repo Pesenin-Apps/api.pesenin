@@ -57,11 +57,12 @@ router.get('/orders/count', hasStaff('cashier','kitchen'), orderController.getCo
 router.post('/waiters/change-status', hasStaff('waiter'), staffController.changeStatus);
 
 // order
+router.post('/waiters/orders/verify/:id', hasStaff('waiter'), orderController.verifyCustomerOrder);
+router.post('/waiters/orders/check-out/:id', hasStaff('waiter'), orderController.checkOutCustomerByWaiter);
 router.get('/waiters/orders', hasStaff('waiter'), orderController.getOrderForWaiter);
 router.post('/waiters/orders', hasStaff('waiter'), orderController.createOrderForWaiter);
 router.patch('/waiters/orders/:id', hasStaff('waiter'), orderController.updateOrderForWaiter);
 router.delete('/waiters/orders/:id', hasStaff('waiter'), orderController.destroyOrderItemForWaiter);
-router.post('/waiters/orders/verify/:id', hasStaff('waiter'), orderController.verifyCustomerOrder);
 
 /* ========= END ENDPOINT FOR WAITER ========= */
 

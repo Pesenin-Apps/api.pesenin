@@ -4,6 +4,7 @@ const Product = require('../models/products/product');
 const Table = require('../models/tables/tabel');
 const { getUserSignedIn, getCustomerCheckedIn, getWaiterReadyToServe } = require('../helpers/gets');
 const linkedList = require('../helpers/queue');
+const { Waiter } = require('../models/waiter');
 const queue = linkedList();
 
 async function getQueues(req, res, next) {
@@ -642,14 +643,6 @@ async function destroyOrderItemForWaiter(req, res, next) {
             }
         });
 
-        // remove item when status more than status IN_QUEUE
-        deletedItems.forEach((element, index, object) => {
-            if (element.status > STATUS_ORDER_ITEM.IN_QUEUE) {
-                object.splice(index, 1);
-                items.splice(index, 1)
-            }
-        });
-
         // check order who serve
         if (order.waiter.toString() !== staff.waiter._id.toString()) {
             return res.status(403).json({
@@ -719,6 +712,64 @@ async function updateOrderItem(req, res, next) {
     }
 }
 
+async function checkOutCustomerByWaiter(req, res, next) {
+    try {
+        
+        let orderItemInProcess = [];
+        const staff = await getUserSignedIn(req.user._id);
+        const order = await Order.findById(req.params.id).populate('order_items');
+
+        order.order_items.forEach((item) => {
+            if (item.status >= STATUS_ORDER_ITEM.IN_PROCESS) {
+                orderItemInProcess.push(item);
+            }
+        });
+
+        // check if order exist
+        if (order) {
+            if (order.status <= STATUS_ORDER.PROCESSED && orderItemInProcess.length == 0) {
+                await Waiter.findOneAndUpdate(
+                    { _id: staff.waiter._id },
+                    { $pull: { "served": order.table } },
+                    { useFindAndModify: false }
+                );
+                await order.updateOne({ status: STATUS_ORDER.CANCEL })
+            } else {
+                return res.status(400).json({
+                    message: 'Customer order has been processed, you cannot cancel it or checkout!'
+                });
+            }
+        }
+        
+        if (order.customer !== null) {
+            await Customer.findOneAndUpdate(
+                { _id: order.customer },
+                { status: STATUS_CUSTOMER.CHECK_OUT },
+                { useFindAndModify: false }
+            );
+        }
+
+        let table = await Table.findOneAndUpdate(
+            { _id: order.table },
+            { used: false },
+            { useFindAndModify: false }
+        );
+
+        if (!table) {
+            return res.status(404).json({
+                message: 'Customer Not Found'
+            });
+        }
+
+        return res.status(200).json({
+            message: 'Cancel or Checked Out Successfully!'
+        });
+
+    } catch (err) {
+        next(err);
+    }
+}
+
 module.exports = {
     getQueues,
     getCountOrders,
@@ -733,4 +784,5 @@ module.exports = {
     updateOrderForWaiter,
     updateOrderItem,
     destroyOrderItemForWaiter,
+    checkOutCustomerByWaiter,
 }
