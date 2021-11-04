@@ -1,15 +1,20 @@
 const { model, Schema } = require('mongoose');
-const { OrderItem } = require('./item');
+const { OrderItem, STATUS_ORDER_ITEM } = require('./item');
 const { getNumbering } = require('../../helpers/gets');
 const { Waiter } = require('../waiter');
 
 const STATUS = {
     STORE_ORDER: 1,
     PROCESSED: 2,
-    NOT_YET_PAID: 3,
-    ALREADY_PAID: 4,
-    FINISH: 5,
-    CANCEL: 6
+    // NOT_YET_PAID: 3,
+    // ALREADY_PAID: 4,
+    FINISH: 3,
+    CANCEL: 4,
+}
+
+const PAID = {
+    NOT_YET: false,
+    ALREADY: true,
 }
 
 const orderSchema = Schema({
@@ -36,6 +41,10 @@ const orderSchema = Schema({
     customer: {
         type: Schema.Types.ObjectId, 
         ref: 'Customer'
+    },
+    is_paid: {
+        type: Boolean,
+        default: false,
     },
     waiter: {
         type: Schema.Types.ObjectId, 
@@ -68,6 +77,13 @@ orderSchema.pre('save', async function(next) {
         );
     }
     const orderItems = await OrderItem.find({ _id: {$in: this.order_items} });
+    orderItems.forEach((element) => {
+        if (element.status == STATUS_ORDER_ITEM.IN_PROCESS) {
+            this.status = STATUS.PROCESSED;
+        } else if (element.status == STATUS_ORDER_ITEM.NEW) {
+            this.status = STATUS.STORE_ORDER;
+        }
+    })
     this.total_price = orderItems.reduce((sum, item) => sum += item.total, 0);
     this.tax = (10 / 100) * this.total_price;
     this.total_overall = this.total_price + this.tax;
@@ -76,5 +92,6 @@ orderSchema.pre('save', async function(next) {
 
 module.exports = {
     STATUS_ORDER: STATUS,
-    Order: model('Order', orderSchema)
+    Order: model('Order', orderSchema),
+    STATUS_PAYMENT: PAID,
 }

@@ -1,10 +1,10 @@
-const { STATUS_ORDER, Order } = require('../models/orders/order');
+const { STATUS_ORDER, Order, STATUS_PAYMENT } = require('../models/orders/order');
 const { STATUS_ORDER_ITEM, OrderItem } = require('../models/orders/item');
-const { Waiter } = require('../models/waiter');
 const Product = require('../models/products/product');
 const Table = require('../models/tables/tabel');
 const { getUserSignedIn, getCustomerCheckedIn, getWaiterReadyToServe } = require('../helpers/gets');
 const linkedList = require('../helpers/queue');
+const { Waiter } = require('../models/waiter');
 const queue = linkedList();
 
 async function getQueues(req, res, next) {
@@ -34,8 +34,8 @@ async function getCountOrders(req, res, next) {
     try {
 
         let data = {};
-        const processed = [1, 2, 3];
-        const finished = [4, 5, 6];
+        const processed = [1, 2];
+        const finished = [3, 4];
         const all = [...processed, ...finished];
         let now = new Date();
         let startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
@@ -214,7 +214,8 @@ async function getOrderForWaiter(req, res, next) {
 
         criteria = {
             ...criteria,
-            waiter: waiter.waiter._id
+            waiter: waiter.waiter._id,
+            is_paid: STATUS_PAYMENT.NOT_YET,
         };
 
         const orders = await Order.find(criteria).populate('customer', 'name checkin_number').populate({
@@ -413,7 +414,14 @@ async function verifyCustomerOrder(req, res, next) {
 
         // update order and order items
         await order.updateOne({ status: STATUS_ORDER.PROCESSED });
-        order.order_items.every(element => orderItemIds.push(element._id.toString()));
+        order.order_items.every(async (element) => {
+            orderItemIds.push(element._id.toString());
+            const product = await Product.findOne({_id: element.product}).populate('type', '_id');
+            queue.push(element._id, product.type._id);
+        });
+
+        console.log(order.order_items);
+
         await OrderItem.updateMany(
             { _id: { $in: orderItemIds } },
             { status: STATUS_ORDER_ITEM.IN_QUEUE }
@@ -605,6 +613,79 @@ async function updateOrderForWaiter(req, res, next) {
     }
 }
 
+async function destroyOrderItemForWaiter(req, res, next) {
+    try {
+        const { items } = req.body;
+        
+        // waiter who serve
+        const staff = await getUserSignedIn(req.user._id);
+
+        // check if orders is empty
+        if (!items || items.length === 0) {
+            return res.status(400).json({
+                message: 'Order Items Not Found!'
+            });
+        }
+
+        // variable for the item to be changed
+        let destroyedItems = [];
+        // get order
+        let order = await Order.findOne({ _id: req.params.id }).populate('order_items');
+        // order item to chenged
+        const udeletedItemIds = items.map(e => e.item);
+        const deletedItems = await OrderItem.find({ _id: { $in: udeletedItemIds } });
+
+        // remove item when status more than status IN_QUEUE
+        deletedItems.forEach((element, index, object) => {
+            if (element.status > STATUS_ORDER_ITEM.IN_QUEUE) {
+                object.splice(index, 1);
+                items.splice(index, 1)
+            }
+        });
+
+        // check order who serve
+        if (order.waiter.toString() !== staff.waiter._id.toString()) {
+            return res.status(403).json({
+                message: 'You Can\'t Dalete It, Only The Waiter Who Serves Can Delete It!'
+            });
+        }
+
+        items.forEach(async (element) => {
+            destroyedItems.push(element);
+        });
+
+        let orderedItems = destroyedItems.map(element => {
+            let relatedItem = deletedItems.find(orderItem => orderItem._id.toString() === element.item);
+            return {
+                "deleteOne": { 
+                    "filter": { 
+                        "_id": relatedItem._id,
+                    },
+                }
+            }
+        });
+
+        // save order and order items
+        await OrderItem.bulkWrite(orderedItems);
+        await order.save();
+
+        // response
+        return res.status(200).json({
+            message: 'Order Deleted Successfully!',
+            order: order
+        });
+
+    } catch (err) {
+        if (err && err.name === 'ValidationError') {
+            return res.status(400).json({
+                message: err.message,
+                fields: err.errors
+            });
+        }
+        next(err);
+    }
+}
+
 async function updateOrderItem(req, res, next) {
     try {
         
@@ -631,6 +712,64 @@ async function updateOrderItem(req, res, next) {
     }
 }
 
+async function checkOutCustomerByWaiter(req, res, next) {
+    try {
+        
+        let orderItemInProcess = [];
+        const staff = await getUserSignedIn(req.user._id);
+        const order = await Order.findById(req.params.id).populate('order_items');
+
+        order.order_items.forEach((item) => {
+            if (item.status >= STATUS_ORDER_ITEM.IN_PROCESS) {
+                orderItemInProcess.push(item);
+            }
+        });
+
+        // check if order exist
+        if (order) {
+            if (order.status <= STATUS_ORDER.PROCESSED && orderItemInProcess.length == 0) {
+                await Waiter.findOneAndUpdate(
+                    { _id: staff.waiter._id },
+                    { $pull: { "served": order.table } },
+                    { useFindAndModify: false }
+                );
+                await order.updateOne({ status: STATUS_ORDER.CANCEL })
+            } else {
+                return res.status(400).json({
+                    message: 'Customer order has been processed, you cannot cancel it or checkout!'
+                });
+            }
+        }
+        
+        if (order.customer !== null) {
+            await Customer.findOneAndUpdate(
+                { _id: order.customer },
+                { status: STATUS_CUSTOMER.CHECK_OUT },
+                { useFindAndModify: false }
+            );
+        }
+
+        let table = await Table.findOneAndUpdate(
+            { _id: order.table },
+            { used: false },
+            { useFindAndModify: false }
+        );
+
+        if (!table) {
+            return res.status(404).json({
+                message: 'Table not Found',
+            });
+        }
+
+        return res.status(200).json({
+            message: 'Cancel or Checked Out Successfully!'
+        });
+
+    } catch (err) {
+        next(err);
+    }
+}
+
 module.exports = {
     getQueues,
     getCountOrders,
@@ -643,5 +782,7 @@ module.exports = {
     verifyCustomerOrder,
     updateOrderForCustomer,
     updateOrderForWaiter,
-    updateOrderItem
+    updateOrderItem,
+    destroyOrderItemForWaiter,
+    checkOutCustomerByWaiter,
 }
