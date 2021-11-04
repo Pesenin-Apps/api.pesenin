@@ -5,6 +5,7 @@ const Table = require('../models/tables/tabel');
 const { getUserSignedIn, getCustomerCheckedIn, getWaiterReadyToServe } = require('../helpers/gets');
 const linkedList = require('../helpers/queue');
 const { Waiter } = require('../models/waiter');
+const { Customer } = require('../models/customer');
 const queue = linkedList();
 
 async function getQueues(req, res, next) {
@@ -718,6 +719,12 @@ async function checkOutCustomerByWaiter(req, res, next) {
         let orderItemInProcess = [];
         const staff = await getUserSignedIn(req.user._id);
         const order = await Order.findById(req.params.id).populate('order_items');
+
+        if (!order) {
+            return res.status(404).json({
+                message: 'Order not Found',
+            });
+        }
 
         order.order_items.forEach((item) => {
             if (item.status >= STATUS_ORDER_ITEM.IN_PROCESS) {
