@@ -1,4 +1,4 @@
-const { STATUS_ORDER, Order } = require('../models/orders/order');
+const { STATUS_ORDER, Order, STATUS_PAYMENT } = require('../models/orders/order');
 const { STATUS_ORDER_ITEM, OrderItem } = require('../models/orders/item');
 const { Waiter } = require('../models/waiter');
 const Product = require('../models/products/product');
@@ -34,8 +34,8 @@ async function getCountOrders(req, res, next) {
     try {
 
         let data = {};
-        const processed = [1, 2, 3];
-        const finished = [4, 5, 6];
+        const processed = [1, 2];
+        const finished = [3, 4];
         const all = [...processed, ...finished];
         let now = new Date();
         let startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
@@ -214,7 +214,8 @@ async function getOrderForWaiter(req, res, next) {
 
         criteria = {
             ...criteria,
-            waiter: waiter.waiter._id
+            waiter: waiter.waiter._id,
+            is_paid: STATUS_PAYMENT.NOT_YET,
         };
 
         const orders = await Order.find(criteria).populate('customer', 'name checkin_number').populate({
