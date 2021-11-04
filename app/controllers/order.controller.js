@@ -414,7 +414,14 @@ async function verifyCustomerOrder(req, res, next) {
 
         // update order and order items
         await order.updateOne({ status: STATUS_ORDER.PROCESSED });
-        order.order_items.every(element => orderItemIds.push(element._id.toString()));
+        order.order_items.every(async (element) => {
+            orderItemIds.push(element._id.toString());
+            const product = await Product.findOne({_id: element.product}).populate('type', '_id');
+            queue.push(element._id, product.type._id);
+        });
+
+        console.log(order.order_items);
+
         await OrderItem.updateMany(
             { _id: { $in: orderItemIds } },
             { status: STATUS_ORDER_ITEM.IN_QUEUE }
