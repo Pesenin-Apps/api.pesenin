@@ -757,7 +757,7 @@ async function checkOutCustomerByWaiter(req, res, next) {
 
         if (!table) {
             return res.status(404).json({
-                message: 'Customer Not Found'
+                message: 'Table not Found',
             });
         }
 
