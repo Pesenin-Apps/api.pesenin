@@ -1,6 +1,5 @@
 const { STATUS_ORDER, Order, STATUS_PAYMENT } = require('../models/orders/order');
 const { STATUS_ORDER_ITEM, OrderItem } = require('../models/orders/item');
-const { Waiter } = require('../models/waiter');
 const Product = require('../models/products/product');
 const Table = require('../models/tables/tabel');
 const { getUserSignedIn, getCustomerCheckedIn, getWaiterReadyToServe } = require('../helpers/gets');
@@ -613,6 +612,87 @@ async function updateOrderForWaiter(req, res, next) {
     }
 }
 
+async function destroyOrderItemForWaiter(req, res, next) {
+    try {
+        const { items } = req.body;
+        
+        // waiter who serve
+        const staff = await getUserSignedIn(req.user._id);
+
+        // check if orders is empty
+        if (!items || items.length === 0) {
+            return res.status(400).json({
+                message: 'Order Items Not Found!'
+            });
+        }
+
+        // variable for the item to be changed
+        let destroyedItems = [];
+        // get order
+        let order = await Order.findOne({ _id: req.params.id }).populate('order_items');
+        // order item to chenged
+        const udeletedItemIds = items.map(e => e.item);
+        const deletedItems = await OrderItem.find({ _id: { $in: udeletedItemIds } });
+
+        // remove item when status more than status IN_QUEUE
+        deletedItems.forEach((element, index, object) => {
+            if (element.status > STATUS_ORDER_ITEM.IN_QUEUE) {
+                object.splice(index, 1);
+                items.splice(index, 1)
+            }
+        });
+
+        // remove item when status more than status IN_QUEUE
+        deletedItems.forEach((element, index, object) => {
+            if (element.status > STATUS_ORDER_ITEM.IN_QUEUE) {
+                object.splice(index, 1);
+                items.splice(index, 1)
+            }
+        });
+
+        // check order who serve
+        if (order.waiter.toString() !== staff.waiter._id.toString()) {
+            return res.status(403).json({
+                message: 'You Can\'t Dalete It, Only The Waiter Who Serves Can Delete It!'
+            });
+        }
+
+        items.forEach(async (element) => {
+            destroyedItems.push(element);
+        });
+
+        let orderedItems = destroyedItems.map(element => {
+            let relatedItem = deletedItems.find(orderItem => orderItem._id.toString() === element.item);
+            return {
+                "deleteOne": { 
+                    "filter": { 
+                        "_id": relatedItem._id,
+                    },
+                }
+            }
+        });
+
+        // save order and order items
+        await OrderItem.bulkWrite(orderedItems);
+        await order.save();
+
+        // response
+        return res.status(200).json({
+            message: 'Order Deleted Successfully!',
+            order: order
+        });
+
+    } catch (err) {
+        if (err && err.name === 'ValidationError') {
+            return res.status(400).json({
+                message: err.message,
+                fields: err.errors
+            });
+        }
+        next(err);
+    }
+}
+
 async function updateOrderItem(req, res, next) {
     try {
         
@@ -651,5 +731,6 @@ module.exports = {
     verifyCustomerOrder,
     updateOrderForCustomer,
     updateOrderForWaiter,
-    updateOrderItem
+    updateOrderItem,
+    destroyOrderItemForWaiter,
 }

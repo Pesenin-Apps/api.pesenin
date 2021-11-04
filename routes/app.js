@@ -60,6 +60,7 @@ router.post('/waiters/change-status', hasStaff('waiter'), staffController.change
 router.get('/waiters/orders', hasStaff('waiter'), orderController.getOrderForWaiter);
 router.post('/waiters/orders', hasStaff('waiter'), orderController.createOrderForWaiter);
 router.patch('/waiters/orders/:id', hasStaff('waiter'), orderController.updateOrderForWaiter);
+router.delete('/waiters/orders/:id', hasStaff('waiter'), orderController.destroyOrderItemForWaiter);
 router.post('/waiters/orders/verify/:id', hasStaff('waiter'), orderController.verifyCustomerOrder);
 
 /* ========= END ENDPOINT FOR WAITER ========= */
