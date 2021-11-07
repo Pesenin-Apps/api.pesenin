@@ -78,12 +78,14 @@ orderSchema.pre('save', async function(next) {
     }
     const orderItems = await OrderItem.find({ _id: {$in: this.order_items} });
     orderItems.forEach((element) => {
-        if (element.status == STATUS_ORDER_ITEM.IN_PROCESS) {
-            this.status = STATUS.PROCESSED;
-        } else if (element.status == STATUS_ORDER_ITEM.NEW) {
+        if (element.status == STATUS_ORDER_ITEM.NEW) {
             this.status = STATUS.STORE_ORDER;
+        } else if (element.status == STATUS_ORDER_ITEM.IN_PROCESS || element.status == STATUS_ORDER_ITEM.IN_QUEUE) {
+            this.status = STATUS.PROCESSED;
+        } else {
+            this.status = STATUS.FINISH;
         }
-    })
+    });
     this.total_price = orderItems.reduce((sum, item) => sum += item.total, 0);
     this.tax = (10 / 100) * this.total_price;
     this.total_overall = this.total_price + this.tax;

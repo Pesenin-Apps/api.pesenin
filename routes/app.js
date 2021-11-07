@@ -133,6 +133,7 @@ router.patch('/orders/items/:id', [ hasStaff('cashier', 'kitchen'), multer().non
 
 router.get('/orders', hasStaff('cashier'), orderController.getAllOrders);
 router.get('/orders/:id', hasStaff('cashier','waiter'), orderController.getOrder);
+router.patch('/orders/:id', hasStaff('cashier'), orderController.updateOrder);
 
 /* ========= END ORDER ENDPOINT ========= */
 
