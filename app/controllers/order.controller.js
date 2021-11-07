@@ -227,6 +227,7 @@ async function getOrderForWaiter(req, res, next) {
         let criteria = {};
         const { filters } = req.query;
         const waiter = await getUserSignedIn(req.user._id);
+        let now = new Date();
         let startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
 
         if (filters) {
