@@ -201,8 +201,8 @@ async function getOrderForWaiter(req, res, next) {
 
         let criteria = {};
         const { filters } = req.query;
-
         const waiter = await getUserSignedIn(req.user._id);
+        let startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
 
         if (filters) {
             if (filters.status) {
@@ -216,7 +216,7 @@ async function getOrderForWaiter(req, res, next) {
         criteria = {
             ...criteria,
             waiter: waiter.waiter._id,
-            is_paid: STATUS_PAYMENT.NOT_YET,
+            createdAt: {$gte: startOfToday},
         };
 
         const orders = await Order.find(criteria).populate('customer', 'name checkin_number').populate({
@@ -411,8 +411,6 @@ async function verifyCustomerOrder(req, res, next) {
             });
         }
 
-        // TODO: queue push to linkedList
-
         // update order and order items
         await order.updateOne({ status: STATUS_ORDER.PROCESSED });
         order.order_items.every(async (element) => {
@@ -420,8 +418,6 @@ async function verifyCustomerOrder(req, res, next) {
             const product = await Product.findOne({_id: element.product}).populate('type', '_id');
             queue.push(element._id, product.type._id);
         });
-
-        console.log(order.order_items);
 
         await OrderItem.updateMany(
             { _id: { $in: orderItemIds } },
@@ -655,14 +651,15 @@ async function destroyOrderItemForWaiter(req, res, next) {
             destroyedItems.push(element);
         });
 
-        let orderedItems = destroyedItems.map(element => {
+        let orderedItems = destroyedItems.map((element) => {
             let relatedItem = deletedItems.find(orderItem => orderItem._id.toString() === element.item);
+            queue.destroy(relatedItem._id);
             return {
                 "deleteOne": { 
                     "filter": { 
                         "_id": relatedItem._id,
                     },
-                }
+                },
             }
         });
 
@@ -692,6 +689,7 @@ async function updateOrderItem(req, res, next) {
         
         const { id } = req.params;
         const payload = req.body;
+        let orderItemStatuses = [];
         
         if (payload.status == STATUS_ORDER_ITEM.FINISH) {
             queue.destroy(id);
@@ -702,6 +700,14 @@ async function updateOrderItem(req, res, next) {
             payload,
             { new: false, runValidators: true }
         );
+
+        let order = await Order.findById(orderItem.order).populate('order_items');
+        order.order_items.forEach((element) => orderItemStatuses.push(element.status));
+        let result = Math.min.apply(null, orderItemStatuses);
+
+        if (result == STATUS_ORDER_ITEM.FINISH) {
+            await order.updateOne({ status: STATUS_ORDER.FINISH });
+        }
 
         return res.status(200).json({
             message: 'OrderItem Updated Successfully!',
