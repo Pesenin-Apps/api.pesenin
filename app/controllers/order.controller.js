@@ -8,6 +8,25 @@ const { Waiter } = require('../models/waiter');
 const { Customer, STATUS_CUSTOMER } = require('../models/customer');
 const queue = linkedList();
 
+async function queues(section) {
+    const listQueues = queue.print(section);
+    const orderItems = await OrderItem.find({ _id: { $in: listQueues } }).populate({
+        path: 'order',
+        select: 'table',
+        populate: {
+            path: 'table',
+            select: 'name',
+        }
+    }).populate('product', 'name').select('-__v -price -total');
+
+    const response = {
+        count: orderItems.length,
+        data: orderItems,
+    };
+
+    return response;
+}
+
 async function getQueues(req, res, next) {
     try {
       const { section } = req.query;
@@ -89,6 +108,12 @@ async function getAllOrders(req, res, next) {
                 criteria = {
                     ...criteria,
                     status: filters.status
+                };
+            }
+            if (filters.is_paid) {
+                criteria = {
+                    ...criteria,
+                    is_paid: filters.is_paid
                 };
             }
         }
@@ -783,7 +808,33 @@ async function checkOutCustomerByWaiter(req, res, next) {
     }
 }
 
+async function updateOrder(req, res, next) {
+    try {
+
+        const id = req.params.id;
+        let payload = req.body;
+
+        console.log(payload);
+        console.log(id);
+
+        const order = await Order.findOneAndUpdate(
+            { _id: id },
+            payload,
+            { new: true, runValidators: true },
+        );
+
+        return res.status(200).json({
+            message: 'Order Updated Successfully!',
+            data: order
+        });
+
+    } catch (err) {
+        next(err);
+    }
+}
+
 module.exports = {
+    queues,
     getQueues,
     getCountOrders,
     getAllOrders,
@@ -798,4 +849,5 @@ module.exports = {
     updateOrderItem,
     destroyOrderItemForWaiter,
     checkOutCustomerByWaiter,
+    updateOrder,
 }

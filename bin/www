@@ -8,6 +8,7 @@ var db;
 var app = require('../app');
 var debug = require('debug')('api.pesenin:server');
 var http = require('http');
+const { queues } = require('../app/controllers/order.controller');
 
 /**
  * currently using MongoDB Atlas, if you want to use Locally change to local configuration
@@ -31,6 +32,24 @@ app.set('port', port);
  */
 
 var server = http.createServer(app);
+
+/**
+ * Socket IO Implemention
+ */
+
+const io = require('socket.io')(server, {
+  cors: {
+    origin: "*",
+    methods: ["GET", "POST"],
+  }
+});
+
+
+io.on('connection', (socket) => {
+  socket.on('queue', async (data) => {
+    socket.emit(data, await queues(data));
+  });
+});
 
 /**
  * Listen on provided port, on all network interfaces.
