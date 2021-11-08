@@ -51,6 +51,7 @@ const io = require('socket.io')(server, {
     // 'jsonp-polling',
     'polling'
   ],
+  secure: true,
 });
 
 io.on('connection', (socket) => {
