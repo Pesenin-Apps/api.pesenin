@@ -65,14 +65,14 @@ const io = require('socket.io')(server, {
     methods: ["GET", "POST"],
     // credentials: true,
   },
-  // transports: [
-  //   'websocket',
+  transports: [
+    "websocket",
     // 'flashsocket',
     // 'htmlfile',
     // 'xhr-polling',
     // 'jsonp-polling',
     // 'polling'
-  // ],
+  ],
   // secure: true,
 });
 
