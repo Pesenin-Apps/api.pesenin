@@ -80,9 +80,9 @@ io.on('connection', (socket) => {
   socket.on('queue', async (data) => {
     socket.emit(data, await queues(data));
   });
-  socket.on('disconnect', (socket) => {
+  // socket.on('disconnect', (socket) => {
     
-  })
+  // })
 });
 
 /**
