@@ -40,9 +40,16 @@ var server = http.createServer(app);
 const io = require('socket.io')(server, {
   cors: {
     origin: "*",
-    methods: ["GET", "POST"]
+    methods: ["GET", "POST"],
   },
-  transports : 'websocket'
+  transports: [
+    'websocket',
+    'flashsocket',
+    'htmlfile',
+    'xhr-polling',
+    'jsonp-polling',
+    'polling'
+  ],
 });
 
 io.on('connection', (socket) => {
