@@ -71,7 +71,7 @@ const io = require('socket.io')(server, {
     // 'htmlfile',
     // 'xhr-polling',
     // 'jsonp-polling',
-    // 'polling'
+    "polling",
   ],
   // secure: true,
 });
