@@ -9,10 +9,10 @@ var app = require('../app');
 var debug = require('debug')('api.pesenin:server');
 
 // HTTP
-// var http = require('http');
+var http = require('http');
 
 // // HTTPS
-var https = require('https');
+// var https = require('https');
 var fs = require('fs');
 
 const { queues } = require('../app/controllers/order.controller');
@@ -38,18 +38,22 @@ app.set('port', port);
  * Create HTTP server.
  */
 
-// var server = http.createServer(app);
+var server = http.createServer({
+  key: fs.readFileSync('/etc/ssl/private/key.pem'),
+  cert: fs.readFileSync('/etc/ssl/certs/cert.pem'),
+}, app);
 
 /**
  * Create HTTPS server
  */
 
- var options = {
-  key: fs.readFileSync('/etc/ssl/private/key.pem'),
-  cert: fs.readFileSync('/etc/ssl/certs/cert.pem'),
-};
-
-var server = https.createServer(options, app);
+// var server = https.createServer({
+//   key: fs.readFileSync('/etc/ssl/private/key.pem'),
+//   cert: fs.readFileSync('/etc/ssl/certs/cert.pem'),
+//   ca: fs.readFileSync('/etc/ssl/certs/ca-certificates.crt'),
+//   requestCert: true,
+//   rejectUnauthorized: false
+// }, app);
 
 /**
  * Socket IO Implemention
@@ -76,6 +80,9 @@ io.on('connection', (socket) => {
   socket.on('queue', async (data) => {
     socket.emit(data, await queues(data));
   });
+  // socket.on('disconnect', (socket) => {
+    
+  // })
 });
 
 /**
