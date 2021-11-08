@@ -9,11 +9,11 @@ var app = require('../app');
 var debug = require('debug')('api.pesenin:server');
 
 // HTTP
-var http = require('http');
+// var http = require('http');
 
 // // HTTPS
-// var https = require('https');
-// var fs = require('fs');
+var https = require('https');
+var fs = require('fs');
 
 const { queues } = require('../app/controllers/order.controller');
 
@@ -38,7 +38,7 @@ app.set('port', port);
  * Create HTTP server.
  */
 
-var server = http.createServer(app);
+// var server = http.createServer(app);
 
 /**
  * Create HTTPS server
@@ -51,6 +51,11 @@ var server = http.createServer(app);
 //   requestCert: true,
 //   rejectUnauthorized: false
 // }, app);
+
+var server = https.createServer({
+  key: fs.readFileSync('/etc/ssl/private/key.pem'),
+  cert: fs.readFileSync('/etc/ssl/certs/cert.pem'),
+}, app);
 
 /**
  * Socket IO Implemention
