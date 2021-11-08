@@ -41,13 +41,14 @@ const io = require('socket.io')(server, {
   cors: {
     origin: "*",
     methods: ["GET", "POST"],
+    credentials:true,
   },
   transports: [
     'websocket',
-    'flashsocket',
-    'htmlfile',
-    'xhr-polling',
-    'jsonp-polling',
+    // 'flashsocket',
+    // 'htmlfile',
+    // 'xhr-polling',
+    // 'jsonp-polling',
     'polling'
   ],
 });
