@@ -12,8 +12,8 @@ var debug = require('debug')('api.pesenin:server');
 // var http = require('http');
 
 // // HTTPS
-var https = require('https');
-var fs = require('fs');
+const { readFileSync } = require("fs");
+const { createServer } = require("https");
 
 const { queues } = require('../app/controllers/order.controller');
 
@@ -52,16 +52,16 @@ app.set('port', port);
 //   rejectUnauthorized: false
 // }, app);
 
-var server = https.createServer({
-  key: fs.readFileSync('/etc/ssl/private/key.pem'),
-  cert: fs.readFileSync('/etc/ssl/certs/cert.pem'),
+var httpServer = createServer({
+  key: readFileSync('/etc/ssl/private/key.pem'),
+  cert: readFileSync('/etc/ssl/certs/cert.pem'),
 }, app);
 
 /**
  * Socket IO Implemention
  */
 
-const io = require('socket.io')(server, {
+const io = new Server(httpServer, {
   cors: {
     origin: "*",
     methods: ["GET", "POST"],
