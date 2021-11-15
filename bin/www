@@ -39,8 +39,8 @@ app.set('port', port);
  */
 
 var server = http.createServer({
-  key: fs.readFileSync('/etc/ssl/private/key.pem'),
-  cert: fs.readFileSync('/etc/ssl/certs/cert.pem'),
+  // key: fs.readFileSync('/etc/ssl/private/key.pem'),
+  // cert: fs.readFileSync('/etc/ssl/certs/cert.pem'),
 }, app);
 
 /**
