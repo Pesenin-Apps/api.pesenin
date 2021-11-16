@@ -67,12 +67,13 @@ const io = require('socket.io')(server, {
   },
   transports: [
     "websocket",
+    "polling",
     // 'flashsocket',
     // 'htmlfile',
     // 'xhr-polling',
     // 'jsonp-polling',
-    "polling",
   ],
+  allowEIO3: true,
   // secure: true,
 });
 
