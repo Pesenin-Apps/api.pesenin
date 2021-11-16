@@ -63,27 +63,17 @@ const io = require('socket.io')(server, {
   cors: {
     origin: "*",
     methods: ["GET", "POST"],
-    // credentials: true,
   },
   transports: [
     "websocket",
     "polling",
-    // 'flashsocket',
-    // 'htmlfile',
-    // 'xhr-polling',
-    // 'jsonp-polling',
   ],
-  allowEIO3: true,
-  // secure: true,
 });
 
 io.on('connection', (socket) => {
   socket.on('queue', async (data) => {
     socket.emit(data, await queues(data));
   });
-  // socket.on('disconnect', (socket) => {
-    
-  // })
 });
 
 /**
