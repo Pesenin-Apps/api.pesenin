@@ -55,7 +55,7 @@ async function getCountOrders(req, res, next) {
 
         let data = {};
         const processed = [1, 2];
-        const finished = [3, 4];
+        const finished = [3];
         const all = [...processed, ...finished];
         let now = new Date();
         let startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
@@ -814,15 +814,39 @@ async function updateOrder(req, res, next) {
 
         const id = req.params.id;
         let payload = req.body;
-
-        console.log(payload);
-        console.log(id);
-
+        
         const order = await Order.findOneAndUpdate(
             { _id: id },
             payload,
             { new: true, runValidators: true },
         );
+
+        if (payload.is_paid === STATUS_PAYMENT.ALREADY) {
+
+            // update waiter
+            await Waiter.findOneAndUpdate(
+                { _id: order.waiter },
+                { $pull: { "served": order.table } },
+                { useFindAndModify: false }
+            );
+
+            // update customer
+            if (order.customer != null) {
+                await Customer.findOneAndUpdate(
+                    { _id: order.customer },
+                    { status: STATUS_CUSTOMER.CHECK_OUT },
+                    { useFindAndModify: false }
+                );
+            }
+
+            // update table
+            await Table.findOneAndUpdate(
+                { _id: order.table },
+                { used: false },
+                { useFindAndModify: false }
+            );
+
+        }
 
         return res.status(200).json({
             message: 'Order Updated Successfully!',
