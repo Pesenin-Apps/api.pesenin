@@ -3,10 +3,10 @@ const { STATUS_ORDER_ITEM, OrderItem } = require('../models/orders/item');
 const Product = require('../models/products/product');
 const Table = require('../models/tables/tabel');
 const { getUserSignedIn, getCustomerCheckedIn, getWaiterReadyToServe } = require('../helpers/gets');
-const linkedList = require('../helpers/queue');
+const { LinkedList } = require('../helpers/queue');
 const { Waiter } = require('../models/waiter');
 const { Customer, STATUS_CUSTOMER } = require('../models/customer');
-const queue = linkedList();
+const queue = new LinkedList();
 
 async function queues(section) {
     const listQueues = queue.print(section);

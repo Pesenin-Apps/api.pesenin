@@ -1,64 +1,130 @@
-function createNode(item, section) {
-  return {
-    order: {
+class Node {
+  constructor(item, section) {
+    this.order = {
       item,
       section
     },
-    next: null
+    this.next = null
   }
 }
 
-function linkedList() {
-  return {
-    head: null,
-    tail: null,
-    length: 0,
-    push: function(item, section) {
-      const node = createNode(item, section);
-      // list null
-      if (this.head == null) {
-        this.head = node;
-        this.tail = node;
-      } else {
-        this.tail.next = node;
-        this.tail = node;
-      }
-      this.length++;
-      return node;
-    },
-    destroy: function(item) {
-      let current = this.head;
-      let previous;
-      if (current.order.item == item) {
-        this.head = current.next;
-      } else {
-        while (current) {
-          if (current.order.item == item) {
-            previous.next = current.next;
-          } else {
-            previous = current;
-          }
-          current = current.next;
-        }
-      }
-      this.length--;
-    },
-    print: function(section) {
-      const items = [];
-      let current = this.head;
+class LinkedList {
+  constructor() {
+    this.head = null;
+    this.tail = null;
+    this.length = 0;
+  }
+  push(item, section) {
+    const node = new Node(item, section);
+    // list null
+    if (this.head == null) {
+      this.head = node;
+      this.tail = node;
+    } else {
+      this.tail.next = node;
+      this.tail = node;
+    }
+    this.length++;
+    return node;
+  }
+  destroy(item) {
+    let current = this.head;
+    let previous;
+    if (current.order.item == item) {
+      this.head = current.next;
+    } else {
       while (current) {
-        if(current.order.section == section) {
-          items.push(current.order.item);
+        if (current.order.item == item) {
+          previous.next = current.next;
+        } else {
+          previous = current;
         }
         current = current.next;
       }
-      return items;
-    },
-    count: function () {
-      return this.length;
     }
+    this.length--;
+  }
+  print(section) {
+    const items = [];
+    let current = this.head;
+    while (current) {
+      if(current.order.section == section) {
+        items.push(current.order.item);
+      }
+      current = current.next;
+    }
+    return items;
+  }
+  count() {
+    return this.length;
   }
 }
+
+export { LinkedList }; 
+
+// 'use strict';
+
+// function createNode(item, section) {
+//   return {
+//     order: {
+//       item,
+//       section
+//     },
+//     next: null
+//   }
+// }
+
+// function linkedList() {
+//   return {
+//     head: null,
+//     tail: null,
+//     length: 0,
+//     push: function(item, section) {
+//       const node = createNode(item, section);
+//       // list null
+//       if (this.head == null) {
+//         this.head = node;
+//         this.tail = node;
+//       } else {
+//         this.tail.next = node;
+//         this.tail = node;
+//       }
+//       this.length++;
+//       return node;
+//     },
+//     destroy: function(item) {
+//       let current = this.head;
+//       let previous;
+//       if (current.order.item == item) {
+//         this.head = current.next;
+//       } else {
+//         while (current) {
+//           if (current.order.item == item) {
+//             previous.next = current.next;
+//           } else {
+//             previous = current;
+//           }
+//           current = current.next;
+//         }
+//       }
+//       this.length--;
+//     },
+//     print: function(section) {
+//       const items = [];
+//       let current = this.head;
+//       while (current) {
+//         if(current.order.section == section) {
+//           items.push(current.order.item);
+//         }
+//         current = current.next;
+//       }
+//       return items;
+//     },
+//     count: function () {
+//       return this.length;
+//     }
+//   }
+// }
 
 // const queue = linkedList();
 
@@ -85,4 +151,4 @@ function linkedList() {
 
 // console.log(queue.print('grill'));
 
-module.exports = linkedList;
+// module.exports = linkedList;
