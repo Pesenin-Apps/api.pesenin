@@ -60,7 +60,7 @@ class LinkedList {
   }
 }
 
-export { LinkedList }; 
+module.exports = LinkedList;
 
 // 'use strict';
 
