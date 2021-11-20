@@ -357,9 +357,15 @@ async function createOrderForWaiter(req, res, next) {
             waiter: user.waiter
         }
 
+        // filter for update
+        const filter = {
+            table: table,
+            is_paid: false,
+        }
+
         // order (if dont found then insert else update)
         let order = await Order.findOneAndUpdate(
-            { table: table },
+            filter,
             { $setOnInsert: newOrder },
             { upsert: true, new: true, runValidators: true, setDefaultsOnInsert: true }
         );
