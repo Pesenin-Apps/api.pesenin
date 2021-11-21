@@ -780,12 +780,10 @@ async function checkOutCustomerByWaiter(req, res, next) {
                 { useFindAndModify: false }
             );
             await order.updateOne({ status: STATUS_ORDER.CANCEL });
-            order.order_items.forEach((item) => {
-                queue.destroy(item._id);
-            });
+            order.order_items.forEach(item => queue.destroy(item._id.toString()));
         } else {
             return res.status(400).json({
-                message: 'Customer order has been processed, you cannot cancel it or customer checked out!'
+                message: 'Customer order has been processed, you cannot cancel it or customer are checked out!'
             });
         }
         
