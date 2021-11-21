@@ -758,6 +758,7 @@ async function checkOutCustomerByWaiter(req, res, next) {
         const staff = await getUserSignedIn(req.user._id);
         const order = await Order.findById(req.params.id).populate('order_items');
 
+        // check if order empty
         if (!order) {
             return res.status(404).json({
                 message: 'Order not Found',
@@ -771,19 +772,20 @@ async function checkOutCustomerByWaiter(req, res, next) {
         });
 
         // check if order exist
-        if (order) {
-            if (order.status <= STATUS_ORDER.PROCESSED && orderItemInProcess.length == 0) {
-                await Waiter.findOneAndUpdate(
-                    { _id: staff.waiter._id },
-                    { $pull: { "served": order.table } },
-                    { useFindAndModify: false }
-                );
-                await order.updateOne({ status: STATUS_ORDER.CANCEL })
-            } else {
-                return res.status(400).json({
-                    message: 'Customer order has been processed, you cannot cancel it or checkout!'
-                });
-            }
+        if (order.status <= STATUS_ORDER.PROCESSED && orderItemInProcess.length == 0) {
+            await Waiter.findOneAndUpdate(
+                { _id: staff.waiter._id },
+                { $pull: { "served": order.table } },
+                { useFindAndModify: false }
+            );
+            await order.updateOne({ status: STATUS_ORDER.CANCEL });
+            order.order_items.forEach((item) => {
+                queue.destroy(item._id);
+            });
+        } else {
+            return res.status(400).json({
+                message: 'Customer order has been processed, you cannot cancel it or customer checked out!'
+            });
         }
         
         if (order.customer !== null) {
