@@ -361,6 +361,7 @@ async function createOrderForWaiter(req, res, next) {
         const filter = {
             table: table,
             is_paid: false,
+            status : { $in: [1, 2, 3] },
         }
 
         // order (if dont found then insert else update)
