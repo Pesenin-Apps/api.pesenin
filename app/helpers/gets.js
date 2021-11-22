@@ -45,7 +45,6 @@ async function getUserSignedIn(id) {
     return user;
 }
 
-// TODO: look for more efficient code
 // get a waiter who is ready to serve
 async function getWaiterReadyToServe() {
     let waiterIds = [], countServed = [];
