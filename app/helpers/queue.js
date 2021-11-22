@@ -62,6 +62,9 @@ class LinkedList {
 
 module.exports = LinkedList;
 
+
+// old linkedlist structure
+
 // 'use strict';
 
 // function createNode(item, section) {

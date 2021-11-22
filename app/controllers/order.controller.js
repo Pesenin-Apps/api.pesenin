@@ -8,8 +8,10 @@ const { Waiter } = require('../models/waiter');
 const { Customer, STATUS_CUSTOMER } = require('../models/customer');
 const queue = new LinkedList();
 
+/* ========= START NO PART OF ENDPOINT ========= */
+
 async function queues(section) {
-    const listQueues = queue.print(section);
+    const listQueues = queue.print(section.toString());
     const orderItems = await OrderItem.find({ _id: { $in: listQueues } }).populate({
         path: 'order',
         select: 'table',
@@ -27,10 +29,35 @@ async function queues(section) {
     return response;
 }
 
+async function countingOrder() {
+    const processed = [1, 2];
+    const finished = [3];
+    const all = [...processed, ...finished];
+    let now = new Date();
+    let todayDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+
+    const allData = await Order.find({ status: {$in: all}, createdAt: {$gte: todayDate} }).countDocuments();
+    const processedData = await Order.find({ status: {$in: processed}, createdAt: {$gte: todayDate} }).countDocuments();
+    const finishedData = await Order.find({ status: {$in: finished}, createdAt: {$gte: todayDate} }).countDocuments();
+
+    const response = {
+        all: allData,
+        processed: processedData,
+        finished: finishedData,
+    };
+
+    return response;
+}
+
+/* ========= END NO PART OF ENDPOINT ========= */
+
+
+/* ========= START ENDPOINT ========= */
+
 async function getQueues(req, res, next) {
     try {
       const { section } = req.query;
-      const listQueues = queue.print(section);
+      const listQueues = queue.print(section.toString());
       const orderItems = await OrderItem.find({ _id: { $in: listQueues } }).populate({
         path: 'order',
         select: 'table',
@@ -99,7 +126,7 @@ async function getAllOrders(req, res, next) {
         if(search.length){
 			criteria = {
 				...criteria,
-				order_number: {$regex: `${search}`, $options: 'i'}
+				order_number: {$regex: `ORDER#${search}`, $options: 'i'}
 			};
 		}
 
@@ -220,7 +247,6 @@ async function getOrderForCustomer(req, res, next) {
     }
 }
 
-// TODO: NEED REVIEW
 async function getOrderForWaiter(req, res, next) {
     try {
 
@@ -228,7 +254,7 @@ async function getOrderForWaiter(req, res, next) {
         const { filters } = req.query;
         const waiter = await getUserSignedIn(req.user._id);
         let now = new Date();
-        let startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+        let todayDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
 
         if (filters) {
             if (filters.status) {
@@ -242,7 +268,7 @@ async function getOrderForWaiter(req, res, next) {
         criteria = {
             ...criteria,
             waiter: waiter.waiter._id,
-            createdAt: {$gte: startOfToday},
+            createdAt: {$gte: todayDate},
         };
 
         const orders = await Order.find(criteria).populate('customer', 'name checkin_number').populate({
@@ -252,7 +278,7 @@ async function getOrderForWaiter(req, res, next) {
                 path: 'section',
                 select: 'name code',
             }
-        }).select('-order_items -waiter').sort('-createdAt');
+        }).select('-order_items -waiter').sort('status -createdAt'); // default `-createdAt`
 
         return res.status(200).json({
             message: 'Orders Retrived Successfully!',
@@ -265,7 +291,6 @@ async function getOrderForWaiter(req, res, next) {
     }
 }
 
-// TODO: NEED REVIEW
 async function createOrderForCustomer(req, res, next) {
     try {
         
@@ -337,7 +362,6 @@ async function createOrderForCustomer(req, res, next) {
     }
 }
 
-// TODO: NEED REVIEW
 async function createOrderForWaiter(req, res, next) {
     try {
         
@@ -389,7 +413,7 @@ async function createOrderForWaiter(req, res, next) {
         orderedItems.forEach(async (item) => {
             order.order_items.push(item);
             const product = await Product.findOne({_id: item.product}).populate('type', '_id');
-            queue.push(item._id, product.type._id);
+            queue.push(item._id.toString(), product.type._id.toString());
         });
 
         if (await order.save()) {
@@ -417,7 +441,6 @@ async function createOrderForWaiter(req, res, next) {
     }
 }
 
-// TODO: NEED REVIEW
 async function verifyCustomerOrder(req, res, next) {
     try {
         
@@ -449,7 +472,7 @@ async function verifyCustomerOrder(req, res, next) {
         order.order_items.every(async (element) => {
             orderItemIds.push(element._id.toString());
             const product = await Product.findOne({_id: element.product}).populate('type', '_id');
-            queue.push(element._id, product.type._id);
+            queue.push(element._id.toString(), product.type._id.toString());
         });
 
         await OrderItem.updateMany(
@@ -556,7 +579,6 @@ async function updateOrderForCustomer(req, res, next) {
     }
 }
 
-// TODO: NEED REVIEW
 async function updateOrderForWaiter(req, res, next) {
     try {
         
@@ -686,7 +708,7 @@ async function destroyOrderItemForWaiter(req, res, next) {
 
         let orderedItems = destroyedItems.map((element) => {
             let relatedItem = deletedItems.find(orderItem => orderItem._id.toString() === element.item);
-            queue.destroy(relatedItem._id);
+            queue.destroy(relatedItem._id.toString());
             return {
                 "deleteOne": { 
                     "filter": { 
@@ -725,7 +747,7 @@ async function updateOrderItem(req, res, next) {
         let orderItemStatuses = [];
         
         if (payload.status == STATUS_ORDER_ITEM.FINISH) {
-            queue.destroy(id);
+            queue.destroy(id.toString());
         }
 
         let orderItem = await OrderItem.findByIdAndUpdate(
@@ -865,8 +887,12 @@ async function updateOrder(req, res, next) {
     }
 }
 
+/* ========= END ENDPOINT ========= */
+
+
 module.exports = {
     queues,
+    countingOrder,
     getQueues,
     getCountOrders,
     getAllOrders,
