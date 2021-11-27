@@ -304,7 +304,7 @@ async function createOrderForCustomer(req, res, next) {
         // check if waiter exist or not
         if (waiter === false) {
             return res.status(404).json({
-                message: 'Waiter not found, no one is onduty yet!'
+                message: 'please try some more',
             });
         }
 
@@ -369,6 +369,14 @@ async function createOrderForWaiter(req, res, next) {
         const { table, orders } = req.body;
         // waiter serve
         const user = await getUserSignedIn(req.user._id);
+
+        // check waiter status
+        if (user.waiter.status === false) {
+            return res.status(403).json({
+                message: 'You\'re off duty now'
+            });
+        }
+
         // product who ordered
         const productIds = orders.map(e => e.item);
         const products = await Product.find({ _id: {$in: productIds} });
@@ -448,6 +456,13 @@ async function verifyCustomerOrder(req, res, next) {
         let orderItemIds = [];
         // waiter serve
         const user = await getUserSignedIn(req.user._id);
+
+        // check waiter status
+        if (user.waiter.status === false) {
+            return res.status(403).json({
+                message: 'You\'re off duty now'
+            });
+        }
 
         // get order
         let order = await Order.findOne({ 
@@ -587,6 +602,13 @@ async function updateOrderForWaiter(req, res, next) {
         // waiter who serve
         const staff = await getUserSignedIn(req.user._id);
 
+        // check waiter status
+        if (staff.waiter.status === false) {
+            return res.status(403).json({
+                message: 'You\'re off duty now'
+            });
+        }
+
         // check if orders is empty
         if (!items || items.length === 0) {
             return res.status(400).json({
@@ -671,6 +693,13 @@ async function destroyOrderItemForWaiter(req, res, next) {
         
         // waiter who serve
         const staff = await getUserSignedIn(req.user._id);
+
+        // check waiter status
+        if (staff.waiter.status === false) {
+            return res.status(403).json({
+                message: 'You\'re off duty now'
+            });
+        }
 
         // check if orders is empty
         if (!items || items.length === 0) {
@@ -779,6 +808,14 @@ async function checkOutCustomerByWaiter(req, res, next) {
         
         let orderItemInProcess = [];
         const staff = await getUserSignedIn(req.user._id);
+
+        // check waiter status
+        if (staff.waiter.status === false) {
+            return res.status(403).json({
+                message: 'You\'re off duty now'
+            });
+        }
+
         const order = await Order.findById(req.params.id).populate('order_items');
 
         // check if order empty
