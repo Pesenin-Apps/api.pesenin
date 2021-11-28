@@ -1,6 +1,7 @@
 # Directory
 node_modules/
 public/uploads/
+tests/
 
 # File
 package-lock.json
