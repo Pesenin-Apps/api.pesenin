@@ -1,4 +1,5 @@
 const { Customer } = require('../models/customer');
+const { Guest } = require('../models/guest');
 const { User, ROLE } = require('../models/user');
 const { STATUS_WAITER, Waiter } = require('../models/waiter');
 
@@ -29,6 +30,14 @@ function getNumbering(options) {
 async function getCustomerCheckedIn(checkInNumber) {
     const customer = await Customer.findOne({ checkin_number: {$in: checkInNumber} });
     return customer;
+}
+
+// get guest who checked-in
+async function getGuestCheckedIn(checkInNumber) {
+    const guest = await Guest.findOne({
+        checkin_number: { $in: checkInNumber }
+    });
+    return guest;
 }
 
 // get user who signed in
@@ -85,6 +94,7 @@ module.exports = {
     getInitial,
     getNumbering,
     getCustomerCheckedIn,
+    getGuestCheckedIn,
     getUserSignedIn,
     getWaiterReadyToServe,
     getDateNow,

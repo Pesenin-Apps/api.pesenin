@@ -4,8 +4,9 @@ const router = require('express').Router();
 const passport = require('passport');
 const LocalStrategy = require('passport-local').Strategy;
 
-const { hasStaff, hasCustomer } = require('../app/middlewares/authentication');
+const { hasStaff, hasCustomer, hasGuest } = require('../app/middlewares/authentication');
 
+const guestController = require('../app/controllers/guest.controller');
 const customerController = require('../app/controllers/customer.controller');
 const authController = require('../app/controllers/auth.controller');
 const staffController = require('../app/controllers/staff.controller');
@@ -17,6 +18,16 @@ const tableSectionController = require('../app/controllers/tables/section.contro
 const orderController = require('../app/controllers/order.controller');
 
 passport.use(new LocalStrategy({ usernameField: 'email' }, authController.localStrategy));
+
+
+/* ========= START ENDPOINT FOR GUEST ========= */
+
+router.get('/guest/me', hasGuest(), guestController.me);
+router.post('/guest/check-in', multer().none(), guestController.checkIn);
+router.post('/guest/check-out', hasGuest(), guestController.checkOut);
+
+/* ========= START ENDPOINT FOR GUEST ========= */
+
 
 /* ========= START ENDPOINT FOR CUSTOMER ========= */
 
