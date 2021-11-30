@@ -647,6 +647,7 @@ async function updateOrderForWaiter(req, res, next) {
                     { useFindAndModify: false }
                 );
                 await OrderItem.findByIdAndDelete({ _id: element.item });
+                queue.destroy(element.item.toString());
             }
         });
 
@@ -737,7 +738,9 @@ async function destroyOrderItemForWaiter(req, res, next) {
 
         let orderedItems = destroyedItems.map((element) => {
             let relatedItem = deletedItems.find(orderItem => orderItem._id.toString() === element.item);
-            queue.destroy(relatedItem._id.toString());
+            if (relatedItem.status === STATUS_ORDER_ITEM.IN_QUEUE) {
+                queue.destroy(relatedItem._id.toString());
+            }
             return {
                 "deleteOne": { 
                     "filter": { 
