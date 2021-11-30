@@ -646,8 +646,10 @@ async function updateOrderForWaiter(req, res, next) {
                     { $pull: { "order_items": element.item } },
                     { useFindAndModify: false }
                 );
-                await OrderItem.findByIdAndDelete({ _id: element.item });
-                queue.destroy(element.item.toString());
+                let destoryItem = await OrderItem.findByIdAndDelete({ _id: element.item });
+                if (destoryItem.status === STATUS_ORDER_ITEM.IN_QUEUE) {
+                    queue.destroy(element.item.toString());
+                }
             }
         });
 
