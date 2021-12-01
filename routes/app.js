@@ -7,6 +7,7 @@ const LocalStrategy = require('passport-local').Strategy;
 const { hasStaff, hasCustomer, hasGuest } = require('../app/middlewares/authentication');
 
 const guestController = require('../app/controllers/guest.controller');
+
 const customerController = require('../app/controllers/customer.controller');
 const authController = require('../app/controllers/auth.controller');
 const staffController = require('../app/controllers/staff.controller');
