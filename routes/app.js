@@ -31,6 +31,7 @@ router.post('/guest/check-out', hasGuest(), guestController.checkOut);
 
 
 
+
 /* ========= START ENDPOINT FOR CUSTOMER ========= */
 
 // authentication
