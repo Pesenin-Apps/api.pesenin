@@ -1,6 +1,5 @@
 const { Table, STATUS_TABLE } = require("../models/tables/tabel");
 
-
 async function clearTable(tableId) {
     await Table.findOneAndUpdate(
         { _id: tableId },
