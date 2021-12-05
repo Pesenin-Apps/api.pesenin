@@ -24,7 +24,6 @@ async function tableReservation(tableId) {
     );
 }
 
-
 module.exports = {
     clearTable,
     useTable,
