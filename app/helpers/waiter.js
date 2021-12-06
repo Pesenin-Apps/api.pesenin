@@ -1,6 +1,5 @@
 const { Waiter } = require("../models/waiter");
 
-
 async function waiterServing() {
 
 }
