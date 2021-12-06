@@ -52,9 +52,11 @@ router.get('/users/me', hasRole('cashier','kitchen','waiter','customer'),  userC
 router.post('/users/change-profile', [ hasRole('cashier','kitchen','waiter','customer'), multer().none() ], userController.changeProfile);
 router.post('/users/change-password', [ hasRole('cashier','kitchen','waiter','customer'), multer().none() ], userController.changePassword);
 
-router.get('/orders', hasRole('cashier'), orderController.getOrders);
-router.get('/queues', hasRole('cashier','kitchen'), orderController.getQueues);
+router.patch('/orders/items/:id', [ hasStaff('cashier', 'kitchen', 'waiter'), multer().none() ], orderController.updateOrderItem);
 router.get('/orders/count', hasRole('cashier','kitchen'), orderController.getOrderCounts);
+router.get('/orders', hasRole('cashier'), orderController.getOrders);
+router.patch('/orders/:id', hasStaff('cashier'), orderController.updateOrder);
+router.get('/queues', hasRole('cashier','kitchen'), orderController.getQueues);
 
 /* === START FOR WAITER === */
 router.post('/waiters/change-status', hasRole('waiter'), userController.changeStatusWaiter);
@@ -253,7 +255,7 @@ router.get('/customers/me', hasCustomer(), customerController.me);
 
 /* ========= START ORDER ITEM ENDPOINT ========= */
 
-router.patch('/orders/items/:id', [ hasStaff('cashier', 'kitchen'), multer().none() ], ordersController.updateOrderItem);
+// router.patch('/orders/items/:id', [ hasStaff('cashier', 'kitchen'), multer().none() ], ordersController.updateOrderItem);
 
 /* ========= END ORDER ITEM ENDPOINT ========= */
 
@@ -261,7 +263,7 @@ router.patch('/orders/items/:id', [ hasStaff('cashier', 'kitchen'), multer().non
 /* ========= START ORDER ENDPOINT ========= */
 
 router.get('/orders/:id', hasStaff('cashier','waiter','customer'), ordersController.getOrder);
-router.patch('/orders/:id', hasStaff('cashier'), ordersController.updateOrder);
+// router.patch('/orders/:id', hasStaff('cashier'), ordersController.updateOrder);
 
 /* ========= END ORDER ENDPOINT ========= */
 

@@ -163,7 +163,6 @@ async function getOrder(req, res, next) {
 
         const { id } = req.params;
 
-        // TODO: Add Populate Customer and Guest
         const order = await Order.findById(id).populate({
             path: 'order_items',
             select: '-order',
@@ -193,6 +192,50 @@ async function getOrder(req, res, next) {
         });
         
     } catch (err) {
+        next(err);
+    }
+}
+
+async function updateOrder(req, res, next) {
+    try {
+
+        let payload = req.body;
+        const { id } = req.params;
+
+        const order = await Order.findOneAndUpdate(
+            { _id: id },
+            payload,
+            { new: true, runValidators: true },
+        );
+
+        if (payload.is_paid === STATUS_PAYMENT.ALREADY) {
+
+            await waiterUnserve(order.waiter, order.table);
+
+            if (order.customer !== null) {
+                await Customer.findOneAndUpdate(
+                    { _id: order.customer },
+                    { status: STATUS_CUSTOMER.CHECK_OUT },
+                    { useFindAndModify: false }
+                );
+            }
+
+            await clearTable(order.table);
+
+        }
+
+        return res.status(200).json({
+            message: 'Order Updated Successfully!',
+            data: order,
+        });
+        
+    } catch (err) {
+        if (err && err.name === 'ValidationError') {
+            return res.status(400).json({
+                message: err.message,
+                fields: err.errors,
+            });
+        }
         next(err);
     }
 }
@@ -1310,6 +1353,7 @@ module.exports = {
     getOrderCounts,
     getOrders,
     getOrder,
+    updateOrder,
     getOrderByGuest,
     createOrderByGuest,
     updateOrderModifyByGuest,
