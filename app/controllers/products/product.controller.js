@@ -52,6 +52,7 @@ async function index(req, res, next) {
             pageMaximum: Math.ceil(count / limit),
             data: products
         });
+        
     } catch (err) {
         next(err);
     }
