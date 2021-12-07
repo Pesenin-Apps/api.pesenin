@@ -55,6 +55,7 @@ router.post('/users/change-password', [ hasRole('cashier','kitchen','waiter','cu
 router.patch('/orders/items/:id', [ hasStaff('cashier', 'kitchen', 'waiter'), multer().none() ], orderController.updateOrderItem);
 router.get('/orders/count', hasRole('cashier','kitchen'), orderController.getOrderCounts);
 router.get('/orders', hasRole('cashier'), orderController.getOrders);
+router.get('/orders/:id', hasStaff('cashier','waiter','customer'), orderController.getOrder);
 router.patch('/orders/:id', hasStaff('cashier'), orderController.updateOrder);
 router.get('/queues', hasRole('cashier','kitchen'), orderController.getQueues);
 
@@ -262,7 +263,7 @@ router.get('/customers/me', hasCustomer(), customerController.me);
 
 /* ========= START ORDER ENDPOINT ========= */
 
-router.get('/orders/:id', hasStaff('cashier','waiter','customer'), ordersController.getOrder);
+// router.get('/orders/:id', hasStaff('cashier','waiter','customer'), ordersController.getOrder);
 // router.patch('/orders/:id', hasStaff('cashier'), ordersController.updateOrder);
 
 /* ========= END ORDER ENDPOINT ========= */

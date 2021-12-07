@@ -240,6 +240,49 @@ async function updateOrder(req, res, next) {
     }
 }
 
+async function updateOrderItem(req, res, next) {
+    try {
+        
+        const { id } = req.params;
+        const payload = req.body;
+        
+        let orderItemStatuses = [];
+
+        let orderItem = await OrderItem.findByIdAndUpdate(
+            { _id: id },
+            payload,
+            { new: false, runValidators: true }
+        ).populate({
+            path: 'product',
+            select: 'type',
+            populate: {
+                path: 'type',
+                select: 'belong',
+            }
+        });
+
+        if (payload.status == STATUS_ORDER_ITEM.FINISH && orderItem.product.type.belong === PROCESSED_ON.INSIDE_KITCHEN) {
+            queue.destroy(id.toString());
+        }
+
+        let order = await Order.findById(orderItem.order).populate('order_items');
+        order.order_items.forEach((element) => orderItemStatuses.push(element.status));
+        let result = Math.min.apply(null, orderItemStatuses);
+
+        if (result == STATUS_ORDER_ITEM.FINISH) {
+            await order.updateOne({ status: STATUS_ORDER.FINISH });
+        }
+
+        return res.status(200).json({
+            message: 'OrderItem Updated Successfully!',
+            data: orderItem
+        });
+
+    } catch (err) {
+        next(err);
+    }
+}
+
 /* === START FOR GUEST === */
 
 async function getOrderByGuest(req, res, next) {
@@ -1354,6 +1397,7 @@ module.exports = {
     getOrders,
     getOrder,
     updateOrder,
+    updateOrderItem,
     getOrderByGuest,
     createOrderByGuest,
     updateOrderModifyByGuest,
