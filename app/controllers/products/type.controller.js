@@ -1,9 +1,26 @@
-const ProductType = require('../../models/products/type');
+const { ProductType } = require('../../models/products/type');
 
 async function index(req, res, next) {
     try {
 
-        let productTypes = await ProductType.find().sort('name');
+        let criteria = {};
+        const { belong } = req.query;
+
+        console.log(!req.query);
+        console.log(Object.keys(req.query).length);
+
+        if (req.query !== {} && Object.keys(req.query).length) {
+            if (belong.length) {
+                criteria = {
+                    ...criteria,
+				    belong: parseInt(belong),
+                }
+            }
+        }
+
+
+        let productTypes = await ProductType.find(criteria).sort('name');
+
         return res.status(200).json({
             message: "ProductTypes Retrived Successfully!",
             data: productTypes
@@ -86,6 +103,7 @@ async function destroy(req, res, next) {
     try {
 
         let productType = await ProductType.findOneAndDelete({ _id: req.params.id });
+
         return res.status(200).json({
             message: 'ProductType Deleted Successfully!',
             data: productType

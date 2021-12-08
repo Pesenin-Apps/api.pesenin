@@ -2,8 +2,8 @@ const fs = require('fs')
 const path = require('path');
 const Product = require('../../models/products/product');
 const ProductCategory = require('../../models/products/category');
-const ProductType = require('../../models/products/type');
-const config = require('../../config/config')
+const { ProductType } = require('../../models/products/type');
+const config = require('../../config/config');
 
 async function index(req, res, next) {
     try {
@@ -72,9 +72,11 @@ async function show(req, res, next) {
 
 async function store(req, res, next) {
     try {
+
         // request 
         let payload = req.body;
         let file = req.file;
+
         // relationship of category
         if (payload.category) {
             let category = await ProductCategory.findOne({
@@ -86,6 +88,7 @@ async function store(req, res, next) {
                 delete payload.category
             }
         }
+
         // relationship of type
         if (payload.type) {
             let type = await ProductType.findOne({
@@ -97,6 +100,7 @@ async function store(req, res, next) {
                 delete payload.type
             }
         }
+
         // store and upload data
         if (file) {
             // file declaration
@@ -143,6 +147,7 @@ async function store(req, res, next) {
                 data: product
             });
         }
+
     } catch (err) {
         if (err && err.name === 'ValidationError') {
             return res.status(400).json({
@@ -156,9 +161,11 @@ async function store(req, res, next) {
 
 async function update(req, res, next) {
     try {
+
         // request 
         let payload = req.body;
         let file = req.file;
+
         // relationship of category
         if (payload.category) {
             let category = await ProductCategory.findOne({
@@ -170,6 +177,7 @@ async function update(req, res, next) {
                 delete payload.category
             }
         }
+
         // relationship of type
         if (payload.type) {
             let type = await ProductType.findOne({
@@ -181,6 +189,7 @@ async function update(req, res, next) {
                 delete payload.type
             }
         }
+
         // store and upload data
         if (file) {
             // file declaration
@@ -240,6 +249,7 @@ async function update(req, res, next) {
                 data: product
             });
         }
+
     } catch (err) {
         if (err && err.name === 'ValidationError') {
             return res.status(400).json({
