@@ -1,7 +1,11 @@
 const { Waiter } = require("../models/waiter");
 
-async function waiterServing() {
-
+async function waiterServing(waiterId, tableId) {
+    await Waiter.findOneAndUpdate(
+        { _id: waiterId },
+        { $push: { "served": tableId } },
+        { useFindAndModify: false }
+    );
 }
 
 async function waiterUnserve(waiterId, tableId) {
@@ -11,7 +15,6 @@ async function waiterUnserve(waiterId, tableId) {
         { useFindAndModify: false }
     );
 }
-
 
 module.exports = {
     waiterServing,

@@ -1,7 +1,7 @@
-const { STATUS_ORDER, Order, STATUS_PAYMENT } = require('../models/orders/order');
+const { STATUS_ORDER, STATUS_PAYMENT, Order } = require('../models/orders/order');
 const { STATUS_ORDER_ITEM, OrderItem } = require('../models/orders/item');
 const Product = require('../models/products/product');
-const Table = require('../models/tables/tabel');
+const { Table } = require('../models/tables/tabel');
 const { getUserSignedIn, getCustomerCheckedIn, getWaiterReadyToServe } = require('../helpers/gets');
 const LinkedList = require('../helpers/queue');
 const { Waiter } = require('../models/waiter');

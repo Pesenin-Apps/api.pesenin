@@ -1,6 +1,6 @@
 const { Customer } = require('../models/customer');
 const { Guest } = require('../models/guest');
-const { User, ROLE } = require('../models/user');
+const { ROLE, User } = require('../models/user');
 const { STATUS_WAITER, Waiter } = require('../models/waiter');
 
 // get initial based on `params`, ex: params = `Tiyan Attirmdzi` then return `TA`

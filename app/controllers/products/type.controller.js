@@ -5,10 +5,7 @@ async function index(req, res, next) {
 
         let criteria = {};
         const { belong } = req.query;
-
-        console.log(!req.query);
-        console.log(Object.keys(req.query).length);
-
+        
         if (req.query !== {} && Object.keys(req.query).length) {
             if (belong.length) {
                 criteria = {
@@ -17,7 +14,6 @@ async function index(req, res, next) {
                 }
             }
         }
-
 
         let productTypes = await ProductType.find(criteria).sort('name');
 

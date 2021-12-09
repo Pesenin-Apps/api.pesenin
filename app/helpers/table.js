@@ -1,4 +1,4 @@
-const { Table, STATUS_TABLE } = require("../models/tables/tabel");
+const { STATUS_TABLE, Table } = require("../models/tables/tabel");
 
 async function clearTable(tableId) {
     await Table.findOneAndUpdate(
