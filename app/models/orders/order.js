@@ -4,10 +4,9 @@ const { getNumbering } = require('../../helpers/gets');
 const { Waiter } = require('../waiter');
 
 const STATUS = {
-    STORE_ORDER: 1,
+    STORE_ORDER: 1, // TODO: Delete It If dont used
+    CREATE: 1,
     PROCESSED: 2,
-    // NOT_YET_PAID: 3,
-    // ALREADY_PAID: 4,
     FINISH: 3,
     CANCEL: 4,
 }
@@ -15,6 +14,11 @@ const STATUS = {
 const PAID = {
     NOT_YET: false,
     ALREADY: true,
+}
+
+const TYPE = {
+    DINE_IN: 1,
+    RESERVATION: 2,
 }
 
 const orderSchema = Schema({
@@ -40,7 +44,16 @@ const orderSchema = Schema({
     },
     customer: {
         type: Schema.Types.ObjectId, 
-        ref: 'Customer'
+        ref: 'User'
+    },
+    guest: {
+        type: Schema.Types.ObjectId, 
+        ref: 'Guest'
+    },
+    type: {
+        type: Number,
+        enum: [ TYPE.DINE_IN, TYPE.RESERVATION ],
+        required: [ true, 'is required.' ]
     },
     is_paid: {
         type: Boolean,
@@ -96,4 +109,5 @@ module.exports = {
     STATUS_ORDER: STATUS,
     Order: model('Order', orderSchema),
     STATUS_PAYMENT: PAID,
+    TYPE_ORDER: TYPE,
 }

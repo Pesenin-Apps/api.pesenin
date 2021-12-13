@@ -26,7 +26,7 @@ function getNumbering(options) {
     return strOption + '#' + dateNow;
 }
 
-// get customer who checked in
+// TODO: delete if all order method has refactored (get customer who checked in)
 async function getCustomerCheckedIn(checkInNumber) {
     const customer = await Customer.findOne({ checkin_number: {$in: checkInNumber} });
     return customer;
@@ -56,6 +56,7 @@ async function getUserSignedIn(id) {
 
 // get a waiter who is ready to serve
 async function getWaiterReadyToServe() {
+
     let waiterIds = [], countServed = [];
     const waiter = await Waiter.find({ status: STATUS_WAITER.ON_DUTY });
     waiter.every(element => countServed.push(element.served.length));
@@ -74,6 +75,7 @@ async function getWaiterReadyToServe() {
     } else {
         return false;
     }
+    
 }
 
 function getDateNow() {

@@ -15,7 +15,11 @@ var http = require('http');
 // var https = require('https');
 var fs = require('fs');
 
-const { queues, countingOrder } = require('../app/controllers/order.controller');
+const { 
+  queues,
+  // countingOrder
+} = require('../app/controllers/orders.controller');
+// const { getTables } = require('../app/controllers/socket.controller');
 
 /**
  * currently using MongoDB Atlas, if you want to use Locally change to local configuration
@@ -74,6 +78,9 @@ io.on('connection', (socket) => {
   socket.on('queue', async (data) => {
     socket.emit(data, await queues(data));
   });
+  // socket.on('table-section', async (data) => {
+  //   socket.emit(data, await getTables(data));
+  // });
   // socket.emit('count-order-today', await countingOrder());
 });
 

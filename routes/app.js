@@ -13,12 +13,13 @@ const productController = require('../app/controllers/products/product.controlle
 const productTypeController = require('../app/controllers/products/type.controller');
 const tableController = require('../app/controllers/tables/table.controller');
 const tableSectionController = require('../app/controllers/tables/section.controller');
+const orderController = require('../app/controllers/order.controller');
 
 
 const customerController = require('../app/controllers/customer.controller');
 const authController = require('../app/controllers/auth.controller');
 const staffController = require('../app/controllers/staff.controller');
-const orderController = require('../app/controllers/order.controller');
+const ordersController = require('../app/controllers/orders.controller');
 
 passport.use(new LocalStrategy({ usernameField: 'email' }, authController.localStrategy));
 
@@ -28,6 +29,10 @@ passport.use(new LocalStrategy({ usernameField: 'email' }, authController.localS
 router.get('/guest/me', hasGuest(), guestController.me);
 router.post('/guest/check-in', multer().none(), guestController.checkIn);
 router.post('/guest/check-out', hasGuest(), guestController.checkOut);
+router.get('/guest/orders', hasGuest(), orderController.getOrderByGuest);
+router.post('/guest/orders', [ hasGuest(), multer().none() ], orderController.createOrderByGuest);
+router.patch('/guest/orders/:id', [ hasGuest(), multer().none() ], orderController.updateOrderModifyByGuest);
+router.delete('/guest/orders/:id', hasGuest(), orderController.updateOrderDeleteByGuest);
 
 /* ========= END ENDPOINT FOR GUEST ========= */
 
@@ -140,9 +145,9 @@ router.post('/customers/check-out', hasCustomer(), customerController.checkOut);
 router.get('/customers/me', hasCustomer(), customerController.me);
 
 // order
-router.get('/customers/orders', hasCustomer(), orderController.getOrderForCustomer);
-router.post('/customers/orders', hasCustomer(), orderController.createOrderForCustomer);
-router.post('/customers/orders/update', hasCustomer(), orderController.updateOrderForCustomer);
+router.get('/customers/orders', hasCustomer(), ordersController.getOrderForCustomer);
+router.post('/customers/orders', hasCustomer(), ordersController.createOrderForCustomer);
+router.post('/customers/orders/update', hasCustomer(), ordersController.updateOrderForCustomer);
 
 /* ========= END ENDPOINT FOR CUSTOMER ========= */
 
@@ -158,7 +163,7 @@ router.post('/customers/orders/update', hasCustomer(), orderController.updateOrd
 // router.get('/user/me', hasStaff('cashier','kitchen','waiter'),  staffController.me);
 // router.post('/user/change-password', hasStaff('cashier','kitchen','waiter'), staffController.changePassword);
 // router.post('/user/change-profile', hasStaff('cashier','kitchen','waiter'), staffController.changeProfile);
-router.get('/orders/count', hasStaff('cashier','kitchen'), orderController.getCountOrders);
+router.get('/orders/count', hasStaff('cashier','kitchen'), ordersController.getCountOrders);
 
 /* ========= END ENDPOINT FOR STAFF (WAITER, KITCHEN, CASHIER) ========= */
 
@@ -169,12 +174,12 @@ router.get('/orders/count', hasStaff('cashier','kitchen'), orderController.getCo
 // router.post('/waiters/change-status', hasStaff('waiter'), staffController.changeStatus);
 
 // order
-router.post('/waiters/orders/verify/:id', hasStaff('waiter'), orderController.verifyCustomerOrder);
-router.post('/waiters/orders/check-out/:id', hasStaff('waiter'), orderController.checkOutCustomerByWaiter);
-router.get('/waiters/orders', hasStaff('waiter'), orderController.getOrderForWaiter);
-router.post('/waiters/orders', hasStaff('waiter'), orderController.createOrderForWaiter);
-router.patch('/waiters/orders/:id', hasStaff('waiter'), orderController.updateOrderForWaiter);
-router.delete('/waiters/orders/:id', hasStaff('waiter'), orderController.destroyOrderItemForWaiter);
+router.post('/waiters/orders/verify/:id', hasStaff('waiter'), ordersController.verifyCustomerOrder);
+router.post('/waiters/orders/check-out/:id', hasStaff('waiter'), ordersController.checkOutCustomerByWaiter);
+router.get('/waiters/orders', hasStaff('waiter'), ordersController.getOrderForWaiter);
+router.post('/waiters/orders', hasStaff('waiter'), ordersController.createOrderForWaiter);
+router.patch('/waiters/orders/:id', hasStaff('waiter'), ordersController.updateOrderForWaiter);
+router.delete('/waiters/orders/:id', hasStaff('waiter'), ordersController.destroyOrderItemForWaiter);
 
 /* ========= END ENDPOINT FOR WAITER ========= */
 
@@ -236,23 +241,23 @@ router.delete('/waiters/orders/:id', hasStaff('waiter'), orderController.destroy
 
 /* ========= START ORDER ITEM ENDPOINT ========= */
 
-router.patch('/orders/items/:id', [ hasStaff('cashier', 'kitchen'), multer().none() ], orderController.updateOrderItem);
+router.patch('/orders/items/:id', [ hasStaff('cashier', 'kitchen'), multer().none() ], ordersController.updateOrderItem);
 
 /* ========= END ORDER ITEM ENDPOINT ========= */
 
 
 /* ========= START ORDER ENDPOINT ========= */
 
-router.get('/orders', hasStaff('cashier'), orderController.getAllOrders);
-router.get('/orders/:id', hasStaff('cashier','waiter'), orderController.getOrder);
-router.patch('/orders/:id', hasStaff('cashier'), orderController.updateOrder);
+router.get('/orders', hasStaff('cashier'), ordersController.getAllOrders);
+router.get('/orders/:id', hasStaff('cashier','waiter'), ordersController.getOrder);
+router.patch('/orders/:id', hasStaff('cashier'), ordersController.updateOrder);
 
 /* ========= END ORDER ENDPOINT ========= */
 
 
 /* ========= START QUEUE ENDPOINT ========= */
 
-router.get('/queues', hasStaff('cashier','kitchen'), orderController.getQueues);
+router.get('/queues', hasStaff('cashier','kitchen'), ordersController.getQueues);
 
 /* ========= END QUEUE ENDPOINT ========= */
 
