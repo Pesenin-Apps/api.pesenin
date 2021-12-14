@@ -131,8 +131,7 @@ async function getOrders(req, res, next) {
             }
         }
 
-        // TODO: Add Populate Customer and Guest
-        let orders = await Order.find(criteria).populate('customer', 'name checkin_number').populate({
+        let orders = await Order.find(criteria).populate('customer', 'fullname email').populate('guest', 'name checkin_number').populate({
             path: 'table',
             select: 'name section number',
             populate: {
@@ -169,7 +168,7 @@ async function getOrder(req, res, next) {
                 path: 'product',
                 select: 'name price'
             }
-        }).populate('customer', 'name checkin_number device_detection').populate({
+        }).populate('customer', 'fullname email').populate('guest', 'name checkin_number device_detection').populate({
             path: 'table',
             select: 'name section number',
             populate: {
@@ -368,7 +367,6 @@ async function updateOrderModifyByGuest(req, res, next) {
         await OrderItem.bulkWrite(orderedItems);
         await order.save();
 
-        // response
         return res.status(200).json({
             message: 'Order Updated Successfully!',
             data: order,
@@ -424,6 +422,10 @@ async function updateOrderDeleteByGuest(req, res, next) {
 
         items.forEach(async (element) => {
             destroyedItems.push(element);
+            await order.updateOne(
+                { $pull: { order_items: element.item } },
+                { useFindAndModify: false },
+            );
         });
 
         let orderedItems = destroyedItems.map((element) => {
@@ -437,11 +439,9 @@ async function updateOrderDeleteByGuest(req, res, next) {
             }
         });
 
-        // save order and order items
         await OrderItem.bulkWrite(orderedItems);
         await order.save();
 
-        // response
         return res.status(200).json({
             message: 'Order Deleted Successfully!',
             data: order
@@ -460,6 +460,56 @@ async function updateOrderDeleteByGuest(req, res, next) {
 
 /* === END FOR GUEST === */
 
+/* === START FOR CUSTOMER === */
+
+async function getOrdersByCustomer(req, res, next) {
+    try {
+        
+        let criteria = {};
+        const { filters } = req.query;
+        const customer = await getUserSignedIn(req.user._id);
+
+        criteria = {
+            ...criteria,
+            customer: customer._id,
+        };
+
+        if (filters) {
+            if (filters.status) {
+                criteria = {
+                    ...criteria,
+                    status: filters.status
+                };
+            }
+            if (filters.is_paid) {
+                criteria = {
+                    ...criteria,
+                    is_paid: filters.is_paid
+                };
+            }
+        }
+
+        const orders = await Order.find(criteria).populate('customer', 'fullname email').populate({
+            path: 'table',
+            select: 'name section number',
+            populate: {
+                path: 'section',
+                select: 'name code',
+            }
+        }).sort('-createdAt');
+
+        return res.status(200).json({
+            message: 'Orders Retrived Successfully!',
+            data: orders
+        });
+
+    } catch (err) {
+        next(err);
+    }
+}
+
+/* === END FOR CUSTOMER === */
+
 /* = = = = = = = = =   [ E N D ]   R E S T   A P I   = = = = = = = = = */
 
 
@@ -473,4 +523,5 @@ module.exports = {
     createOrderByGuest,
     updateOrderModifyByGuest,
     updateOrderDeleteByGuest,
+    getOrdersByCustomer,
 }

@@ -52,6 +52,8 @@ router.get('/users/me', hasRole('cashier','kitchen','waiter','customer'),  userC
 router.post('/users/change-profile', [ hasRole('cashier','kitchen','waiter','customer'), multer().none() ], userController.changeProfile);
 router.post('/users/change-password', [ hasRole('cashier','kitchen','waiter','customer'), multer().none() ], userController.changePassword);
 
+router.get('/orders', hasStaff('cashier'), orderController.getOrders);
+
 /* === START FOR WAITER === */
 router.post('/waiters/change-status', hasRole('waiter'), userController.changeStatusWaiter);
 // Order //
@@ -59,6 +61,7 @@ router.post('/waiters/change-status', hasRole('waiter'), userController.changeSt
 
 /* === START FOR CUSTOMER === */
 // TODO: Create / Add Order Customer
+router.get('/customers/orders', hasRole('customer'), orderController.getOrdersByCustomer);
 // TODO: Update Order Customer
 // TODO: Cancel Order Customer
 /* === END FOR CUSTOMER === */
@@ -248,7 +251,6 @@ router.patch('/orders/items/:id', [ hasStaff('cashier', 'kitchen'), multer().non
 
 /* ========= START ORDER ENDPOINT ========= */
 
-router.get('/orders', hasStaff('cashier'), ordersController.getAllOrders);
 router.get('/orders/:id', hasStaff('cashier','waiter'), ordersController.getOrder);
 router.patch('/orders/:id', hasStaff('cashier'), ordersController.updateOrder);
 
