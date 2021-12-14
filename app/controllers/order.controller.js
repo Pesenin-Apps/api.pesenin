@@ -404,8 +404,8 @@ async function updateOrderDeleteByGuest(req, res, next) {
             });
         }
 
-        const udeletedItemIds = items.map(e => e.item);
-        const deletedItems = await OrderItem.find({ _id: { $in: udeletedItemIds } });
+        const deletedItemIds = items.map(e => e.item);
+        const deletedItems = await OrderItem.find({ _id: { $in: deletedItemIds } });
 
         deletedItems.forEach((element, index, object) => {
             if (element.status > STATUS_ORDER_ITEM.NEW) {
