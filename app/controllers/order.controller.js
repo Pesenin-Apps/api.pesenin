@@ -444,7 +444,7 @@ async function updateOrderDeleteByGuest(req, res, next) {
 
         return res.status(200).json({
             message: 'Order Deleted Successfully!',
-            data: order
+            data: order,
         });
         
     } catch (err) {
