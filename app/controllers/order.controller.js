@@ -1,4 +1,4 @@
-const { STATUS_ORDER, STATUS_PAYMENT, Order, TYPE_ORDER } = require('../models/orders/order');
+const { STATUS_ORDER, STATUS_PAYMENT, Order, TYPE_ORDER, ORDER_VIA } = require('../models/orders/order');
 const { STATUS_ORDER_ITEM, OrderItem } = require('../models/orders/item');
 const Product = require('../models/products/product');
 const { Table } = require('../models/tables/tabel');
@@ -6,6 +6,7 @@ const { getUserSignedIn, getCustomerCheckedIn, getWaiterReadyToServe, getGuestCh
 const { Waiter } = require('../models/waiter');
 const { Customer, STATUS_CUSTOMER } = require('../models/customer');
 const LinkedList = require('../helpers/queue');
+const { useTable } = require('../helpers/table');
 const queue = new LinkedList();
 
 
@@ -260,6 +261,7 @@ async function createOrderByGuest(req, res, next) {
             table: guest.table,
             waiter: waiter,
             type: TYPE_ORDER.DINE_IN,
+            via: ORDER_VIA.GUEST,
         }
 
         // if dont found then insert else update
@@ -508,6 +510,88 @@ async function getOrdersByCustomer(req, res, next) {
     }
 }
 
+async function createOrderByCustomer(req, res, next) {
+    try {
+        
+        const { table, orders } = req.body;
+        const customer = await getUserSignedIn(req.user._id);
+        const waiter = await getWaiterReadyToServe();
+        
+        if (waiter === false) {
+            return res.status(404).json({
+                message: 'please try some more',
+            });
+        }
+
+        const productIds = orders.map(e => e.item);
+        const products = await Product.find({ _id: {$in: productIds} });
+
+        const newOrderData = {
+            guest: null,
+            customer: customer._id,
+            status: STATUS_ORDER.CREATE,
+            table: table,
+            waiter: waiter,
+            type: TYPE_ORDER.DINE_IN,
+            via: ORDER_VIA.CUSTOMER,
+        }
+
+        const filter = {
+            table: table,
+            is_paid: false,
+            status : { $in: [ STATUS_ORDER.CREATE, STATUS_ORDER.PROCESSED, STATUS_ORDER.FINISH ] },
+        }
+
+        const options = {
+            upsert: true,
+            new: true,
+            runValidators: true,
+            setDefaultsOnInsert: true
+        }
+        
+        let order = await Order.findOneAndUpdate(
+            filter,
+            { $setOnInsert: newOrderData },
+            options,
+        );
+
+        let orderItems = orders.map(element => {
+            let relatedProduct = products.find(product => product._id.toString() === element.item);
+            return {
+                order: order._id,
+                product: relatedProduct.id,
+                price: relatedProduct.price,
+                qty: element.qty,
+                total: relatedProduct.price * element.qty,
+                status: STATUS_ORDER_ITEM.IN_QUEUE
+            }
+        });
+
+        let orderedItems = await OrderItem.insertMany(orderItems);
+        orderedItems.forEach(async (item) => {
+            order.order_items.push(item);
+        });
+
+        if (await order.save()) {
+            await useTable(table);
+        }
+
+        return res.status(201).json({
+            message: 'Order Stored Successfully!',
+            data: order
+        });
+
+    } catch (err) {
+        if (err && err.name === 'ValidationError') {
+            return res.status(400).json({
+                message: err.message,
+                fields: err.errors,
+            });
+        }
+        next(err);
+    }
+}
+
 /* === END FOR CUSTOMER === */
 
 /* = = = = = = = = =   [ E N D ]   R E S T   A P I   = = = = = = = = = */
@@ -524,4 +608,5 @@ module.exports = {
     updateOrderModifyByGuest,
     updateOrderDeleteByGuest,
     getOrdersByCustomer,
+    createOrderByCustomer,
 }

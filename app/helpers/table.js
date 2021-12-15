@@ -24,8 +24,25 @@ async function tableReservation(tableId) {
     );
 }
 
+async function checkTable(tableId) {
+    const table = await Table.findById(tableId);
+    switch (table.status) {
+        case STATUS_TABLE.USED:
+            return res.status(400).json({
+                message: 'Table is filled',
+            });
+        case STATUS_TABLE.RESERVED:
+            return res.status(400).json({
+                message: 'Table reserved',
+            });
+        default:
+            return true;
+    }
+}
+
 module.exports = {
     clearTable,
     useTable,
     tableReservation,
+    checkTable,
 }

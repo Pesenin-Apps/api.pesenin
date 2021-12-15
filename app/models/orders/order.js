@@ -21,6 +21,12 @@ const TYPE = {
     RESERVATION: 2,
 }
 
+const VIA = {
+    GUEST: 1,
+    CUSTOMER: 2,
+    WAITER: 3,
+}
+
 const orderSchema = Schema({
     order_number: {
         type: String,
@@ -53,6 +59,11 @@ const orderSchema = Schema({
     type: {
         type: Number,
         enum: [ TYPE.DINE_IN, TYPE.RESERVATION ],
+        required: [ true, 'is required.' ]
+    },
+    via: {
+        type: Number,
+        enum: [ VIA.GUEST, VIA.CUSTOMER, VIA.WAITER ],
         required: [ true, 'is required.' ]
     },
     is_paid: {
@@ -110,4 +121,5 @@ module.exports = {
     Order: model('Order', orderSchema),
     STATUS_PAYMENT: PAID,
     TYPE_ORDER: TYPE,
+    ORDER_VIA: VIA,
 }
