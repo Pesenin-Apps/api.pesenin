@@ -64,6 +64,7 @@ router.get('/customers/orders', hasRole('customer'), orderController.getOrdersBy
 // TODO: Create / Add Order Customer
 router.post('/customers/orders', [ hasRole('customer'), multer().none() ], orderController.createOrderByCustomer);
 // TODO: Update Order Customer
+router.patch('/customers/orders/:id', [ hasRole('customer'), multer().none() ], orderController.updateOrderModifyByCustomer);
 // TODO: Cancel Order Customer
 /* === END FOR CUSTOMER === */
 
@@ -151,7 +152,7 @@ router.get('/customers/me', hasCustomer(), customerController.me);
 // order
 router.get('/customers/orders', hasCustomer(), ordersController.getOrderForCustomer);
 // router.post('/customers/orders', hasCustomer(), ordersController.createOrderForCustomer);
-router.post('/customers/orders/update', hasCustomer(), ordersController.updateOrderForCustomer);
+// router.post('/customers/orders/update', hasCustomer(), ordersController.updateOrderForCustomer);
 
 /* ========= END ENDPOINT FOR CUSTOMER ========= */
 

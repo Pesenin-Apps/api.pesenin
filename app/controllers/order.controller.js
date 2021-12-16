@@ -445,7 +445,7 @@ async function updateOrderDeleteByGuest(req, res, next) {
         await order.save();
 
         return res.status(200).json({
-            message: 'Order Deleted Successfully!',
+            message: 'OrderItem Deleted Successfully!',
             data: order,
         });
         
@@ -563,7 +563,7 @@ async function createOrderByCustomer(req, res, next) {
                 price: relatedProduct.price,
                 qty: element.qty,
                 total: relatedProduct.price * element.qty,
-                status: STATUS_ORDER_ITEM.IN_QUEUE
+                status: STATUS_ORDER_ITEM.NEW
             }
         });
 
@@ -579,6 +579,101 @@ async function createOrderByCustomer(req, res, next) {
         return res.status(201).json({
             message: 'Order Stored Successfully!',
             data: order
+        });
+
+    } catch (err) {
+        if (err && err.name === 'ValidationError') {
+            return res.status(400).json({
+                message: err.message,
+                fields: err.errors,
+            });
+        }
+        next(err);
+    }
+}
+
+async function updateOrderModifyByCustomer(req, res, next) {
+    try {
+        
+        const { items } = req.body;
+        const customer = await getUserSignedIn(req.user._id);
+
+        if (!items || items.length === 0) {
+            return res.status(400).json({
+                message: 'Order Items Is Empty!'
+            });
+        }
+
+        let changedItems = [];
+        let order = await Order.findOne({ _id: req.params.id }).populate('order_items');
+
+        if (order.customer.toString() !== customer._id.toString()) {
+            return res.status(403).json({
+                message: 'You Can\'t Change It, You\'re Forbidden!'
+            });
+        }
+
+        const updatedItemIds = items.map(e => e.item);
+        const updatedItems = await OrderItem.find({ _id: { $in: updatedItemIds } });
+
+        if (updatedItems.length === 0) {
+            return res.status(400).json({
+                message: 'Gagal, item tidak ditemukan!',
+            });
+        }
+
+        updatedItems.forEach((element, index, object) => {
+            if (element.status > STATUS_ORDER_ITEM.NEW) {
+                object.splice(index, 1);
+                items.splice(index, 1);
+            }
+        });
+
+        if (items.length === 0) {
+            return res.status(400).json({
+                message: 'Pesanan anda telah diproses, anda tidak dapat mengubahnya!',
+            });
+        }
+
+        items.forEach(async (element) => {
+            if (element.qty === 0) {
+                await order.updateOne(
+                    { $pull: { order_items: element.item } },
+                    { useFindAndModify: false },
+                );
+                await OrderItem.findByIdAndDelete({ _id: element.item });
+            } else {
+                changedItems.push(element);
+            }
+        });
+
+        if (changedItems.length === 0) {
+            return res.status(200).json({
+                message: 'OrderItem Deleted Successfully!',
+            });
+        }
+
+        let orderedItems = changedItems.map(element => {
+            let relatedItem = updatedItems.find(orderItem => orderItem._id.toString() === element.item);
+            return {
+                "updateOne": { 
+                    "filter": { 
+                        "_id": relatedItem._id,
+                    },              
+                    "update": { "$set": { 
+                        "qty": element.qty,
+                        "total": relatedItem.price * element.qty,
+                    } } 
+                }
+            }
+        });
+
+        await OrderItem.bulkWrite(orderedItems);
+        await order.save();
+
+        return res.status(200).json({
+            message: 'Order Updated Successfully!',
+            data: order,
         });
 
     } catch (err) {
@@ -609,4 +704,5 @@ module.exports = {
     updateOrderDeleteByGuest,
     getOrdersByCustomer,
     createOrderByCustomer,
+    updateOrderModifyByCustomer,
 }
