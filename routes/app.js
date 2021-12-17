@@ -65,6 +65,7 @@ router.get('/customers/orders', hasRole('customer'), orderController.getOrdersBy
 router.post('/customers/orders', [ hasRole('customer'), multer().none() ], orderController.createOrderByCustomer);
 // TODO: Update Order Customer
 router.patch('/customers/orders/:id', [ hasRole('customer'), multer().none() ], orderController.updateOrderModifyByCustomer);
+router.delete('/customers/orders/:id', [ hasRole('customer'), multer().none() ], orderController.updateOrderDeleteByCustomer);
 // TODO: Cancel Order Customer
 /* === END FOR CUSTOMER === */
 
@@ -253,7 +254,7 @@ router.patch('/orders/items/:id', [ hasStaff('cashier', 'kitchen'), multer().non
 
 /* ========= START ORDER ENDPOINT ========= */
 
-router.get('/orders/:id', hasStaff('cashier','waiter'), ordersController.getOrder);
+router.get('/orders/:id', hasStaff('cashier','waiter','customer'), ordersController.getOrder);
 router.patch('/orders/:id', hasStaff('cashier'), ordersController.updateOrder);
 
 /* ========= END ORDER ENDPOINT ========= */

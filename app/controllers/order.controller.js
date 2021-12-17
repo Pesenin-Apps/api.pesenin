@@ -700,6 +700,88 @@ async function updateOrderModifyByCustomer(req, res, next) {
     }
 }
 
+async function updateOrderDeleteByCustomer(req, res, next) {
+    try {
+        
+        const { items } = req.body;
+        const customer = await getUserSignedIn(req.user._id);
+
+
+        if (!items || items.length === 0) {
+            return res.status(400).json({
+                message: 'Order Items Is Empty!'
+            });
+        }
+
+        let destroyedItems = [];
+        let order = await Order.findOne({ _id: req.params.id }).populate('order_items');
+
+        if (order.customer.toString() !== customer._id.toString()) {
+            return res.status(403).json({
+                message: 'You Can\'t Delete It, You\'re Forbidden!'
+            });
+        }
+
+        const deletedItemIds = items.map(e => e.item);
+        const deletedItems = await OrderItem.find({ _id: { $in: deletedItemIds } });
+
+        if (deletedItems.length === 0) {
+            return res.status(400).json({
+                message: 'Gagal, item tidak ditemukan!',
+            });
+        }
+
+        deletedItems.forEach((element, index, object) => {
+            if (element.status > STATUS_ORDER_ITEM.NEW) {
+                object.splice(index, 1);
+                items.splice(index, 1);
+            }
+        });
+
+        if (items.length === 0) {
+            return res.status(400).json({
+                message: 'Pesanan anda telah diproses, anda tidak dapat menghapusnya!'
+            });
+        }
+
+        items.forEach(async (element) => {
+            destroyedItems.push(element);
+            await order.updateOne(
+                { $pull: { order_items: element.item } },
+                { useFindAndModify: false },
+            );
+        });
+
+        let orderedItems = destroyedItems.map((element) => {
+            let relatedItem = deletedItems.find(orderItem => orderItem._id.toString() === element.item);
+            return {
+                "deleteOne": { 
+                    "filter": { 
+                        "_id": relatedItem._id,
+                    },
+                },
+            }
+        });
+
+        await OrderItem.bulkWrite(orderedItems);
+        await order.save();
+
+        return res.status(200).json({
+            message: 'OrderItem Deleted Successfully!',
+            data: order,
+        });
+
+    } catch (err) {
+        if (err && err.name === 'ValidationError') {
+            return res.status(400).json({
+                message: err.message,
+                fields: err.errors,
+            });
+        }
+        next(err);
+    }
+}
+
 /* === END FOR CUSTOMER === */
 
 /* = = = = = = = = =   [ E N D ]   R E S T   A P I   = = = = = = = = = */
@@ -718,4 +800,5 @@ module.exports = {
     getOrdersByCustomer,
     createOrderByCustomer,
     updateOrderModifyByCustomer,
+    updateOrderDeleteByCustomer,
 }
