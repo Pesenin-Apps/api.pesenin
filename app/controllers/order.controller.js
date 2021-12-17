@@ -327,6 +327,12 @@ async function updateOrderModifyByGuest(req, res, next) {
         const updatedItemIds = items.map(e => e.item);
         const updatedItems = await OrderItem.find({ _id: { $in: updatedItemIds } });
 
+        if (updatedItems.length === 0) {
+            return res.status(400).json({
+                message: 'Gagal, item tidak ditemukan!',
+            });
+        }
+
         updatedItems.forEach((element, index, object) => {
             if (element.status > STATUS_ORDER_ITEM.NEW) {
                 object.splice(index, 1);
@@ -341,15 +347,22 @@ async function updateOrderModifyByGuest(req, res, next) {
         }
 
         items.forEach(async (element) => {
-            changedItems.push(element);
             if (element.qty === 0) {
                 await order.updateOne(
                     { $pull: { order_items: element.item } },
                     { useFindAndModify: false },
                 );
                 await OrderItem.findByIdAndDelete({ _id: element.item });
+            } else {
+                changedItems.push(element);
             }
         });
+
+        if (changedItems.length === 0) {
+            return res.status(200).json({
+                message: 'OrderItem Deleted Successfully!',
+            });
+        }
 
         let orderedItems = changedItems.map(element => {
             let relatedItem = updatedItems.find(orderItem => orderItem._id.toString() === element.item);
