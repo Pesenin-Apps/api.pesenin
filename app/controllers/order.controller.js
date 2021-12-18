@@ -166,8 +166,12 @@ async function getOrder(req, res, next) {
             select: '-order',
             populate: {
                 path: 'product',
-                select: 'name price'
-            }
+                select: 'name price image_url',
+                populate: {
+                    path: 'type',
+                    select: 'name belong',
+                }
+            },
         }).populate('customer', 'fullname email').populate('guest', 'name checkin_number device_detection').populate({
             path: 'table',
             select: 'name section number',
@@ -603,7 +607,7 @@ async function getOrdersByCustomer(req, res, next) {
                 path: 'section',
                 select: 'name code',
             }
-        }).sort('-createdAt');
+        }).select('-order_items -waiter').sort('-createdAt');
 
         return res.status(200).json({
             message: 'Orders Retrived Successfully!',
