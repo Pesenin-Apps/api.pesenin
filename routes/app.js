@@ -52,7 +52,9 @@ router.get('/users/me', hasRole('cashier','kitchen','waiter','customer'),  userC
 router.post('/users/change-profile', [ hasRole('cashier','kitchen','waiter','customer'), multer().none() ], userController.changeProfile);
 router.post('/users/change-password', [ hasRole('cashier','kitchen','waiter','customer'), multer().none() ], userController.changePassword);
 
-router.get('/orders', hasStaff('cashier'), orderController.getOrders);
+router.get('/orders', hasRole('cashier'), orderController.getOrders);
+router.get('/queues', hasRole('cashier','kitchen'), orderController.getQueues);
+router.get('/orders/count', hasRole('cashier','kitchen'), orderController.getOrderCounts);
 
 /* === START FOR WAITER === */
 router.post('/waiters/change-status', hasRole('waiter'), userController.changeStatusWaiter);
@@ -74,11 +76,11 @@ router.post('/customers/orders/cancel/:id', hasRole('customer'), orderController
 
 /* ========= START ENDPOINT USERS RESOURCES ========= */
 
-router.get('/users', hasStaff('cashier'), userController.index);
-router.get('/users/:id', hasStaff('cashier'), userController.show);
-router.post('/users', [ hasStaff('cashier'), multer().none() ], userController.store);
-router.patch('/users/:id', [ hasStaff('cashier'), multer().none() ], userController.update);
-router.delete('/users/:id', hasStaff('cashier'), userController.destroy);
+router.get('/users', hasRole('cashier'), userController.index);
+router.get('/users/:id', hasRole('cashier'), userController.show);
+router.post('/users', [ hasRole('cashier'), multer().none() ], userController.store);
+router.patch('/users/:id', [ hasRole('cashier'), multer().none() ], userController.update);
+router.delete('/users/:id', hasRole('cashier'), userController.destroy);
 
 /* ========= END ENDPOINT USERS RESOURCES ========= */
 
@@ -88,25 +90,25 @@ router.delete('/users/:id', hasStaff('cashier'), userController.destroy);
 /* === START FOR PRODUCT TYPES === */
 router.get('/products/types', productTypeController.index);
 router.get('/products/types/:id', productTypeController.show);
-router.post('/products/types', [ hasStaff('cashier'), multer().none() ], productTypeController.store);
-router.patch('/products/types/:id', [ hasStaff('cashier'), multer().none() ], productTypeController.update);
-router.delete('/products/types/:id', hasStaff('cashier'), productTypeController.destroy);
+router.post('/products/types', [ hasRole('cashier'), multer().none() ], productTypeController.store);
+router.patch('/products/types/:id', [ hasRole('cashier'), multer().none() ], productTypeController.update);
+router.delete('/products/types/:id', hasRole('cashier'), productTypeController.destroy);
 /* === END FOR PRODUCT TYPES === */
 
 /* === START FOR PRODUCT CATEGORIES === */
 router.get('/products/categories', productCategoryController.index);
 router.get('/products/categories/:id', productCategoryController.show);
-router.post('/products/categories', [ hasStaff('cashier'), multer().none() ], productCategoryController.store);
-router.patch('/products/categories/:id', [ hasStaff('cashier'), multer().none() ], productCategoryController.update);
-router.delete('/products/categories/:id', hasStaff('cashier'), productCategoryController.destroy);
+router.post('/products/categories', [ hasRole('cashier'), multer().none() ], productCategoryController.store);
+router.patch('/products/categories/:id', [ hasRole('cashier'), multer().none() ], productCategoryController.update);
+router.delete('/products/categories/:id', hasRole('cashier'), productCategoryController.destroy);
 /* === END FOR PRODUCT CATEGORIES === */
 
 /* === START FOR PRODUCTS === */
 router.get('/products', productController.index);
 router.get('/products/:id', productController.show);
-router.post('/products', [ hasStaff('cashier'), multer({dest: os.tmpdir()}).single('image') ], productController.store);
-router.patch('/products/:id', [ hasStaff('cashier'), multer({dest: os.tmpdir()}).single('image') ], productController.update);
-router.delete('/products/:id', hasStaff('cashier'), productController.destroy);
+router.post('/products', [ hasRole('cashier'), multer({dest: os.tmpdir()}).single('image') ], productController.store);
+router.patch('/products/:id', [ hasRole('cashier'), multer({dest: os.tmpdir()}).single('image') ], productController.update);
+router.delete('/products/:id', hasRole('cashier'), productController.destroy);
 /* === END FOR PRODUCTS === */
 
 /* ========= END ENDPOINT PRODUCTS RESOURCES ========= */
@@ -117,17 +119,17 @@ router.delete('/products/:id', hasStaff('cashier'), productController.destroy);
 /* === START FOR TABLE SECTIONS === */
 router.get('/tables/sections', tableSectionController.index);
 router.get('/tables/sections/:id', tableSectionController.show);
-router.post('/tables/sections', [ hasStaff('cashier'), multer().none() ], tableSectionController.store);
-router.patch('/tables/sections/:id', [ hasStaff('cashier'), multer().none() ], tableSectionController.update);
-router.delete('/tables/sections/:id', hasStaff('cashier'), tableSectionController.destroy);
+router.post('/tables/sections', [ hasRole('cashier'), multer().none() ], tableSectionController.store);
+router.patch('/tables/sections/:id', [ hasRole('cashier'), multer().none() ], tableSectionController.update);
+router.delete('/tables/sections/:id', hasRole('cashier'), tableSectionController.destroy);
 /* === END FOR TABLE SECTIONS === */
 
 /* === START FOR TABLES === */
 router.get('/tables', tableController.index);
 router.get('/tables/:id', tableController.show);
-router.post('/tables', [ hasStaff('cashier'), multer().none() ], tableController.store);
-router.patch('/tables/:id', [ hasStaff('cashier'), multer().none() ], tableController.update);
-router.delete('/tables/:id', hasStaff('cashier'), tableController.destroy);
+router.post('/tables', [ hasRole('cashier'), multer().none() ], tableController.store);
+router.patch('/tables/:id', [ hasRole('cashier'), multer().none() ], tableController.update);
+router.delete('/tables/:id', hasRole('cashier'), tableController.destroy);
 /* === END FOR TABLES === */
 
 /* ========= END ENDPOINT TABLES RESOURCES ========= */
@@ -169,7 +171,7 @@ router.get('/customers/orders', hasCustomer(), ordersController.getOrderForCusto
 // router.get('/user/me', hasStaff('cashier','kitchen','waiter'),  staffController.me);
 // router.post('/user/change-password', hasStaff('cashier','kitchen','waiter'), staffController.changePassword);
 // router.post('/user/change-profile', hasStaff('cashier','kitchen','waiter'), staffController.changeProfile);
-router.get('/orders/count', hasStaff('cashier','kitchen'), ordersController.getCountOrders);
+// router.get('/orders/count', hasStaff('cashier','kitchen'), ordersController.getCountOrders);
 
 /* ========= END ENDPOINT FOR STAFF (WAITER, KITCHEN, CASHIER) ========= */
 
@@ -263,8 +265,6 @@ router.patch('/orders/:id', hasStaff('cashier'), ordersController.updateOrder);
 /* ========= START QUEUE ENDPOINT ========= */
 
 // router.get('/queues', hasStaff('cashier','kitchen'), ordersController.getQueues);
-router.get('/queues', hasStaff('cashier','kitchen'), orderController.getQueues);
-
 /* ========= END QUEUE ENDPOINT ========= */
 
 module.exports = router;
