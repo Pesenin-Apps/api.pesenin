@@ -1,4 +1,3 @@
-const { Customer } = require('../models/customer');
 const { Guest } = require('../models/guest');
 const { ROLE, User } = require('../models/user');
 const { STATUS_WAITER, Waiter } = require('../models/waiter');
@@ -24,12 +23,6 @@ function getNumbering(options) {
             strOption = 'NUMBER';
     }
     return strOption + '#' + dateNow;
-}
-
-// TODO: delete if all order method has refactored (get customer who checked in)
-async function getCustomerCheckedIn(checkInNumber) {
-    const customer = await Customer.findOne({ checkin_number: {$in: checkInNumber} });
-    return customer;
 }
 
 // get guest who checked-in
@@ -95,7 +88,6 @@ function getDateNow() {
 module.exports = {
     getInitial,
     getNumbering,
-    getCustomerCheckedIn,
     getGuestCheckedIn,
     getUserSignedIn,
     getWaiterReadyToServe,

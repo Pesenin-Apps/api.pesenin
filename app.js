@@ -36,7 +36,7 @@ app.use(allowCrossDomain);
 app.use(authorize());
 
 app.use('/', routerPublic);
-app.use('/api/v1/', routerApp);
+app.use('/v1/', routerApp);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {

@@ -1,14 +1,12 @@
-const { STATUS_ORDER, STATUS_PAYMENT, Order, TYPE_ORDER, ORDER_VIA } = require('../models/orders/order');
-const { STATUS_ORDER_ITEM, OrderItem } = require('../models/orders/item');
 const Product = require('../models/products/product');
-const { Table } = require('../models/tables/tabel');
-const { getUserSignedIn, getCustomerCheckedIn, getWaiterReadyToServe, getGuestCheckedIn } = require('../helpers/gets');
-const { Waiter } = require('../models/waiter');
-const { Customer, STATUS_CUSTOMER } = require('../models/customer');
-const LinkedList = require('../helpers/queue');
+const { STATUS_ORDER, STATUS_PAYMENT, TYPE_ORDER, ORDER_VIA, Order } = require('../models/orders/order');
+const { STATUS_ORDER_ITEM, OrderItem } = require('../models/orders/item');
+const { STATUS_GUEST, Guest } = require('../models/guest');
+const { PROCESSED_ON } = require('../models/products/type');
+const { getUserSignedIn, getWaiterReadyToServe, getGuestCheckedIn } = require('../helpers/gets');
 const { useTable, clearTable } = require('../helpers/table');
 const { waiterUnserve } = require('../helpers/waiter');
-const { PROCESSED_ON } = require('../models/products/type');
+const LinkedList = require('../helpers/queue');
 const queue = new LinkedList();
 
 
@@ -212,10 +210,10 @@ async function updateOrder(req, res, next) {
 
             await waiterUnserve(order.waiter, order.table);
 
-            if (order.customer !== null) {
-                await Customer.findOneAndUpdate(
-                    { _id: order.customer },
-                    { status: STATUS_CUSTOMER.CHECK_OUT },
+            if (order.guest !== null) {
+                await Guest.findOneAndUpdate(
+                    { _id: order.guest },
+                    { status: STATUS_GUEST.CHECK_OUT },
                     { useFindAndModify: false }
                 );
             }
@@ -1366,10 +1364,10 @@ async function cancelOrderByWaiter(req, res, next) {
             });
         }
 
-        if (order.customer !== null) {
-            await Customer.findOneAndUpdate(
-                { _id: order.customer },
-                { status: STATUS_CUSTOMER.CHECK_OUT },
+        if (order.guest !== null) {
+            await Guest.findOneAndUpdate(
+                { _id: order.guest },
+                { status: STATUS_GUEST.CHECK_OUT },
                 { useFindAndModify: false }
             );
         }

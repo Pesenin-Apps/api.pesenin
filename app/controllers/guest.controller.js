@@ -98,7 +98,7 @@ async function checkOut(req, res, next) {
     try {
         // request data
         const token = getToken(req);
-        const guestCheckedIn = await getGuestCheckedIn(req.customer.checkin_number);
+        const guestCheckedIn = await getGuestCheckedIn(req.guest.checkin_number);
 
         // check guest has ordered
         let countItemProcessed = 0;
