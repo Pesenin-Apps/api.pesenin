@@ -829,6 +829,51 @@ async function cancelOrderByCustomer(req, res, next) {
     }
 }
 
+async function getOrdersByWaiter(req, res, next) {
+    try {
+        
+        let criteria = {};
+        const { filters } = req.query;
+        const waiter = await getUserSignedIn(req.user._id);
+
+        let now = new Date();
+        let todayDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+
+        criteria = {
+            ...criteria,
+            waiter: waiter.waiter._id,
+            createdAt: { $gte: todayDate },
+        };
+
+        if (filters) {
+            if (filters.status) {
+                criteria = {
+                    ...criteria,
+                    status: filters.status
+                };
+            }
+        }
+
+        const orders = await Order.find(criteria).populate('customer', 'fullname email').populate('guest', 'name checkin_number').populate({
+            path: 'table',
+            select: 'name section number',
+            populate: {
+                path: 'section',
+                select: 'name code',
+            }
+        }).select('-order_items -waiter').sort('status -createdAt'); // default `-createdAt`
+
+        return res.status(200).json({
+            message: 'Orders Retrived Successfully!',
+            data: orders
+        });
+
+
+    } catch (err) {
+        next(err);
+    }
+}
+
 /* === END FOR CUSTOMER === */
 
 /* = = = = = = = = =   [ E N D ]   R E S T   A P I   = = = = = = = = = */
@@ -849,4 +894,5 @@ module.exports = {
     updateOrderModifyByCustomer,
     updateOrderDeleteByCustomer,
     cancelOrderByCustomer,
+    getOrdersByWaiter,
 }

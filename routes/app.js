@@ -57,6 +57,7 @@ router.get('/orders', hasStaff('cashier'), orderController.getOrders);
 /* === START FOR WAITER === */
 router.post('/waiters/change-status', hasRole('waiter'), userController.changeStatusWaiter);
 // Order //
+router.get('/waiters/orders', hasRole('waiter'), orderController.getOrdersByWaiter);
 /* === END FOR WAITER === */
 
 /* === START FOR CUSTOMER === */
@@ -180,7 +181,7 @@ router.get('/orders/count', hasStaff('cashier','kitchen'), ordersController.getC
 // order
 router.post('/waiters/orders/verify/:id', hasStaff('waiter'), ordersController.verifyCustomerOrder);
 router.post('/waiters/orders/check-out/:id', hasStaff('waiter'), ordersController.checkOutCustomerByWaiter);
-router.get('/waiters/orders', hasStaff('waiter'), ordersController.getOrderForWaiter);
+// router.get('/waiters/orders', hasStaff('waiter'), ordersController.getOrderForWaiter);
 router.post('/waiters/orders', hasStaff('waiter'), ordersController.createOrderForWaiter);
 router.patch('/waiters/orders/:id', hasStaff('waiter'), ordersController.updateOrderForWaiter);
 router.delete('/waiters/orders/:id', hasStaff('waiter'), ordersController.destroyOrderItemForWaiter);
