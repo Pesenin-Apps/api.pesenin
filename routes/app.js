@@ -61,12 +61,10 @@ router.post('/waiters/change-status', hasRole('waiter'), userController.changeSt
 
 /* === START FOR CUSTOMER === */
 router.get('/customers/orders', hasRole('customer'), orderController.getOrdersByCustomer);
-// TODO: Create / Add Order Customer
 router.post('/customers/orders', [ hasRole('customer'), multer().none() ], orderController.createOrderByCustomer);
-// TODO: Update Order Customer
 router.patch('/customers/orders/:id', [ hasRole('customer'), multer().none() ], orderController.updateOrderModifyByCustomer);
 router.delete('/customers/orders/:id', [ hasRole('customer'), multer().none() ], orderController.updateOrderDeleteByCustomer);
-// TODO: Cancel Order Customer
+router.post('/customers/orders/cancel/:id', hasRole('customer'), orderController.cancelOrderByCustomer);
 /* === END FOR CUSTOMER === */
 
 /* ========= END ENDPOINT FOR USER ========= */

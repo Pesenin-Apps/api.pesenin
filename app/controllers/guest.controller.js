@@ -10,6 +10,7 @@ const { getNumbering, getGuestCheckedIn } = require('../helpers/gets');
 const { useTable, clearTable } = require('../helpers/table');
 const guestCheckOut = require('../helpers/guest');
 const { getToken } = require('../utils/get-token');
+const { waiterUnserve } = require('../helpers/waiter');
 
 
 async function me(req, res, next) {
@@ -98,29 +99,38 @@ async function checkOut(req, res, next) {
         // request data
         const token = getToken(req);
         const guestCheckedIn = await getGuestCheckedIn(req.customer.checkin_number);
-        console.log(guestCheckedIn);
 
         // check guest has ordered
-        const order = await Order.findOne({ guest: guestCheckedIn._id });
+        let countItemProcessed = 0;
+        const order = await Order.findOne({ guest: guestCheckedIn._id }).populate('order_items');
+
         if (order) {
-            if (order.status <= STATUS_ORDER.STORE_ORDER) {
+
+            order.order_items.forEach((element) => {
+                if (element.status > STATUS_ORDER_ITEM.NEW) {
+                    countItemProcessed++;
+                }
+            });
+
+            if (order.status <= STATUS_ORDER.CREATE && countItemProcessed === 0) {
                 await waiterUnserve(order.waiter, customerCheckedIn.table);
                 await order.updateOne({ status: STATUS_ORDER.CANCEL });
             } else {
                 return res.status(400).json({
-                    message: 'Your order has been processed, you cannot cancel it or check-out!'
+                    message: 'Pesanan anda telah diproses, anda tidak dapat membatalkannya!',
                 });
             }
+            
         }
 
         await guestCheckOut(token);
         await clearTable(guestCheckedIn.table);
 
         return res.status(200).json({
-            message: 'Checked-Out Successfully!'
+            message: 'Checked-Out Successfully!',
         });
     } catch (err) {
-        
+        next(err);
     }
 }
 

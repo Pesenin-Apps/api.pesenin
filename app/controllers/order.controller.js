@@ -6,7 +6,8 @@ const { getUserSignedIn, getCustomerCheckedIn, getWaiterReadyToServe, getGuestCh
 const { Waiter } = require('../models/waiter');
 const { Customer, STATUS_CUSTOMER } = require('../models/customer');
 const LinkedList = require('../helpers/queue');
-const { useTable } = require('../helpers/table');
+const { useTable, clearTable } = require('../helpers/table');
+const { waiterUnserve } = require('../helpers/waiter');
 const queue = new LinkedList();
 
 
@@ -422,6 +423,8 @@ async function updateOrderDeleteByGuest(req, res, next) {
         const deletedItemIds = items.map(e => e.item);
         const deletedItems = await OrderItem.find({ _id: { $in: deletedItemIds } });
 
+        // TODO : Follow updateOrderDeleteByCustomer
+
         deletedItems.forEach((element, index, object) => {
             if (element.status > STATUS_ORDER_ITEM.NEW) {
                 object.splice(index, 1);
@@ -782,6 +785,46 @@ async function updateOrderDeleteByCustomer(req, res, next) {
     }
 }
 
+async function cancelOrderByCustomer(req, res, next) {
+    try {
+        
+        const { id } = req.params;
+        const customer = await getUserSignedIn(req.user._id);
+
+        let countItemProcessed = 0;
+        const order = await Order.findOne({ _id: id }).populate('order_items');
+
+        if (order.customer.toString() !== customer._id.toString()) {
+            return res.status(403).json({
+                message: 'You Can\'t Cancel It, You\'re Forbidden!'
+            });
+        }
+
+        order.order_items.forEach((element) => {
+            if (element.status > STATUS_ORDER_ITEM.NEW) {
+                countItemProcessed++;
+            }
+        });
+
+        if (order.status <= STATUS_ORDER.CREATE && countItemProcessed === 0) {
+            await waiterUnserve(order.waiter, order.table);
+            await order.updateOne({ status: STATUS_ORDER.CANCEL });
+            await clearTable(order.table);
+        } else {
+            return res.status(400).json({
+                message: 'Pesanan anda telah diproses, anda tidak dapat membatalkannya!',
+            });
+        }
+
+        return res.status(200).json({
+            message: 'Order Canceled Successfully!',
+        });
+
+    } catch (err) {
+        next(err);
+    }
+}
+
 /* === END FOR CUSTOMER === */
 
 /* = = = = = = = = =   [ E N D ]   R E S T   A P I   = = = = = = = = = */
@@ -801,4 +844,5 @@ module.exports = {
     createOrderByCustomer,
     updateOrderModifyByCustomer,
     updateOrderDeleteByCustomer,
+    cancelOrderByCustomer,
 }
