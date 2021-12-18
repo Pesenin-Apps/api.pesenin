@@ -926,6 +926,91 @@ async function verifyOrderByWaiter(req, res, next) {
     }
 }
 
+async function createOrderByWaiter(req, res, next) {
+    try {
+        
+        const { table, orders } = req.body;
+        const waiter = await getUserSignedIn(req.user._id);
+
+        if (waiter.waiter.status === false) {
+            return res.status(403).json({
+                message: 'You\'re off duty now'
+            });
+        }
+
+        const productIds = orders.map(e => e.item);
+        const products = await Product.find({ _id: {$in: productIds} });
+
+        const newOrderData = {
+            guest: null,
+            customer: null,
+            status: STATUS_ORDER.PROCESSED,
+            table: table,
+            waiter: waiter.waiter._id,
+            type: TYPE_ORDER.DINE_IN,
+            via: ORDER_VIA.WAITER,
+        }
+
+        const filter = {
+            table: table,
+            is_paid: false,
+            status : { $in: [ STATUS_ORDER.CREATE, STATUS_ORDER.PROCESSED, STATUS_ORDER.FINISH ] },
+        }
+
+        const options = {
+            upsert: true,
+            new: true,
+            runValidators: true,
+            setDefaultsOnInsert: true
+        }
+
+        let order = await Order.findOneAndUpdate(
+            filter,
+            { $setOnInsert: newOrderData },
+            options,
+        );
+
+        let orderItems = orders.map((element) => {
+            let relatedProduct = products.find((product) => product._id.toString() === element.item);
+            return {
+                order: order._id,
+                product: relatedProduct.id,
+                price: relatedProduct.price,
+                qty: element.qty,
+                total: relatedProduct.price * element.qty,
+                status: STATUS_ORDER_ITEM.IN_QUEUE
+            }
+        });
+
+        let orderedItems = await OrderItem.insertMany(orderItems);
+        orderedItems.forEach(async (item) => {
+            order.order_items.push(item);
+            const product = await Product.findOne({_id: item.product}).populate('type', '_id belong');
+            if (product.type.belong === PROCESSED_ON.INSIDE_KITCHEN) {
+                queue.push(item._id.toString(), product.type._id.toString());
+            }
+        });
+
+        if (await order.save()) {
+            await useTable(table);
+        }
+
+        return res.status(201).json({
+            message: 'Order Stored Successfully!',
+            data: order,
+        });
+
+    } catch (err) {
+        if (err && err.name === 'ValidationError') {
+            return res.status(400).json({
+                message: err.message,
+                fields: err.errors,
+            });
+        }
+        next(err);
+    }
+}
+
 /* === END FOR CUSTOMER === */
 
 /* = = = = = = = = =   [ E N D ]   R E S T   A P I   = = = = = = = = = */
@@ -948,4 +1033,5 @@ module.exports = {
     cancelOrderByCustomer,
     getOrdersByWaiter,
     verifyOrderByWaiter,
+    createOrderByWaiter,
 }
