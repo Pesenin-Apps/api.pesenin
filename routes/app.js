@@ -63,6 +63,7 @@ router.get('/waiters/orders', hasRole('waiter'), orderController.getOrdersByWait
 router.post('/waiters/orders', hasRole('waiter'), orderController.createOrderByWaiter);
 router.patch('/waiters/orders/:id', hasRole('waiter'), orderController.updateOrderModifyByWaiter);
 router.post('/waiters/orders/verify/:id', hasRole('waiter'), orderController.verifyOrderByWaiter);
+router.delete('/waiters/orders/:id', hasRole('waiter'), orderController.updateOrderDeleteByWaiter);
 /* === END FOR WAITER === */
 
 /* === START FOR CUSTOMER === */
@@ -189,7 +190,7 @@ router.post('/waiters/orders/check-out/:id', hasStaff('waiter'), ordersControlle
 // router.get('/waiters/orders', hasStaff('waiter'), ordersController.getOrderForWaiter);
 // router.post('/waiters/orders', hasStaff('waiter'), ordersController.createOrderForWaiter);
 // router.patch('/waiters/orders/:id', hasStaff('waiter'), ordersController.updateOrderForWaiter);
-router.delete('/waiters/orders/:id', hasStaff('waiter'), ordersController.destroyOrderItemForWaiter);
+// router.delete('/waiters/orders/:id', hasStaff('waiter'), ordersController.destroyOrderItemForWaiter);
 
 /* ========= END ENDPOINT FOR WAITER ========= */
 
