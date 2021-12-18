@@ -1011,6 +1011,117 @@ async function createOrderByWaiter(req, res, next) {
     }
 }
 
+async function updateOrderModifyByWaiter(req, res, next) {
+    try {
+
+        const { items } = req.body;
+        const waiter = await getUserSignedIn(req.user._id);
+
+        if (waiter.waiter.status === false) {
+            return res.status(403).json({
+                message: 'You\'re off duty now'
+            });
+        }
+
+        if (!items || items.length === 0) {
+            return res.status(400).json({
+                message: 'Order Items Is Empty!'
+            });
+        }
+
+        let changedItems = [];
+        let order = await Order.findOne({ _id: req.params.id }).populate('order_items');
+        
+        if (order.waiter.toString() !== waiter.waiter._id.toString()) {
+            return res.status(403).json({
+                message: 'Anda tidak dapat mengubah, anda tidak memiliki hak akses!'
+            });
+        }
+
+        const updatedItemIds = items.map(e => e.item);
+        const updatedItems = await OrderItem.find({ _id: { $in: updatedItemIds } });
+
+        if (updatedItems.length === 0) {
+            return res.status(400).json({
+                message: 'Gagal, item tidak ditemukan!',
+            });
+        }
+
+        updatedItems.forEach((element, index, object) => {
+            if (element.status > STATUS_ORDER_ITEM.IN_QUEUE) {
+                object.splice(index, 1);
+                items.splice(index, 1);
+            }
+        });
+
+        if (items.length === 0) {
+            return res.status(400).json({
+                message: 'Pesanan telah diproses, anda tidak dapat mengubahnya!',
+            });
+        }
+
+        items.forEach(async (element) => {
+            if (element.qty === 0) {
+                await order.updateOne(
+                    { $pull: { order_items: element.item } },
+                    { useFindAndModify: false },
+                );
+                let destoryItem = await OrderItem.findByIdAndDelete({ _id: element.item }).populate({
+                    path: 'product',
+                    select: 'type',
+                    populate: {
+                        path: 'type',
+                        select: 'belong',
+                    }
+                });
+                if (destoryItem.status === STATUS_ORDER_ITEM.IN_QUEUE && destoryItem.product.type.belong === PROCESSED_ON.INSIDE_KITCHEN) {
+                    queue.destroy(element.item.toString());
+                }
+            } else {
+                changedItems.push(element);
+            }
+        });
+
+        if (changedItems.length === 0) {
+            return res.status(200).json({
+                message: 'OrderItem Deleted Successfully!',
+            });
+        }
+
+        let orderedItems = changedItems.map(element => {
+            let relatedItem = updatedItems.find(orderItem => orderItem._id.toString() === element.item);
+            return {
+                "updateOne": { 
+                    "filter": { 
+                        "_id": relatedItem._id,
+                    },              
+                    "update": { "$set": { 
+                        "qty": element.qty,
+                        "total": relatedItem.price * element.qty,
+                    } } 
+                }
+            }
+        });
+
+        await OrderItem.bulkWrite(orderedItems);
+        await order.save();
+
+        return res.status(200).json({
+            message: 'Order Updated Successfully!',
+            data: order,
+        });
+        
+    } catch (err) {
+        if (err && err.name === 'ValidationError') {
+            return res.status(400).json({
+                message: err.message,
+                fields: err.errors,
+            });
+        }
+        next(err);
+    }
+}
+
 /* === END FOR CUSTOMER === */
 
 /* = = = = = = = = =   [ E N D ]   R E S T   A P I   = = = = = = = = = */
@@ -1034,4 +1145,5 @@ module.exports = {
     getOrdersByWaiter,
     verifyOrderByWaiter,
     createOrderByWaiter,
+    updateOrderModifyByWaiter,
 }
