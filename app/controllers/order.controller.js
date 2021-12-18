@@ -868,7 +868,6 @@ async function getOrdersByWaiter(req, res, next) {
             data: orders
         });
 
-
     } catch (err) {
         next(err);
     }
