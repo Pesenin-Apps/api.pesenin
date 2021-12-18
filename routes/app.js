@@ -58,6 +58,7 @@ router.get('/orders', hasStaff('cashier'), orderController.getOrders);
 router.post('/waiters/change-status', hasRole('waiter'), userController.changeStatusWaiter);
 // Order //
 router.get('/waiters/orders', hasRole('waiter'), orderController.getOrdersByWaiter);
+router.post('/waiters/orders/verify/:id', hasRole('waiter'), orderController.verifyOrderByWaiter);
 /* === END FOR WAITER === */
 
 /* === START FOR CUSTOMER === */
@@ -179,7 +180,7 @@ router.get('/orders/count', hasStaff('cashier','kitchen'), ordersController.getC
 // router.post('/waiters/change-status', hasStaff('waiter'), staffController.changeStatus);
 
 // order
-router.post('/waiters/orders/verify/:id', hasStaff('waiter'), ordersController.verifyCustomerOrder);
+// router.post('/waiters/orders/verify/:id', hasStaff('waiter'), ordersController.verifyCustomerOrder);
 router.post('/waiters/orders/check-out/:id', hasStaff('waiter'), ordersController.checkOutCustomerByWaiter);
 // router.get('/waiters/orders', hasStaff('waiter'), ordersController.getOrderForWaiter);
 router.post('/waiters/orders', hasStaff('waiter'), ordersController.createOrderForWaiter);
@@ -261,7 +262,8 @@ router.patch('/orders/:id', hasStaff('cashier'), ordersController.updateOrder);
 
 /* ========= START QUEUE ENDPOINT ========= */
 
-router.get('/queues', hasStaff('cashier','kitchen'), ordersController.getQueues);
+// router.get('/queues', hasStaff('cashier','kitchen'), ordersController.getQueues);
+router.get('/queues', hasStaff('cashier','kitchen'), orderController.getQueues);
 
 /* ========= END QUEUE ENDPOINT ========= */
 

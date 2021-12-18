@@ -8,6 +8,7 @@ const { Customer, STATUS_CUSTOMER } = require('../models/customer');
 const LinkedList = require('../helpers/queue');
 const { useTable, clearTable } = require('../helpers/table');
 const { waiterUnserve } = require('../helpers/waiter');
+const { PROCESSED_ON } = require('../models/products/type');
 const queue = new LinkedList();
 
 
@@ -873,6 +874,58 @@ async function getOrdersByWaiter(req, res, next) {
     }
 }
 
+async function verifyOrderByWaiter(req, res, next) {
+    try {
+        
+        let orderItemIds = [];
+        const { id } = req.params;
+        const waiter = await getUserSignedIn(req.user._id);
+
+        if (waiter.waiter.status === false) {
+            return res.status(403).json({
+                message: 'You\'re off duty now'
+            });
+        }
+
+        let order = await Order.findOne({ 
+            _id: id, 
+            waiter: waiter.waiter._id
+        }).populate({
+            path: 'order_items',
+            match: { 
+                status: STATUS_ORDER_ITEM.NEW
+            }
+        });
+
+        if (order.order_items.length == 0) {
+            return res.status(400).json({
+                message: 'Order In Process!'
+            });
+        }
+
+        await order.updateOne({ status: STATUS_ORDER.PROCESSED });
+        order.order_items.every(async (element) => {
+            orderItemIds.push(element._id.toString());
+            const product = await Product.findOne({_id: element.product}).populate('type', '_id belong');
+            if (product.type.belong === PROCESSED_ON.INSIDE_KITCHEN) {
+                queue.push(element._id.toString(), product.type._id.toString());
+            }
+        });
+
+        await OrderItem.updateMany(
+            { _id: { $in: orderItemIds } },
+            { status: STATUS_ORDER_ITEM.IN_QUEUE }
+        );
+
+        return res.status(200).json({
+            message: 'Order Verified Successfully!'
+        });
+
+    } catch (err) {
+        next(err);
+    }
+}
+
 /* === END FOR CUSTOMER === */
 
 /* = = = = = = = = =   [ E N D ]   R E S T   A P I   = = = = = = = = = */
@@ -894,4 +947,5 @@ module.exports = {
     updateOrderDeleteByCustomer,
     cancelOrderByCustomer,
     getOrdersByWaiter,
+    verifyOrderByWaiter,
 }
