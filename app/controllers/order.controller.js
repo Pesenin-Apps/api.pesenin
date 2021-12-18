@@ -423,7 +423,11 @@ async function updateOrderDeleteByGuest(req, res, next) {
         const deletedItemIds = items.map(e => e.item);
         const deletedItems = await OrderItem.find({ _id: { $in: deletedItemIds } });
 
-        // TODO : Follow updateOrderDeleteByCustomer
+        if (deletedItems.length === 0) {
+            return res.status(400).json({
+                message: 'Gagal, item tidak ditemukan!',
+            });
+        }
 
         deletedItems.forEach((element, index, object) => {
             if (element.status > STATUS_ORDER_ITEM.NEW) {
