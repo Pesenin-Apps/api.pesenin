@@ -5,7 +5,7 @@ const STATUS = {
     CHECK_OUT: 2
 }
 
-const customerSchema = Schema({
+const guestSchema = Schema({
     name: {
         type: String,
         required: [ true, 'is required.' ],
@@ -22,7 +22,7 @@ const customerSchema = Schema({
         minlength: [ 3, 'must be at least 3 characters in length.' ]
     },
     checkin_token: {
-        type: String,
+        type: String, 
         required: [ true, 'is required.' ]
     },
     status: {
@@ -37,6 +37,6 @@ const customerSchema = Schema({
 }, { timestamps: true });
 
 module.exports = {
-    STATUS_CUSTOMER: STATUS,
-    Customer: model('Customer', customerSchema)
+    STATUS_GUEST: STATUS,
+    Guest: model('Guest', guestSchema)
 }

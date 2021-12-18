@@ -1,4 +1,4 @@
-const Table = require('../../models/tables/tabel');
+const { Table } = require('../../models/tables/tabel');
 const TableSection = require('../../models/tables/section');
 
 async function index(req, res, next) {
@@ -11,7 +11,7 @@ async function index(req, res, next) {
         });
 
     } catch (err) {
-        next(error);
+        next(err);
     }
 }
 

@@ -1,5 +1,5 @@
-const { Customer } = require('../models/customer');
-const { User, ROLE } = require('../models/user');
+const { Guest } = require('../models/guest');
+const { ROLE, User } = require('../models/user');
 const { STATUS_WAITER, Waiter } = require('../models/waiter');
 
 // get initial based on `params`, ex: params = `Tiyan Attirmdzi` then return `TA`
@@ -25,10 +25,12 @@ function getNumbering(options) {
     return strOption + '#' + dateNow;
 }
 
-// get customer who checked in
-async function getCustomerCheckedIn(checkInNumber) {
-    const customer = await Customer.findOne({ checkin_number: {$in: checkInNumber} });
-    return customer;
+// get guest who checked-in
+async function getGuestCheckedIn(checkInNumber) {
+    const guest = await Guest.findOne({
+        checkin_number: { $in: checkInNumber }
+    });
+    return guest;
 }
 
 // get user who signed in
@@ -47,6 +49,7 @@ async function getUserSignedIn(id) {
 
 // get a waiter who is ready to serve
 async function getWaiterReadyToServe() {
+
     let waiterIds = [], countServed = [];
     const waiter = await Waiter.find({ status: STATUS_WAITER.ON_DUTY });
     waiter.every(element => countServed.push(element.served.length));
@@ -65,6 +68,7 @@ async function getWaiterReadyToServe() {
     } else {
         return false;
     }
+    
 }
 
 function getDateNow() {
@@ -84,7 +88,7 @@ function getDateNow() {
 module.exports = {
     getInitial,
     getNumbering,
-    getCustomerCheckedIn,
+    getGuestCheckedIn,
     getUserSignedIn,
     getWaiterReadyToServe,
     getDateNow,

@@ -1,5 +1,11 @@
 const { model, Schema } = require('mongoose');
 
+const STATUS = {
+    EMPTY: 1,
+    USED: 2,
+    RESERVED: 3,
+}
+
 const tableSchema = Schema({
     name: {
         type: String,
@@ -10,9 +16,9 @@ const tableSchema = Schema({
         type: Number,
         required: [ true, 'is required.' ]
     },
-    used: {
-        type: Boolean,
-        default: false
+    status: {
+        type: Number,
+        default: STATUS.EMPTY,
     },
     section: {
         type: Schema.Types.ObjectId,
@@ -21,4 +27,7 @@ const tableSchema = Schema({
     }
 }, { timestamps: true });
 
-module.exports = model('Table', tableSchema);
+module.exports = {
+    STATUS_TABLE: STATUS,
+    Table: model('Table', tableSchema),
+}

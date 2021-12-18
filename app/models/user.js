@@ -4,7 +4,8 @@ const bcrypt = require('bcrypt');
 const ROLE = {
     CASHIER: 'cashier',
     KITCHEN: 'kitchen',
-    WAITER: 'waiter'
+    WAITER: 'waiter',
+    CUSTOMER: 'customer',
 }
 
 const HASH_ROUND = 10;
@@ -14,7 +15,7 @@ const userSchema = Schema({
         type: String,
         required: [ true, 'is required.' ],
         maxlength: [ 255, 'cannot exceed 255 characters in length.' ],
-        minlength: [ 3, 'must be at least 3 characters in length.' ]
+        minlength: [ 3, 'must be at least 3 characters in length.' ],
     },
     email: {
         type: String,
@@ -28,10 +29,10 @@ const userSchema = Schema({
     },
     role: {
         type: String, 
-        enum: [ 'cashier', 'kitchen', 'waiter' ],
-        default: 'waiter'
+        enum: [ 'cashier', 'kitchen', 'waiter', 'customer' ],
+        default: 'customer',
     },
-    token: [String]
+    token: [String],
 }, { timestamps: true });
 
 // validation for valid email address
@@ -65,6 +66,6 @@ userSchema.pre('save', function(next) {
 });
 
 module.exports = {
+    ROLE: ROLE,
     User: model('User', userSchema),
-    ROLE: ROLE
 }

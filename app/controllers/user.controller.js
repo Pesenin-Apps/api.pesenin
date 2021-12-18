@@ -1,47 +1,51 @@
-const bcrypt = require('bcrypt');
-const { ROLE, User } = require('../models/user');
-const { STATUS_WAITER, Waiter } = require('../models/waiter');
+const { ROLE, User } = require("../models/user");
+const { Waiter } = require("../models/waiter");
 
 async function me(req, res, next) {
-
     try {
-
-        const user = req.user;
-        let staff = await User.findById(user._id);
+        
+        const { user } = req;
+        let userData = await User.findById(user._id);
 
         switch (user.role) {
             case ROLE.WAITER:
-                let waiter = (await Waiter.findOne({ waiter: user._id })).toJSON();
-                staff = { ...staff.toJSON(), waiter }
+                const waiter = (await Waiter.findOne({ waiter: user._id })).toJSON();
+                userData = {
+                    ...userData.toJSON(),
+                    waiter,
+                }
                 break;
             default:
+                break;
         }
 
         return res.status(200).json({
-            staff: staff
+            message: 'User Retrived Successfully!',
+            data: userData,
         });
+
 
     } catch (err) {
         next(err);
     }
-
 }
 
 async function changeProfile(req, res, next) {
     try {
+        
         const payload = req.body;
-        const staff = await User.findById(req.user._id);
 
-        await User.findOneAndUpdate(
-            { _id: staff._id },
+        const user = await User.findOneAndUpdate(
+            { _id: req.user._id },
             payload,
             { new: false, runValidators: true}
         );
 
         return res.status(200).json({
-            message: 'User Change Data Successfully!',
-            data: staff,
+            message: 'User ChangeProfile Data Successfully!',
+            data: user,
         });
+
     } catch (err) {
         next(err);
     }
@@ -49,9 +53,8 @@ async function changeProfile(req, res, next) {
 
 async function changePassword(req, res, next) {
     try {
-        const { oldpassword, newpassword } = req.body;
-        const staff = await User.findById(req.user._id);
 
+        const { oldpassword, newpassword } = req.body;
         const match = await bcrypt.compare(oldpassword, staff.password);
 
         if (!match) {
@@ -60,22 +63,49 @@ async function changePassword(req, res, next) {
             });
         }
 
-        await User.findOneAndUpdate(
-            { _id: staff._id },
+        const user = await User.findOneAndUpdate(
+            { _id: req.user._id },
             { password: bcrypt.hashSync(newpassword, 10) },
             { new: false, runValidators: true}
         );
 
         return res.status(200).json({
             message: 'User Change Password Successfully!',
-            data: staff,
+            data: user,
         });
+
     } catch (err) {
         next(err);
     }
 }
 
-/* =========  [ S T A R T ]  R E S O U R C E  E N D P O I N T  F O R  A L L  U S E R S  ========= */
+async function changeStatusWaiter(req, res, next) {
+    try {
+
+        let message;
+        let waiter = await Waiter.findOne({ waiter: req.user._id});
+
+        if (waiter.status === STATUS_WAITER.OFF_DUTY) {
+            waiter.status = STATUS_WAITER.ON_DUTY;
+            message = 'Now, You\'re On Duty';
+        } else {
+            waiter.status = STATUS_WAITER.OFF_DUTY;
+            message = 'Now, You\'re Off Duty';
+        }
+
+        await waiter.save();
+
+        return res.status(200).json({
+            message: message,
+            data: waiter
+        });
+
+    } catch (err) {
+        next(err);
+    }
+}
+
+/* =========  R E S O U R C E   R E S T   U S E R S  ========= */
 
 async function index(req, res, next) {
     try {
@@ -174,6 +204,7 @@ async function store(req, res, next) {
 
 async function update(req, res, next) {
     try {
+
         let dataUpdate = {};
         let { fullname, new_password } = req.body;
 
@@ -188,68 +219,46 @@ async function update(req, res, next) {
 
         return res.status(200).json({
             message: 'User Updated Successfully!',
-            data: user
+            data: user,
         });
+
     } catch (err) {
+
+        if (err && err.name == 'ValidationError') {
+            return res.status(400).json({
+                message: err.message,
+                fields: err.errors,
+            });
+        }
         next(err);
+
     }
 }
 
 async function destroy(req, res, next) {
     try {
+
         let user = await User.findOneAndDelete({ _id: req.params.id });
         await Waiter.findOneAndDelete({ waiter: req.params.id });
+        
         return res.status(200).json({
             message: 'User Deleted Successfully!',
-            data: user
-        });
-    } catch (err) {
-        next(err);
-    }
-}
-
-/* =========  [ E N D ]  R E S O U R C E  E N D P O I N T  F O R  A L L  U S E R S  ========= */
-
-
-/* =========  [ S T A R T ]  F O R  W A I T E R  ========= */
-
-async function changeStatus(req, res, next) {
-    try {
-
-        let message;
-        let waiter = await Waiter.findOne({ waiter: req.user._id});
-
-        if (waiter.status === STATUS_WAITER.OFF_DUTY) {
-            waiter.status = STATUS_WAITER.ON_DUTY;
-            message = 'Now, You\'re On Duty';
-        } else {
-            waiter.status = STATUS_WAITER.OFF_DUTY;
-            message = 'Now, You\'re Off Duty';
-        }
-
-        await waiter.save();
-
-        return res.status(200).json({
-            message: message,
-            waiter: waiter
+            data: user,
         });
 
     } catch (err) {
         next(err);
     }
 }
-
-/* =========  [ E N D ]  F O R  W A I T E R  ========= */
 
 module.exports = {
     me,
     changeProfile,
     changePassword,
+    changeStatusWaiter,
     index,
     show,
     store,
     update,
     destroy,
-    // for waiter
-    changeStatus
 }
