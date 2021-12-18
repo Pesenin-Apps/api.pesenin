@@ -830,6 +830,10 @@ async function cancelOrderByCustomer(req, res, next) {
     }
 }
 
+/* === END FOR CUSTOMER === */
+
+/* === START FOR WAITER === */
+
 async function getOrdersByWaiter(req, res, next) {
     try {
         
@@ -1219,7 +1223,83 @@ async function updateOrderDeleteByWaiter(req, res, next) {
     }
 }
 
-/* === END FOR CUSTOMER === */
+async function cancelOrderByWaiter(req, res, next) {
+    try {
+        
+        const { id } = req.params;
+        const waiter = await getUserSignedIn(req.user._id);
+
+        if (waiter.waiter.status === false) {
+            return res.status(403).json({
+                message: 'You\'re off duty now'
+            });
+        }
+
+        let countItemProcessed = 0;
+        const order = await Order.findOne({ _id: id }).populate({
+            path: 'order_items',
+            populate: {
+                path: 'product',
+                select: 'type',
+                populate: {
+                    path: 'type',
+                    select: 'belong',
+                }
+            }
+        });
+
+        if (!order) {
+            return res.status(404).json({
+                message: 'Pesanan tidak ditemukan!',
+            });
+        }
+
+        if (order.waiter.toString() !== waiter.waiter._id.toString()) {
+            return res.status(403).json({
+                message: 'Tidak dapat membatalkan, anda tidak memiliki hak akses!'
+            });
+        }
+
+        order.order_items.forEach((element) => {
+            if (element.status > STATUS_ORDER_ITEM.IN_PROCESS) {
+                countItemProcessed++;
+            }
+        });
+
+        if (order.status <= STATUS_ORDER.PROCESSED && countItemProcessed === 0) {
+            await waiterUnserve(waiter.waiter._id, order.table);
+            await order.updateOne({ status: STATUS_ORDER.CANCEL });
+            order.order_items.forEach((item) => {
+                if (item.status === STATUS_ORDER_ITEM.IN_QUEUE && item.product.type.belong === PROCESSED_ON.INSIDE_KITCHEN) {
+                    queue.destroy(item._id.toString());
+                }
+            });
+        } else {
+            return res.status(400).json({
+                message: 'Pesanan telah diproses, anda tidak dapat membatalkannya!',
+            });
+        }
+
+        if (order.customer !== null) {
+            await Customer.findOneAndUpdate(
+                { _id: order.customer },
+                { status: STATUS_CUSTOMER.CHECK_OUT },
+                { useFindAndModify: false }
+            );
+        }
+
+        await clearTable(order.table);
+
+        return res.status(200).json({
+            message: 'Order Canceled Successfully!',
+        });
+
+    } catch (err) {
+        next(err);
+    }
+}
+
+/* === END FOR WAITER === */
 
 /* = = = = = = = = =   [ E N D ]   R E S T   A P I   = = = = = = = = = */
 
@@ -1244,4 +1324,5 @@ module.exports = {
     createOrderByWaiter,
     updateOrderModifyByWaiter,
     updateOrderDeleteByWaiter,
+    cancelOrderByWaiter,
 }

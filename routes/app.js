@@ -64,6 +64,7 @@ router.post('/waiters/orders', hasRole('waiter'), orderController.createOrderByW
 router.patch('/waiters/orders/:id', hasRole('waiter'), orderController.updateOrderModifyByWaiter);
 router.post('/waiters/orders/verify/:id', hasRole('waiter'), orderController.verifyOrderByWaiter);
 router.delete('/waiters/orders/:id', hasRole('waiter'), orderController.updateOrderDeleteByWaiter);
+router.post('/waiters/orders/cancel/:id', hasRole('waiter'), orderController.cancelOrderByWaiter);
 /* === END FOR WAITER === */
 
 /* === START FOR CUSTOMER === */
@@ -156,7 +157,7 @@ router.post('/customers/check-out', hasCustomer(), customerController.checkOut);
 router.get('/customers/me', hasCustomer(), customerController.me);
 
 // order
-router.get('/customers/orders', hasCustomer(), ordersController.getOrderForCustomer);
+// router.get('/customers/orders', hasCustomer(), ordersController.getOrderForCustomer);
 // router.post('/customers/orders', hasCustomer(), ordersController.createOrderForCustomer);
 // router.post('/customers/orders/update', hasCustomer(), ordersController.updateOrderForCustomer);
 
@@ -186,7 +187,7 @@ router.get('/customers/orders', hasCustomer(), ordersController.getOrderForCusto
 
 // order
 // router.post('/waiters/orders/verify/:id', hasStaff('waiter'), ordersController.verifyCustomerOrder);
-router.post('/waiters/orders/check-out/:id', hasStaff('waiter'), ordersController.checkOutCustomerByWaiter);
+// router.post('/waiters/orders/check-out/:id', hasStaff('waiter'), ordersController.checkOutCustomerByWaiter);
 // router.get('/waiters/orders', hasStaff('waiter'), ordersController.getOrderForWaiter);
 // router.post('/waiters/orders', hasStaff('waiter'), ordersController.createOrderForWaiter);
 // router.patch('/waiters/orders/:id', hasStaff('waiter'), ordersController.updateOrderForWaiter);
