@@ -577,7 +577,8 @@ async function getOrdersByCustomer(req, res, next) {
     try {
         
         let criteria = {};
-        const { filters } = req.query;
+        let limitCol = 0;
+        const { filters, limit } = req.query;
         const customer = await getUserSignedIn(req.user._id);
 
         criteria = {
@@ -600,6 +601,10 @@ async function getOrdersByCustomer(req, res, next) {
             }
         }
 
+        if (limit) {
+            limitCol = parseInt(limit);
+        }
+
         const orders = await Order.find(criteria).populate('customer', 'fullname email').populate({
             path: 'table',
             select: 'name section number',
@@ -607,7 +612,7 @@ async function getOrdersByCustomer(req, res, next) {
                 path: 'section',
                 select: 'name code',
             }
-        }).select('-order_items -waiter').sort('-createdAt');
+        }).select('-order_items -waiter').sort('-createdAt').limit(limitCol);
 
         return res.status(200).json({
             message: 'Orders Retrived Successfully!',
