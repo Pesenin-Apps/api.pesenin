@@ -27,6 +27,10 @@ const userSchema = Schema({
         required: [ true, 'is required.' ],
         maxlength: [ 255, 'cannot exceed 255 characters in length.' ],
     },
+    phone: {
+        type: String,
+        default: null,
+    },
     role: {
         type: String, 
         enum: [ 'cashier', 'kitchen', 'waiter', 'customer' ],
