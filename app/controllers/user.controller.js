@@ -1,3 +1,4 @@
+const bcrypt = require('bcrypt');
 const { ROLE, User } = require("../models/user");
 const { Waiter } = require("../models/waiter");
 
@@ -55,7 +56,9 @@ async function changePassword(req, res, next) {
     try {
 
         const { oldpassword, newpassword } = req.body;
-        const match = await bcrypt.compare(oldpassword, staff.password);
+
+        const user = await User.findById(req.user._id);
+        const match = await bcrypt.compare(oldpassword, user.password);
 
         if (!match) {
             return res.status(400).json({
@@ -63,11 +66,7 @@ async function changePassword(req, res, next) {
             });
         }
 
-        const user = await User.findOneAndUpdate(
-            { _id: req.user._id },
-            { password: bcrypt.hashSync(newpassword, 10) },
-            { new: false, runValidators: true}
-        );
+        await user.updateOne({ password: bcrypt.hashSync(newpassword, 10) });
 
         return res.status(200).json({
             message: 'User Change Password Successfully!',
