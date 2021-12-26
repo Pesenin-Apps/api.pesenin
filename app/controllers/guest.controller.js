@@ -4,6 +4,7 @@ const jwt = require('jsonwebtoken');
 const { STATUS_GUEST, Guest } = require('../models/guest');
 const { STATUS_ORDER, Order } = require('../models/orders/order');
 const { STATUS_TABLE, Table } = require('../models/tables/tabel');
+const { STATUS_ORDER_ITEM } = require('../models/orders/item');
 // Config, Helper & Util
 const config = require('../config/config');
 const { getNumbering, getGuestCheckedIn } = require('../helpers/gets');
@@ -113,7 +114,7 @@ async function checkOut(req, res, next) {
             });
 
             if (order.status <= STATUS_ORDER.CREATE && countItemProcessed === 0) {
-                await waiterUnserve(order.waiter, customerCheckedIn.table);
+                await waiterUnserve(order.waiter, order.table);
                 await order.updateOne({ status: STATUS_ORDER.CANCEL });
             } else {
                 return res.status(400).json({
