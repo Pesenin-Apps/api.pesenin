@@ -172,7 +172,7 @@ async function getOrder(req, res, next) {
                     select: 'name belong',
                 }
             },
-        }).populate('customer', 'fullname email').populate('guest', 'name checkin_number device_detection').populate({
+        }).populate('customer', 'fullname email phone').populate('guest', 'name checkin_number device_detection').populate({
             path: 'table',
             select: 'name section number',
             populate: {
