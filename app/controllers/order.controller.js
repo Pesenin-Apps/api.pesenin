@@ -12,7 +12,7 @@ const queue = new LinkedList();
 
 /* = = = = = = = = =   [ S T A R T ]   S O C K E T   = = = = = = = = = */
 
-async function queues() {
+async function queues(section) {
     
     const listQueues = queue.print(section.toString());
     
