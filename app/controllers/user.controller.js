@@ -1,6 +1,6 @@
 const bcrypt = require('bcrypt');
 const { ROLE, User } = require("../models/user");
-const { Waiter } = require("../models/waiter");
+const { Waiter, STATUS_WAITER } = require("../models/waiter");
 
 async function me(req, res, next) {
     try {
