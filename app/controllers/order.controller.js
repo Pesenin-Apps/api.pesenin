@@ -1,9 +1,10 @@
 const Product = require('../models/products/product');
 const { STATUS_ORDER, STATUS_PAYMENT, TYPE_ORDER, ORDER_VIA, Order } = require('../models/orders/order');
 const { STATUS_ORDER_ITEM, OrderItem } = require('../models/orders/item');
+const { STATUS_RESERVATION, SERVING_TYPE, RESERVATION_CONFIRM, Reservation } = require('../models/orders/reservation');
 const { STATUS_GUEST, Guest } = require('../models/guest');
 const { PROCESSED_ON } = require('../models/products/type');
-const { getUserSignedIn, getWaiterReadyToServe, getGuestCheckedIn } = require('../helpers/gets');
+const { getUserSignedIn, getWaiterReadyToServe, getGuestCheckedIn, getNumbering } = require('../helpers/gets');
 const { useTable, clearTable } = require('../helpers/table');
 const { waiterUnserve } = require('../helpers/waiter');
 const LinkedList = require('../helpers/queue');
@@ -923,6 +924,84 @@ async function cancelOrderByCustomer(req, res, next) {
     }
 }
 
+// START RESERVATION FEATURES //
+
+async function createReservationByCustomer(req, res, next) {
+    try {
+
+        let payload = req.body;
+        const customer = await getUserSignedIn(req.user._id);
+
+        const productIds = payload.orders.map(e => e.item);
+        const products = await Product.find({ _id: {$in: productIds} });
+
+        const dataOrder = {
+            order_number: getNumbering('order'),
+            guest: null,
+            customer: customer._id,
+            status: STATUS_ORDER.CREATE,
+            table: null,
+            waiter: null,
+            type: TYPE_ORDER.RESERVATION,
+            via: ORDER_VIA.CUSTOMER,
+        }
+
+        let order = new Order(dataOrder);
+        
+        const dataReservation = {
+            order: order._id,
+            datetime_plan: payload.datetime_plan,
+            number_of_people: payload.number_of_people,
+            section_table: payload.section_table,
+            status: STATUS_RESERVATION.CREATE,
+            serving_type: payload.serving_type,
+            reservartion_confirm: null,
+        }
+        
+        if (payload.serving_type === SERVING_TYPE.BY_CONFIRMATION) {
+            dataReservation.reservartion_confirm = RESERVATION_CONFIRM.WAITING;
+        }
+
+        let reservation = new Reservation(dataReservation);
+
+        let orderItems = payload.orders.map(element => {
+            let relatedProduct = products.find(product => product._id.toString() === element.item);
+            return {
+                order: order._id,
+                product: relatedProduct.id,
+                price: relatedProduct.price,
+                qty: element.qty,
+                total: relatedProduct.price * element.qty,
+                status: STATUS_ORDER_ITEM.NEW
+            }
+        });
+
+        let orderedItems = await OrderItem.insertMany(orderItems);
+        orderedItems.forEach(async (item) => {
+            order.order_items.push(item);
+        });
+
+        await order.save();
+        await reservation.save();
+
+        return res.status(201).json({
+            message: 'Reservation Stored Successfully!',
+            data: order
+        });
+        
+    } catch (err) {
+        if (err && err.name === 'ValidationError') {
+            return res.status(400).json({
+                message: err.message,
+                fields: err.errors,
+            });
+        }
+        next(err);
+    }
+}
+
+// END RESERVATION FEATURES //
+
 /* === END FOR CUSTOMER === */
 
 /* === START FOR WAITER === */
@@ -1414,6 +1493,7 @@ module.exports = {
     updateOrderModifyByCustomer,
     updateOrderDeleteByCustomer,
     cancelOrderByCustomer,
+    createReservationByCustomer,
     getOrdersByWaiter,
     verifyOrderByWaiter,
     createOrderByWaiter,

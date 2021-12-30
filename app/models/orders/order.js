@@ -90,7 +90,7 @@ orderSchema.virtual('items_count').get(function(){
 
 orderSchema.pre('save', async function(next) {
     // first time for save it
-    if (this.__v == 0) {
+    if (this.__v == 0 && this.type == TYPE.DINE_IN) {
         // generate order numbering
         this.order_number = getNumbering('order');
         // serving waiter
