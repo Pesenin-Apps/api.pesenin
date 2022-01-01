@@ -66,11 +66,14 @@ router.post('/waiters/orders/cancel/:id', hasRole('waiter'), orderController.can
 /* === END FOR WAITER === */
 
 /* === START FOR CUSTOMER === */
+// Order //
 router.get('/customers/orders', hasRole('customer'), orderController.getOrdersByCustomer);
 router.post('/customers/orders', [ hasRole('customer'), multer().none() ], orderController.createOrderByCustomer);
 router.patch('/customers/orders/:id', [ hasRole('customer'), multer().none() ], orderController.updateOrderModifyByCustomer);
 router.delete('/customers/orders/:id', [ hasRole('customer'), multer().none() ], orderController.updateOrderDeleteByCustomer);
 router.post('/customers/orders/cancel/:id', hasRole('customer'), orderController.cancelOrderByCustomer);
+// Reservation //
+router.post('/customers/reservations', [ hasRole('customer'), multer().none() ], orderController.createReservationByCustomer);
 /* === END FOR CUSTOMER === */
 
 /* ========= END ENDPOINT FOR USER ========= */
