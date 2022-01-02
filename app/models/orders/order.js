@@ -116,6 +116,7 @@ orderSchema.pre('save', async function(next) {
     next();
 });
 
+// Additional Populate
 orderSchema.virtual('reservation', {
     ref: 'Reservation',
     localField: '_id',
