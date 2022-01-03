@@ -28,11 +28,6 @@ const reservationSchema = Schema({
         type: Number,
         required: [ true, 'is required.' ],
     },
-    section_table: {
-        type: Schema.Types.ObjectId,
-        ref: 'TableSection',
-        required: [ true, 'is required.' ]
-    },
     status: {
         type: Number,
         default: STATUS.CREATE,
