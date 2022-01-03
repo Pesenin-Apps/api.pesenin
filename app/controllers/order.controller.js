@@ -187,7 +187,7 @@ async function getOrder(req, res, next) {
                 path: 'users',
                 select: 'fullname email'
             }
-        });
+        }).populate('reservation');
 
         return res.status(200).json({
             message: 'Order Retrived Successfully!',
@@ -952,7 +952,6 @@ async function createReservationByCustomer(req, res, next) {
             order: order._id,
             datetime_plan: payload.datetime_plan,
             number_of_people: payload.number_of_people,
-            section_table: payload.section_table,
             status: STATUS_RESERVATION.CREATE,
             serving_type: payload.serving_type,
             reservartion_confirm: null,

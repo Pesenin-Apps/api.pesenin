@@ -84,9 +84,9 @@ const orderSchema = Schema({
     }]
 }, { timestamps: true });
 
-orderSchema.virtual('items_count').get(function(){
-    return this.order_items.reduce((total, item) => { return total + parseInt(item.qty)}, 0)
-});
+// orderSchema.virtual('items_count').get(function(){
+//     return this.order_items.reduce((total, item) => { return total + parseInt(item.qty)}, 0)
+// });
 
 orderSchema.pre('save', async function(next) {
     // first time for save it
@@ -115,6 +115,16 @@ orderSchema.pre('save', async function(next) {
     this.total_overall = this.total_price + this.tax;
     next();
 });
+
+orderSchema.virtual('reservation', {
+    ref: 'Reservation',
+    localField: '_id',
+    foreignField: 'order',
+    justOne: true
+});
+
+orderSchema.set('toObject', { virtuals: true });
+orderSchema.set('toJSON', { virtuals: true });
 
 module.exports = {
     STATUS_ORDER: STATUS,
