@@ -68,7 +68,7 @@ async function signIn(req, res, next) {
 
         if (err) return next(err);
         if (!user) return res.status(403).json({
-            message: 'email or password incorrect'
+            message: 'Email Address atau Password Tidak Cocok!'
         });
 
         let signed = jwt.sign(user, config.secretkey);
@@ -101,7 +101,7 @@ async function signOut(req, res, next) {
 
     if (!user || !token) {
         return res.status(404).json({
-            message: 'User Not Found'
+            message: 'Pengguna Tidak Ditemukan'
         });
     }
     

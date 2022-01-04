@@ -62,7 +62,7 @@ async function changePassword(req, res, next) {
 
         if (!match) {
             return res.status(400).json({
-                message: 'The Old Password does NOT match!',
+                message: 'Password Lama tidak benar!',
             });
         }
 

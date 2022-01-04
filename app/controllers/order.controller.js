@@ -337,7 +337,7 @@ async function createOrderByGuest(req, res, next) {
 
         if (waiter === false) {
             return res.status(404).json({
-                message: 'please try some more',
+                message: 'Maaf sistem sedang sibuk. silahkan coba beberapa saat lagi!',
             });
         }
 
@@ -572,6 +572,7 @@ async function updateOrderDeleteByGuest(req, res, next) {
 
 /* === END FOR GUEST === */
 
+
 /* === START FOR CUSTOMER === */
 
 async function getOrdersByCustomer(req, res, next) {
@@ -634,7 +635,7 @@ async function createOrderByCustomer(req, res, next) {
         
         if (waiter === false) {
             return res.status(404).json({
-                message: 'please try some more',
+                message: 'Maaf sistem sedang sibuk. silahkan coba beberapa saat lagi!',
             });
         }
 
@@ -1003,6 +1004,7 @@ async function createReservationByCustomer(req, res, next) {
 
 /* === END FOR CUSTOMER === */
 
+
 /* === START FOR WAITER === */
 
 async function getOrdersByWaiter(req, res, next) {
@@ -1058,7 +1060,7 @@ async function verifyOrderByWaiter(req, res, next) {
 
         if (waiter.waiter.status === false) {
             return res.status(403).json({
-                message: 'You\'re off duty now'
+                message: 'Anda sedang OFF-DUTY, silahkan ON-DUTY terlebih dahulu!'
             });
         }
 
@@ -1109,7 +1111,7 @@ async function createOrderByWaiter(req, res, next) {
 
         if (waiter.waiter.status === false) {
             return res.status(403).json({
-                message: 'You\'re off duty now'
+                message: 'Anda sedang OFF-DUTY, silahkan ON-DUTY terlebih dahulu!'
             });
         }
 
@@ -1194,7 +1196,7 @@ async function updateOrderModifyByWaiter(req, res, next) {
 
         if (waiter.waiter.status === false) {
             return res.status(403).json({
-                message: 'You\'re off duty now'
+                message: 'Anda sedang OFF DUTY, silahkan ON DUTY terlebih dahulu!'
             });
         }
 
@@ -1305,7 +1307,7 @@ async function updateOrderDeleteByWaiter(req, res, next) {
 
         if (waiter.waiter.status === false) {
             return res.status(403).json({
-                message: 'You\'re off duty now'
+                message: 'Anda sedang OFF-DUTY, silahkan ON-DUTY terlebih dahulu!'
             });
         }
 
@@ -1402,7 +1404,7 @@ async function cancelOrderByWaiter(req, res, next) {
 
         if (waiter.waiter.status === false) {
             return res.status(403).json({
-                message: 'You\'re off duty now'
+                message: 'Anda sedang OFF-DUTY, silahkan ON-DUTY terlebih dahulu!'
             });
         }
 

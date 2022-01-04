@@ -60,11 +60,13 @@ async function index(req, res, next) {
 
 async function show(req, res, next) {
     try {
+
         let product = await Product.findById(req.params.id).populate('category').populate('type');
         return res.status(200).json({
             message: "Product Retrived Successfully!",
             data: product
         });
+
     } catch (err) {
         next(err);
     }
@@ -149,6 +151,7 @@ async function store(req, res, next) {
         }
 
     } catch (err) {
+
         if (err && err.name === 'ValidationError') {
             return res.status(400).json({
                 message: err.message,
@@ -156,6 +159,7 @@ async function store(req, res, next) {
             });
         }
         next(err);
+
     }
 }
 
@@ -251,6 +255,7 @@ async function update(req, res, next) {
         }
 
     } catch (err) {
+        
         if (err && err.name === 'ValidationError') {
             return res.status(400).json({
                 message: err.message,
@@ -258,22 +263,27 @@ async function update(req, res, next) {
             });
         }
         next(err);
+
     }
 
 }
 
 async function destroy(req, res, next) {
     try {
+
         let product = await Product.findOneAndDelete({ _id: req.params.id });
         let fileCurrent = `${config.rootPath}/public/uploads/${product.image_url}`;
+        
         // destroy file current
         if (fs.existsSync(fileCurrent)) {
             fs.unlinkSync(fileCurrent);
         }
+        
         res.status(200).json({
             message: 'Product Deleted Successfully!',
             data: product
         });
+
     } catch (err) {
         next(err);   
     }
