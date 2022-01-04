@@ -36,7 +36,7 @@ const reservationSchema = Schema({
         type: Number,
         required: [ true, 'is required.' ],
     },
-    reservartion_confirm: {
+    reservation_confirm: {
         type: Number,
         default: null,
     },

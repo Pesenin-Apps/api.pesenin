@@ -954,11 +954,11 @@ async function createReservationByCustomer(req, res, next) {
             number_of_people: payload.number_of_people,
             status: STATUS_RESERVATION.CREATE,
             serving_type: payload.serving_type,
-            reservartion_confirm: null,
+            reservation_confirm: null,
         }
         
         if (payload.serving_type === SERVING_TYPE.BY_CONFIRMATION) {
-            dataReservation.reservartion_confirm = RESERVATION_CONFIRM.WAITING;
+            dataReservation.reservation_confirm = RESERVATION_CONFIRM.WAITING;
         }
 
         let reservation = new Reservation(dataReservation);
