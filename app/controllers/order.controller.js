@@ -892,7 +892,7 @@ async function cancelOrderByCustomer(req, res, next) {
         const customer = await getUserSignedIn(req.user._id);
 
         let countItemProcessed = 0;
-        const order = await Order.findOne({ _id: id }).populate('order_items');
+        const order = await Order.findOne({ _id: id }).populate('order_items').populate('reservation');
 
         if (order.customer.toString() !== customer._id.toString()) {
             return res.status(403).json({
@@ -906,15 +906,26 @@ async function cancelOrderByCustomer(req, res, next) {
             }
         });
 
-        if (order.status <= STATUS_ORDER.CREATE && countItemProcessed === 0) {
-            await waiterUnserve(order.waiter, order.table);
-            await order.updateOne({ status: STATUS_ORDER.CANCEL });
-            await clearTable(order.table);
+        if (order.type === TYPE_ORDER.DINE_IN) {
+            if (order.status <= STATUS_ORDER.CREATE && countItemProcessed === 0) {
+                await waiterUnserve(order.waiter, order.table);
+                await order.updateOne({ status: STATUS_ORDER.CANCEL });
+                await clearTable(order.table);
+            } else {
+                return res.status(400).json({
+                    message: 'Pesanan anda telah diproses, anda tidak dapat membatalkannya!',
+                });
+            }
         } else {
-            return res.status(400).json({
-                message: 'Pesanan anda telah diproses, anda tidak dapat membatalkannya!',
-            });
+            if (order.reservation.status === STATUS_RESERVATION.CREATE && order.status <= STATUS_ORDER.CREATE && countItemProcessed === 0) {
+                await order.updateOne({ status: STATUS_ORDER.CANCEL });
+            } else {
+                return res.status(400).json({
+                    message: 'Reservasi anda telah terkonfirmasi, anda tidak dapat membatalkannya!',
+                });
+            }
         }
+
 
         return res.status(200).json({
             message: 'Order Canceled Successfully!',
