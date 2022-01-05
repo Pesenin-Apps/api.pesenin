@@ -16,6 +16,7 @@ const { waiterUnserve } = require('../helpers/waiter');
 
 async function me(req, res, next) {
     try {
+
         const guest = await Guest.findOne({
             checkin_number: req.guest.checkin_number
         }).populate({
@@ -30,6 +31,7 @@ async function me(req, res, next) {
         return res.status(200).json({
             data: guest,
         });
+
     } catch (err) {
         next(err);
     }
@@ -37,6 +39,7 @@ async function me(req, res, next) {
 
 async function checkIn(req, res, next) {
     try {
+
         // request
         let payload = req.body;
         const table = await Table.findById(payload.table);
@@ -52,11 +55,11 @@ async function checkIn(req, res, next) {
         // check status table
         if (table.status === STATUS_TABLE.USED) {
             return res.status(400).json({
-                message: 'This Table has been used by another customer'
+                message: 'Meja telah Digunakan oleh Pelanggan lain, silahkan pilih meja lain!'
             });
         } else if (table.status === STATUS_TABLE.RESERVED) {
             return res.status(400).json({
-                message: 'This Table has been reserved'
+                message: 'Meja telah Direservasi, silahkan pilih meja lain!'
             });
         }
 
@@ -84,7 +87,9 @@ async function checkIn(req, res, next) {
             data: guest,
             token: tokenCheckIn,
         });
+
     } catch (err) {
+
         if (err && err.name === 'ValidationError') {
             return res.status(400).json({
                 message: err.message,
@@ -92,6 +97,7 @@ async function checkIn(req, res, next) {
             });
         }
         next(err);
+
     }
 }
 

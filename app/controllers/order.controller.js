@@ -337,7 +337,7 @@ async function createOrderByGuest(req, res, next) {
 
         if (waiter === false) {
             return res.status(404).json({
-                message: 'please try some more',
+                message: 'Maaf sistem sedang sibuk. silahkan coba beberapa saat lagi!',
             });
         }
 
@@ -572,6 +572,7 @@ async function updateOrderDeleteByGuest(req, res, next) {
 
 /* === END FOR GUEST === */
 
+
 /* === START FOR CUSTOMER === */
 
 async function getOrdersByCustomer(req, res, next) {
@@ -634,7 +635,7 @@ async function createOrderByCustomer(req, res, next) {
         
         if (waiter === false) {
             return res.status(404).json({
-                message: 'please try some more',
+                message: 'Maaf sistem sedang sibuk. silahkan coba beberapa saat lagi!',
             });
         }
 
@@ -891,7 +892,7 @@ async function cancelOrderByCustomer(req, res, next) {
         const customer = await getUserSignedIn(req.user._id);
 
         let countItemProcessed = 0;
-        const order = await Order.findOne({ _id: id }).populate('order_items');
+        const order = await Order.findOne({ _id: id }).populate('order_items').populate('reservation');
 
         if (order.customer.toString() !== customer._id.toString()) {
             return res.status(403).json({
@@ -905,15 +906,26 @@ async function cancelOrderByCustomer(req, res, next) {
             }
         });
 
-        if (order.status <= STATUS_ORDER.CREATE && countItemProcessed === 0) {
-            await waiterUnserve(order.waiter, order.table);
-            await order.updateOne({ status: STATUS_ORDER.CANCEL });
-            await clearTable(order.table);
+        if (order.type === TYPE_ORDER.DINE_IN) {
+            if (order.status <= STATUS_ORDER.CREATE && countItemProcessed === 0) {
+                await waiterUnserve(order.waiter, order.table);
+                await order.updateOne({ status: STATUS_ORDER.CANCEL });
+                await clearTable(order.table);
+            } else {
+                return res.status(400).json({
+                    message: 'Pesanan anda telah diproses, anda tidak dapat membatalkannya!',
+                });
+            }
         } else {
-            return res.status(400).json({
-                message: 'Pesanan anda telah diproses, anda tidak dapat membatalkannya!',
-            });
+            if (order.reservation.status === STATUS_RESERVATION.CREATE && order.status <= STATUS_ORDER.CREATE && countItemProcessed === 0) {
+                await order.updateOne({ status: STATUS_ORDER.CANCEL });
+            } else {
+                return res.status(400).json({
+                    message: 'Reservasi anda telah terkonfirmasi, anda tidak dapat membatalkannya!',
+                });
+            }
         }
+
 
         return res.status(200).json({
             message: 'Order Canceled Successfully!',
@@ -999,9 +1011,68 @@ async function createReservationByCustomer(req, res, next) {
     }
 }
 
+async function updateReservationByCustomer(req, res, next) {
+    try {
+
+        const payload = req.body;
+        const productIds = payload.orders.map(e => e.item);
+        const products = await Product.find({ _id: {$in: productIds} });
+
+        let order = await Order.findOne({ _id: req.params.id }).populate('order_items').populate('reservation');
+
+        let dataChangeReservation = {
+            datetime_plan: payload.datetime_plan,
+            number_of_people: payload.number_of_people,
+            serving_type: payload.serving_type,
+        }
+
+        if (payload.serving_type === SERVING_TYPE.BY_CONFIRMATION) {
+            dataChangeReservation = { ...dataChangeReservation, reservation_confirm: RESERVATION_CONFIRM.WAITING }
+        } else {
+            dataChangeReservation = { ...dataChangeReservation, reservation_confirm: null }
+        }
+        
+        await order.reservation.updateOne(dataChangeReservation);
+
+        let orderItems = payload.orders.map(element => {
+            let relatedProduct = products.find(product => product._id.toString() === element.item);
+            return {
+                order: order._id,
+                product: relatedProduct.id,
+                price: relatedProduct.price,
+                qty: element.qty,
+                total: relatedProduct.price * element.qty,
+                status: STATUS_ORDER_ITEM.NEW
+            }
+        });
+
+        let orderedItems = await OrderItem.insertMany(orderItems);
+        orderedItems.forEach(async (item) => {
+            order.order_items.push(item);
+        });
+
+        await order.save();
+
+        return res.status(200).json({
+            message: 'Reservation Updated Successfully!',
+            data: order,
+        });
+        
+    } catch (err) {
+        if (err && err.name === 'ValidationError') {
+            return res.status(400).json({
+                message: err.message,
+                fields: err.errors,
+            });
+        }
+        next(err);
+    }
+}
+
 // END RESERVATION FEATURES //
 
 /* === END FOR CUSTOMER === */
+
 
 /* === START FOR WAITER === */
 
@@ -1058,7 +1129,7 @@ async function verifyOrderByWaiter(req, res, next) {
 
         if (waiter.waiter.status === false) {
             return res.status(403).json({
-                message: 'You\'re off duty now'
+                message: 'Anda sedang OFF-DUTY, silahkan ON-DUTY terlebih dahulu!'
             });
         }
 
@@ -1109,7 +1180,7 @@ async function createOrderByWaiter(req, res, next) {
 
         if (waiter.waiter.status === false) {
             return res.status(403).json({
-                message: 'You\'re off duty now'
+                message: 'Anda sedang OFF-DUTY, silahkan ON-DUTY terlebih dahulu!'
             });
         }
 
@@ -1194,7 +1265,7 @@ async function updateOrderModifyByWaiter(req, res, next) {
 
         if (waiter.waiter.status === false) {
             return res.status(403).json({
-                message: 'You\'re off duty now'
+                message: 'Anda sedang OFF DUTY, silahkan ON DUTY terlebih dahulu!'
             });
         }
 
@@ -1305,7 +1376,7 @@ async function updateOrderDeleteByWaiter(req, res, next) {
 
         if (waiter.waiter.status === false) {
             return res.status(403).json({
-                message: 'You\'re off duty now'
+                message: 'Anda sedang OFF-DUTY, silahkan ON-DUTY terlebih dahulu!'
             });
         }
 
@@ -1402,7 +1473,7 @@ async function cancelOrderByWaiter(req, res, next) {
 
         if (waiter.waiter.status === false) {
             return res.status(403).json({
-                message: 'You\'re off duty now'
+                message: 'Anda sedang OFF-DUTY, silahkan ON-DUTY terlebih dahulu!'
             });
         }
 
@@ -1499,4 +1570,5 @@ module.exports = {
     updateOrderModifyByWaiter,
     updateOrderDeleteByWaiter,
     cancelOrderByWaiter,
+    updateReservationByCustomer,
 }

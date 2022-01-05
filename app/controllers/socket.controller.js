@@ -39,21 +39,21 @@ async function getOrderCount() {
 
 }
 
-async function getOrderItemCount() {
+// async function getOrderItemCount() {
     
-    const inQueue = [2];
-    const inProcess = [3];
-    const finished = [4];
-    const all = [...inQueue, ...inProcess, ...finished];
+//     const inQueue = [2];
+//     const inProcess = [3];
+//     const finished = [4];
+//     const all = [...inQueue, ...inProcess, ...finished];
 
-    let now = new Date();
-    let todayDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+//     let now = new Date();
+//     let todayDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
 
-    const allData = await Order.find({ status: {$in: all}, createdAt: {$gte: todayDate} }).countDocuments();
-    const processedData = await Order.find({ status: {$in: processed}, createdAt: {$gte: todayDate} }).countDocuments();
-    const finishedData = await Order.find({ status: {$in: finished}, createdAt: {$gte: todayDate} }).countDocuments();
+//     const allData = await Order.find({ status: {$in: all}, createdAt: {$gte: todayDate} }).countDocuments();
+//     const processedData = await Order.find({ status: {$in: processed}, createdAt: {$gte: todayDate} }).countDocuments();
+//     const finishedData = await Order.find({ status: {$in: finished}, createdAt: {$gte: todayDate} }).countDocuments();
 
-}
+// }
 
 module.exports = {
     getTables,
