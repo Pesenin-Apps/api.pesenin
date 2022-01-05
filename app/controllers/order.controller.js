@@ -286,6 +286,34 @@ async function updateOrderItem(req, res, next) {
     }
 }
 
+async function updateReservation(req, res, next) {
+    try {
+        
+        let payload = req.body;
+        const { id } = req.params;
+
+        const reservation = await Reservation.findOneAndUpdate(
+            { _id: id },
+            payload,
+            { new: true, runValidators: true },
+        );
+
+        return res.status(200).json({
+            message: 'Reservation Updated Successfully!',
+            data: reservation,
+        });
+
+    } catch (err) {
+        if (err && err.name === 'ValidationError') {
+            return res.status(400).json({
+                message: err.message,
+                fields: err.errors,
+            });
+        }
+        next(err);
+    }
+}
+
 /* === START FOR GUEST === */
 
 async function getOrderByGuest(req, res, next) {
@@ -1554,6 +1582,7 @@ module.exports = {
     getOrder,
     updateOrder,
     updateOrderItem,
+    updateReservation,
     getOrderByGuest,
     createOrderByGuest,
     updateOrderModifyByGuest,
