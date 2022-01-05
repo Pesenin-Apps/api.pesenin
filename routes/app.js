@@ -74,6 +74,7 @@ router.delete('/customers/orders/:id', [ hasRole('customer'), multer().none() ],
 router.post('/customers/orders/cancel/:id', hasRole('customer'), orderController.cancelOrderByCustomer);
 // Reservation //
 router.post('/customers/reservations', [ hasRole('customer'), multer().none() ], orderController.createReservationByCustomer);
+router.patch('/customers/reservations/:id', [ hasRole('customer'), multer().none() ], orderController.updateReservationByCustomer);
 /* === END FOR CUSTOMER === */
 
 /* ========= END ENDPOINT FOR USER ========= */

@@ -1000,6 +1000,64 @@ async function createReservationByCustomer(req, res, next) {
     }
 }
 
+async function updateReservationByCustomer(req, res, next) {
+    try {
+
+        const payload = req.body;
+        const productIds = payload.orders.map(e => e.item);
+        const products = await Product.find({ _id: {$in: productIds} });
+
+        let order = await Order.findOne({ _id: req.params.id }).populate('order_items').populate('reservation');
+
+        let dataChangeReservation = {
+            datetime_plan: payload.datetime_plan,
+            number_of_people: payload.number_of_people,
+            serving_type: payload.serving_type,
+        }
+
+        if (payload.serving_type === SERVING_TYPE.BY_CONFIRMATION) {
+            dataChangeReservation = { ...dataChangeReservation, reservation_confirm: RESERVATION_CONFIRM.WAITING }
+        } else {
+            dataChangeReservation = { ...dataChangeReservation, reservation_confirm: null }
+        }
+        
+        await order.reservation.updateOne(dataChangeReservation);
+
+        let orderItems = payload.orders.map(element => {
+            let relatedProduct = products.find(product => product._id.toString() === element.item);
+            return {
+                order: order._id,
+                product: relatedProduct.id,
+                price: relatedProduct.price,
+                qty: element.qty,
+                total: relatedProduct.price * element.qty,
+                status: STATUS_ORDER_ITEM.NEW
+            }
+        });
+
+        let orderedItems = await OrderItem.insertMany(orderItems);
+        orderedItems.forEach(async (item) => {
+            order.order_items.push(item);
+        });
+
+        await order.save();
+
+        return res.status(200).json({
+            message: 'Reservation Updated Successfully!',
+            data: order,
+        });
+        
+    } catch (err) {
+        if (err && err.name === 'ValidationError') {
+            return res.status(400).json({
+                message: err.message,
+                fields: err.errors,
+            });
+        }
+        next(err);
+    }
+}
+
 // END RESERVATION FEATURES //
 
 /* === END FOR CUSTOMER === */
@@ -1501,4 +1559,5 @@ module.exports = {
     updateOrderModifyByWaiter,
     updateOrderDeleteByWaiter,
     cancelOrderByWaiter,
+    updateReservationByCustomer,
 }
