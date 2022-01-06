@@ -39,6 +39,8 @@ async function queues(section) {
 
 /* = = = = = = = = =   [ S T A R T ]   R E S T   A P I   = = = = = = = = = */
 
+/* === STAgit RT FOR AVAILABLE ALL ROLE === */
+
 async function getQueues(req, res, next) {
     try {
 
@@ -313,6 +315,9 @@ async function updateReservation(req, res, next) {
         next(err);
     }
 }
+
+/* === END FOR AVAILABLE ALL ROLE === */
+
 
 /* === START FOR GUEST === */
 
