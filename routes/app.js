@@ -48,10 +48,13 @@ router.post('/users/change-profile', [ hasRole('cashier','kitchen','waiter','cus
 router.post('/users/change-password', [ hasRole('cashier','kitchen','waiter','customer'), multer().none() ], userController.changePassword);
 
 router.patch('/orders/items/:id', [ hasRole('cashier', 'kitchen', 'waiter'), multer().none() ], orderController.updateOrderItem);
+router.patch('/orders/reservations/verify/:id', [ hasRole('cashier'), multer().none() ], orderController.verifyReservation);
+router.patch('/orders/reservations/:id', [ hasRole('cashier', 'kitchen', 'waiter', 'customer'), multer().none() ], orderController.updateReservation);
 router.get('/orders/count', hasRole('cashier','kitchen'), orderController.getOrderCounts);
 router.get('/orders', hasRole('cashier'), orderController.getOrders);
 router.get('/orders/:id', hasRole('cashier','waiter','customer'), orderController.getOrder);
 router.patch('/orders/:id', hasRole('cashier'), orderController.updateOrder);
+router.get('/queues/reservations', hasRole('cashier','kitchen'), orderController.getReservationQueues);
 router.get('/queues', hasRole('cashier','kitchen'), orderController.getQueues);
 
 /* === START FOR WAITER === */

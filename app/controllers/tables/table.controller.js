@@ -4,7 +4,7 @@ const TableSection = require('../../models/tables/section');
 async function index(req, res, next) {
     try {
 
-        let tables = await Table.find().populate('section', 'name');
+        let tables = await Table.find().populate('section', 'name').sort('section number');
         return res.status(200).json({
             message: "Tables Retrived Successfully!",
             data: tables

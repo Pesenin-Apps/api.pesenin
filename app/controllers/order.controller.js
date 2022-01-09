@@ -6,7 +6,7 @@ const { STATUS_GUEST, Guest } = require('../models/guest');
 const { PROCESSED_ON } = require('../models/products/type');
 const { getUserSignedIn, getWaiterReadyToServe, getGuestCheckedIn, getNumbering } = require('../helpers/gets');
 const { useTable, clearTable } = require('../helpers/table');
-const { waiterUnserve } = require('../helpers/waiter');
+const { waiterUnserve, waiterServing } = require('../helpers/waiter');
 const LinkedList = require('../helpers/queue');
 const queue = new LinkedList();
 
@@ -34,10 +34,56 @@ async function queues(section) {
     return response;
 }
 
+async function reservationQueues() {
+
+    const orders = await Order.find({
+        type: TYPE_ORDER.RESERVATION,
+        status: {
+            $gte: STATUS_ORDER.PROCESSED,
+            $lte: STATUS_ORDER.FINISH,
+        },
+        is_paid: STATUS_PAYMENT.NOT_YET,
+    }).populate('reservation').populate({
+        path: 'order_items',
+        select: '-__v -price -total -order',
+        populate: {
+            path: 'product',
+            select: 'name',
+        },
+    }).populate({
+        path: 'table',
+        select: 'number',
+        populate: {
+            path: 'section',
+            select: 'name'
+        }
+    }).populate('customer', 'fullname').populate({
+        path: 'waiter',
+        select: 'waiter',
+        populate: {
+            path: 'users',
+            select: 'fullname'
+        }
+    });
+
+    orders.sort((a,b) => {
+        return a.reservation.datetime_plan > b.reservation.datetime_plan ? 1 : -1;
+    });
+
+    const response = {
+        data: orders,
+    };
+
+    return response;
+
+}
+
 /* = = = = = = = = =   [ E N D ]   S O C K E T   = = = = = = = = = */
 
 
 /* = = = = = = = = =   [ S T A R T ]   R E S T   A P I   = = = = = = = = = */
+
+/* === START FOR AVAILABLE ALL ROLE === */
 
 async function getQueues(req, res, next) {
     try {
@@ -58,6 +104,53 @@ async function getQueues(req, res, next) {
             message: 'Queues Retrived Successfully!',
             count: orderItems.length,
             data: orderItems
+        });
+
+    } catch (err) {
+        next(err);
+    }
+}
+
+async function getReservationQueues(req, res, next) {
+    try {
+
+        const orders = await Order.find({
+            type: TYPE_ORDER.RESERVATION,
+            status: {
+                $gte: STATUS_ORDER.PROCESSED,
+                $lte: STATUS_ORDER.FINISH,
+            },
+            is_paid: STATUS_PAYMENT.NOT_YET,
+        }).populate('reservation').populate({
+            path: 'order_items',
+            select: '-__v -price -total -order',
+            populate: {
+                path: 'product',
+                select: 'name',
+            },
+        }).populate({
+            path: 'table',
+            select: 'number',
+            populate: {
+                path: 'section',
+                select: 'name'
+            }
+        }).populate('customer', 'fullname').populate({
+            path: 'waiter',
+            select: 'waiter',
+            populate: {
+                path: 'users',
+                select: 'fullname'
+            }
+        });
+
+        orders.sort((a,b) => {
+            return a.reservation.datetime_plan > b.reservation.datetime_plan ? 1 : -1;
+        });
+
+        return res.status(200).json({
+            message: 'ReservationQueues Retrived Successfully!',
+            data: orders,
         });
 
     } catch (err) {
@@ -140,7 +233,7 @@ async function getOrders(req, res, next) {
                 path: 'section',
                 select: 'name code',
             }
-        }).sort('-createdAt').skip(skipCol).limit(limitCol);
+        }).populate('reservation').sort('-createdAt').skip(skipCol).limit(limitCol);
 
         let count = await Order.find(criteria).countDocuments();
 
@@ -213,8 +306,6 @@ async function updateOrder(req, res, next) {
 
         if (payload.is_paid === STATUS_PAYMENT.ALREADY) {
 
-            await waiterUnserve(order.waiter, order.table);
-
             if (order.guest !== null) {
                 await Guest.findOneAndUpdate(
                     { _id: order.guest },
@@ -223,6 +314,7 @@ async function updateOrder(req, res, next) {
                 );
             }
 
+            await waiterUnserve(order.waiter, order.table);
             await clearTable(order.table);
 
         }
@@ -264,7 +356,9 @@ async function updateOrderItem(req, res, next) {
             }
         });
 
-        if (payload.status == STATUS_ORDER_ITEM.FINISH && orderItem.product.type.belong === PROCESSED_ON.INSIDE_KITCHEN) {
+        const orderData = await Order.findById(orderItem.order);
+
+        if (payload.status == STATUS_ORDER_ITEM.FINISH && orderItem.product.type.belong === PROCESSED_ON.INSIDE_KITCHEN && orderData.type === TYPE_ORDER.DINE_IN) {
             queue.destroy(id.toString());
         }
 
@@ -285,6 +379,96 @@ async function updateOrderItem(req, res, next) {
         next(err);
     }
 }
+
+async function updateReservation(req, res, next) {
+    try {
+        
+        let payload = req.body;
+        const { id } = req.params;
+
+        const reservation = await Reservation.findOneAndUpdate(
+            { _id: id },
+            payload,
+            { new: true, runValidators: true },
+        );
+
+        return res.status(200).json({
+            message: 'Reservation Updated Successfully!',
+            data: reservation,
+        });
+
+    } catch (err) {
+        if (err && err.name === 'ValidationError') {
+            return res.status(400).json({
+                message: err.message,
+                fields: err.errors,
+            });
+        }
+        next(err);
+    }
+}
+
+/* === END FOR AVAILABLE ALL ROLE === */
+
+
+/* === START FOR CASHIER === */
+
+async function verifyReservation(req, res, next) {
+    try {
+        
+        let orderItemIds = [];
+        const { table } = req.body;
+        const waiter = await getWaiterReadyToServe();
+
+        if (waiter === false) {
+            return res.status(404).json({
+                message: 'Maaf sistem sedang sibuk. silahkan coba beberapa saat lagi!',
+            });
+        }
+
+        let order = await Order.findOne({ _id: req.params.id }).populate({
+            path: 'order_items',
+            match: { status: STATUS_ORDER_ITEM.NEW }
+        }).populate('reservation');
+
+        await order.reservation.updateOne({
+            status: STATUS_RESERVATION.CONFIRMED
+        });
+
+        await order.updateOne({
+            table,
+            waiter,
+            status: STATUS_ORDER.PROCESSED,
+        });
+
+        await useTable(table);
+        await waiterServing(waiter, table);
+
+        if (order.order_items.length > 0) {
+            order.order_items.every((element) => orderItemIds.push(element._id.toString()));
+            await OrderItem.updateMany(
+                { _id: { $in: orderItemIds } },
+                { status: STATUS_ORDER_ITEM.IN_QUEUE }
+            );
+        }
+
+        return res.status(200).json({
+            message: 'Reservation Verified Successfully!'
+        });
+
+    } catch (err) {
+        if (err && err.name === 'ValidationError') {
+            return res.status(400).json({
+                message: err.message,
+                fields: err.errors,
+            });
+        }
+        next(err);
+    }
+}
+
+/* === END FOR CASHIER === */
+
 
 /* === START FOR GUEST === */
 
@@ -1548,12 +1732,16 @@ async function cancelOrderByWaiter(req, res, next) {
 
 module.exports = {
     queues,
+    reservationQueues,
     getQueues,
+    getReservationQueues,
     getOrderCounts,
     getOrders,
     getOrder,
     updateOrder,
     updateOrderItem,
+    updateReservation,
+    verifyReservation,
     getOrderByGuest,
     createOrderByGuest,
     updateOrderModifyByGuest,
