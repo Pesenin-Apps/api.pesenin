@@ -6,7 +6,7 @@ const { STATUS_GUEST, Guest } = require('../models/guest');
 const { PROCESSED_ON } = require('../models/products/type');
 const { getUserSignedIn, getWaiterReadyToServe, getGuestCheckedIn, getNumbering } = require('../helpers/gets');
 const { useTable, clearTable } = require('../helpers/table');
-const { waiterUnserve } = require('../helpers/waiter');
+const { waiterUnserve, waiterServing } = require('../helpers/waiter');
 const LinkedList = require('../helpers/queue');
 const queue = new LinkedList();
 
@@ -83,7 +83,7 @@ async function reservationQueues() {
 
 /* = = = = = = = = =   [ S T A R T ]   R E S T   A P I   = = = = = = = = = */
 
-/* === STAgit RT FOR AVAILABLE ALL ROLE === */
+/* === START FOR AVAILABLE ALL ROLE === */
 
 async function getQueues(req, res, next) {
     try {
@@ -306,8 +306,6 @@ async function updateOrder(req, res, next) {
 
         if (payload.is_paid === STATUS_PAYMENT.ALREADY) {
 
-            await waiterUnserve(order.waiter, order.table);
-
             if (order.guest !== null) {
                 await Guest.findOneAndUpdate(
                     { _id: order.guest },
@@ -316,6 +314,7 @@ async function updateOrder(req, res, next) {
                 );
             }
 
+            await waiterUnserve(order.waiter, order.table);
             await clearTable(order.table);
 
         }
@@ -410,6 +409,65 @@ async function updateReservation(req, res, next) {
 }
 
 /* === END FOR AVAILABLE ALL ROLE === */
+
+
+/* === START FOR CASHIER === */
+
+async function verifyReservation(req, res, next) {
+    try {
+        
+        let orderItemIds = [];
+        const { table } = req.body;
+        const waiter = await getWaiterReadyToServe();
+
+        if (waiter === false) {
+            return res.status(404).json({
+                message: 'Maaf sistem sedang sibuk. silahkan coba beberapa saat lagi!',
+            });
+        }
+
+        let order = await Order.findOne({ _id: req.params.id }).populate({
+            path: 'order_items',
+            match: { status: STATUS_ORDER_ITEM.NEW }
+        }).populate('reservation');
+
+        await order.reservation.updateOne({
+            status: STATUS_RESERVATION.CONFIRMED
+        });
+
+        await order.updateOne({
+            table,
+            waiter,
+            status: STATUS_ORDER.PROCESSED,
+        });
+
+        await useTable(table);
+        await waiterServing(waiter, table);
+
+        if (order.order_items.length > 0) {
+            order.order_items.every((element) => orderItemIds.push(element._id.toString()));
+            await OrderItem.updateMany(
+                { _id: { $in: orderItemIds } },
+                { status: STATUS_ORDER_ITEM.IN_QUEUE }
+            );
+        }
+
+        return res.status(200).json({
+            message: 'Reservation Verified Successfully!'
+        });
+
+    } catch (err) {
+        if (err && err.name === 'ValidationError') {
+            return res.status(400).json({
+                message: err.message,
+                fields: err.errors,
+            });
+        }
+        next(err);
+    }
+}
+
+/* === END FOR CASHIER === */
 
 
 /* === START FOR GUEST === */
@@ -1683,6 +1741,7 @@ module.exports = {
     updateOrder,
     updateOrderItem,
     updateReservation,
+    verifyReservation,
     getOrderByGuest,
     createOrderByGuest,
     updateOrderModifyByGuest,
