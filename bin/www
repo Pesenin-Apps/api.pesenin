@@ -15,7 +15,7 @@ var http = require('http');
 // var https = require('https');
 // var fs = require('fs');
 
-const { queues } = require('../app/controllers/order.controller');
+const { queues, reservationQueues } = require('../app/controllers/order.controller');
 // const { getOrderCount } = require('../app/controllers/socket.controller');
 
 /**
@@ -74,6 +74,9 @@ const io = require('socket.io')(server, {
 io.on('connection', (socket) => {
   socket.on('queue', async (data) => {
     socket.emit(data, await queues(data));
+  });
+  socket.on('reservation', async () => {
+    socket.emit('queue', await reservationQueues());
   });
   // socket.emit('count-order-today', await getOrderCount());
   // socket.on('table-section', async (data) => {

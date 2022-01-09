@@ -34,6 +34,50 @@ async function queues(section) {
     return response;
 }
 
+async function reservationQueues() {
+
+    const orders = await Order.find({
+        type: TYPE_ORDER.RESERVATION,
+        status: {
+            $gte: STATUS_ORDER.PROCESSED,
+            $lte: STATUS_ORDER.FINISH,
+        },
+        is_paid: STATUS_PAYMENT.NOT_YET,
+    }).populate('reservation').populate({
+        path: 'order_items',
+        select: '-__v -price -total -order',
+        populate: {
+            path: 'product',
+            select: 'name',
+        },
+    }).populate({
+        path: 'table',
+        select: 'number',
+        populate: {
+            path: 'section',
+            select: 'name'
+        }
+    }).populate('customer', 'fullname').populate({
+        path: 'waiter',
+        select: 'waiter',
+        populate: {
+            path: 'users',
+            select: 'fullname'
+        }
+    });
+
+    orders.sort((a,b) => {
+        return a.reservation.datetime_plan > b.reservation.datetime_plan ? 1 : -1;
+    });
+
+    const response = {
+        data: orders,
+    };
+
+    return response;
+
+}
+
 /* = = = = = = = = =   [ E N D ]   S O C K E T   = = = = = = = = = */
 
 
@@ -60,6 +104,53 @@ async function getQueues(req, res, next) {
             message: 'Queues Retrived Successfully!',
             count: orderItems.length,
             data: orderItems
+        });
+
+    } catch (err) {
+        next(err);
+    }
+}
+
+async function getReservationQueues(req, res, next) {
+    try {
+
+        const orders = await Order.find({
+            type: TYPE_ORDER.RESERVATION,
+            status: {
+                $gte: STATUS_ORDER.PROCESSED,
+                $lte: STATUS_ORDER.FINISH,
+            },
+            is_paid: STATUS_PAYMENT.NOT_YET,
+        }).populate('reservation').populate({
+            path: 'order_items',
+            select: '-__v -price -total -order',
+            populate: {
+                path: 'product',
+                select: 'name',
+            },
+        }).populate({
+            path: 'table',
+            select: 'number',
+            populate: {
+                path: 'section',
+                select: 'name'
+            }
+        }).populate('customer', 'fullname').populate({
+            path: 'waiter',
+            select: 'waiter',
+            populate: {
+                path: 'users',
+                select: 'fullname'
+            }
+        });
+
+        orders.sort((a,b) => {
+            return a.reservation.datetime_plan > b.reservation.datetime_plan ? 1 : -1;
+        });
+
+        return res.status(200).json({
+            message: 'ReservationQueues Retrived Successfully!',
+            data: orders,
         });
 
     } catch (err) {
@@ -142,7 +233,7 @@ async function getOrders(req, res, next) {
                 path: 'section',
                 select: 'name code',
             }
-        }).sort('-createdAt').skip(skipCol).limit(limitCol);
+        }).populate('reservation').sort('-createdAt').skip(skipCol).limit(limitCol);
 
         let count = await Order.find(criteria).countDocuments();
 
@@ -266,7 +357,9 @@ async function updateOrderItem(req, res, next) {
             }
         });
 
-        if (payload.status == STATUS_ORDER_ITEM.FINISH && orderItem.product.type.belong === PROCESSED_ON.INSIDE_KITCHEN) {
+        const orderData = await Order.findById(orderItem.order);
+
+        if (payload.status == STATUS_ORDER_ITEM.FINISH && orderItem.product.type.belong === PROCESSED_ON.INSIDE_KITCHEN && orderData.type === TYPE_ORDER.DINE_IN) {
             queue.destroy(id.toString());
         }
 
@@ -1581,7 +1674,9 @@ async function cancelOrderByWaiter(req, res, next) {
 
 module.exports = {
     queues,
+    reservationQueues,
     getQueues,
+    getReservationQueues,
     getOrderCounts,
     getOrders,
     getOrder,

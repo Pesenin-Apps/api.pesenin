@@ -53,6 +53,7 @@ router.get('/orders/count', hasRole('cashier','kitchen'), orderController.getOrd
 router.get('/orders', hasRole('cashier'), orderController.getOrders);
 router.get('/orders/:id', hasRole('cashier','waiter','customer'), orderController.getOrder);
 router.patch('/orders/:id', hasRole('cashier'), orderController.updateOrder);
+router.get('/queues/reservations', hasRole('cashier','kitchen'), orderController.getReservationQueues);
 router.get('/queues', hasRole('cashier','kitchen'), orderController.getQueues);
 
 /* === START FOR WAITER === */
