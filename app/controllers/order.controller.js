@@ -406,10 +406,8 @@ async function updateReservation(req, res, next) {
     try {
         
         let payload = req.body;
-        const { id } = req.params;
-
         const reservation = await Reservation.findOneAndUpdate(
-            { _id: id },
+            { _id: req.params.id },
             payload,
             { new: true, runValidators: true },
         );
@@ -1359,7 +1357,7 @@ async function verifyOrderByWaiter(req, res, next) {
         order.order_items.every(async (element) => {
             orderItemIds.push(element._id.toString());
             const product = await Product.findOne({_id: element.product}).populate('type', '_id belong');
-            if (product.type.belong === PROCESSED_ON.INSIDE_KITCHEN) {
+            if (product.type.belong === PROCESSED_ON.INSIDE_KITCHEN && order.type === TYPE_ORDER.DINE_IN) {
                 queue.push(element._id.toString(), product.type._id.toString());
             }
         });
@@ -1438,7 +1436,7 @@ async function createOrderByWaiter(req, res, next) {
         orderedItems.forEach(async (item) => {
             order.order_items.push(item);
             const product = await Product.findOne({_id: item.product}).populate('type', '_id belong');
-            if (product.type.belong === PROCESSED_ON.INSIDE_KITCHEN) {
+            if (product.type.belong === PROCESSED_ON.INSIDE_KITCHEN && order.type === TYPE_ORDER.DINE_IN) {
                 queue.push(item._id.toString(), product.type._id.toString());
             }
         });
@@ -1526,7 +1524,7 @@ async function updateOrderModifyByWaiter(req, res, next) {
                         select: 'belong',
                     }
                 });
-                if (destoryItem.status === STATUS_ORDER_ITEM.IN_QUEUE && destoryItem.product.type.belong === PROCESSED_ON.INSIDE_KITCHEN) {
+                if (destoryItem.status === STATUS_ORDER_ITEM.IN_QUEUE && destoryItem.product.type.belong === PROCESSED_ON.INSIDE_KITCHEN && order.type === TYPE_ORDER.DINE_IN) {
                     queue.destroy(element.item.toString());
                 }
             } else {
@@ -1640,7 +1638,7 @@ async function updateOrderDeleteByWaiter(req, res, next) {
         
         let orderedItems = destroyedItems.map((element) => {
             let relatedItem = deletedItems.find((orderItem) => orderItem._id.toString() === element.item);
-            if (relatedItem.status === STATUS_ORDER_ITEM.IN_QUEUE && relatedItem.product.type.belong === PROCESSED_ON.INSIDE_KITCHEN) {
+            if (relatedItem.status === STATUS_ORDER_ITEM.IN_QUEUE && relatedItem.product.type.belong === PROCESSED_ON.INSIDE_KITCHEN && order.type === TYPE_ORDER.DINE_IN) {
                 queue.destroy(relatedItem._id.toString());
             }
             return {
@@ -1718,7 +1716,7 @@ async function cancelOrderByWaiter(req, res, next) {
             await waiterUnserve(waiter.waiter._id, order.table);
             await order.updateOne({ status: STATUS_ORDER.CANCEL });
             order.order_items.forEach((item) => {
-                if (item.status === STATUS_ORDER_ITEM.IN_QUEUE && item.product.type.belong === PROCESSED_ON.INSIDE_KITCHEN) {
+                if (item.status === STATUS_ORDER_ITEM.IN_QUEUE && item.product.type.belong === PROCESSED_ON.INSIDE_KITCHEN && order.type === TYPE_ORDER.DINE_IN) {
                     queue.destroy(item._id.toString());
                 }
             });
