@@ -39,11 +39,14 @@ async function reservationQueues() {
     const orders = await Order.find({
         type: TYPE_ORDER.RESERVATION,
         status: {
-            $gte: STATUS_ORDER.PROCESSED,
+            $gte: STATUS_ORDER.CREATE,
             $lte: STATUS_ORDER.FINISH,
         },
         is_paid: STATUS_PAYMENT.NOT_YET,
-    }).populate('reservation').populate({
+    }).populate({
+        path: 'reservation',
+        match: { status: STATUS_RESERVATION.CONFIRMED }
+    }).populate({
         path: 'order_items',
         select: '-__v -price -total -order',
         populate: {
@@ -66,7 +69,13 @@ async function reservationQueues() {
         }
     });
 
-    orders.sort((a,b) => {
+    orders.forEach((element, index, object) => {
+        if (element.reservation === null) {
+            object.splice(index, 1);
+        }
+    });
+
+    orders.sort((a, b) => {
         return a.reservation.datetime_plan > b.reservation.datetime_plan ? 1 : -1;
     });
 
@@ -117,11 +126,14 @@ async function getReservationQueues(req, res, next) {
         const orders = await Order.find({
             type: TYPE_ORDER.RESERVATION,
             status: {
-                $gte: STATUS_ORDER.PROCESSED,
+                $gte: STATUS_ORDER.CREATE,
                 $lte: STATUS_ORDER.FINISH,
             },
             is_paid: STATUS_PAYMENT.NOT_YET,
-        }).populate('reservation').populate({
+        }).populate({
+            path: 'reservation',
+            match: { status: STATUS_RESERVATION.CONFIRMED }
+        }).populate({
             path: 'order_items',
             select: '-__v -price -total -order',
             populate: {
@@ -144,7 +156,13 @@ async function getReservationQueues(req, res, next) {
             }
         });
 
-        orders.sort((a,b) => {
+        orders.forEach((element, index, object) => {
+            if (element.reservation === null) {
+                object.splice(index, 1);
+            }
+        });
+
+        orders.sort((a, b) => {
             return a.reservation.datetime_plan > b.reservation.datetime_plan ? 1 : -1;
         });
 
@@ -358,7 +376,9 @@ async function updateOrderItem(req, res, next) {
 
         const orderData = await Order.findById(orderItem.order);
 
-        if (payload.status == STATUS_ORDER_ITEM.FINISH && orderItem.product.type.belong === PROCESSED_ON.INSIDE_KITCHEN && orderData.type === TYPE_ORDER.DINE_IN) {
+        if (payload.status == STATUS_ORDER_ITEM.FINISH 
+        && orderItem.product.type.belong === PROCESSED_ON.INSIDE_KITCHEN 
+        && orderData.type === TYPE_ORDER.DINE_IN) {
             queue.destroy(id.toString());
         }
 
@@ -368,6 +388,8 @@ async function updateOrderItem(req, res, next) {
 
         if (result == STATUS_ORDER_ITEM.FINISH) {
             await order.updateOne({ status: STATUS_ORDER.FINISH });
+        } else if (result == STATUS_ORDER_ITEM.IN_QUEUE || result == STATUS_ORDER_ITEM.IN_PROCESS) {
+            await order.updateOne({ status: STATUS_ORDER.PROCESSED });
         }
 
         return res.status(200).json({
@@ -384,10 +406,8 @@ async function updateReservation(req, res, next) {
     try {
         
         let payload = req.body;
-        const { id } = req.params;
-
         const reservation = await Reservation.findOneAndUpdate(
-            { _id: id },
+            { _id: req.params.id },
             payload,
             { new: true, runValidators: true },
         );
@@ -438,7 +458,7 @@ async function verifyReservation(req, res, next) {
         await order.updateOne({
             table,
             waiter,
-            status: STATUS_ORDER.PROCESSED,
+            // status: STATUS_ORDER.PROCESSED,
         });
 
         await useTable(table);
@@ -1337,7 +1357,7 @@ async function verifyOrderByWaiter(req, res, next) {
         order.order_items.every(async (element) => {
             orderItemIds.push(element._id.toString());
             const product = await Product.findOne({_id: element.product}).populate('type', '_id belong');
-            if (product.type.belong === PROCESSED_ON.INSIDE_KITCHEN) {
+            if (product.type.belong === PROCESSED_ON.INSIDE_KITCHEN && order.type === TYPE_ORDER.DINE_IN) {
                 queue.push(element._id.toString(), product.type._id.toString());
             }
         });
@@ -1416,7 +1436,7 @@ async function createOrderByWaiter(req, res, next) {
         orderedItems.forEach(async (item) => {
             order.order_items.push(item);
             const product = await Product.findOne({_id: item.product}).populate('type', '_id belong');
-            if (product.type.belong === PROCESSED_ON.INSIDE_KITCHEN) {
+            if (product.type.belong === PROCESSED_ON.INSIDE_KITCHEN && order.type === TYPE_ORDER.DINE_IN) {
                 queue.push(item._id.toString(), product.type._id.toString());
             }
         });
@@ -1504,7 +1524,7 @@ async function updateOrderModifyByWaiter(req, res, next) {
                         select: 'belong',
                     }
                 });
-                if (destoryItem.status === STATUS_ORDER_ITEM.IN_QUEUE && destoryItem.product.type.belong === PROCESSED_ON.INSIDE_KITCHEN) {
+                if (destoryItem.status === STATUS_ORDER_ITEM.IN_QUEUE && destoryItem.product.type.belong === PROCESSED_ON.INSIDE_KITCHEN && order.type === TYPE_ORDER.DINE_IN) {
                     queue.destroy(element.item.toString());
                 }
             } else {
@@ -1618,7 +1638,7 @@ async function updateOrderDeleteByWaiter(req, res, next) {
         
         let orderedItems = destroyedItems.map((element) => {
             let relatedItem = deletedItems.find((orderItem) => orderItem._id.toString() === element.item);
-            if (relatedItem.status === STATUS_ORDER_ITEM.IN_QUEUE && relatedItem.product.type.belong === PROCESSED_ON.INSIDE_KITCHEN) {
+            if (relatedItem.status === STATUS_ORDER_ITEM.IN_QUEUE && relatedItem.product.type.belong === PROCESSED_ON.INSIDE_KITCHEN && order.type === TYPE_ORDER.DINE_IN) {
                 queue.destroy(relatedItem._id.toString());
             }
             return {
@@ -1696,7 +1716,7 @@ async function cancelOrderByWaiter(req, res, next) {
             await waiterUnserve(waiter.waiter._id, order.table);
             await order.updateOne({ status: STATUS_ORDER.CANCEL });
             order.order_items.forEach((item) => {
-                if (item.status === STATUS_ORDER_ITEM.IN_QUEUE && item.product.type.belong === PROCESSED_ON.INSIDE_KITCHEN) {
+                if (item.status === STATUS_ORDER_ITEM.IN_QUEUE && item.product.type.belong === PROCESSED_ON.INSIDE_KITCHEN && order.type === TYPE_ORDER.DINE_IN) {
                     queue.destroy(item._id.toString());
                 }
             });
