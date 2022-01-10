@@ -39,11 +39,14 @@ async function reservationQueues() {
     const orders = await Order.find({
         type: TYPE_ORDER.RESERVATION,
         status: {
-            $gte: STATUS_ORDER.PROCESSED,
+            $gte: STATUS_ORDER.CREATE,
             $lte: STATUS_ORDER.FINISH,
         },
         is_paid: STATUS_PAYMENT.NOT_YET,
-    }).populate('reservation').populate({
+    }).populate({
+        path: 'reservation',
+        match: { status: STATUS_RESERVATION.CONFIRMED }
+    }).populate({
         path: 'order_items',
         select: '-__v -price -total -order',
         populate: {
@@ -66,7 +69,13 @@ async function reservationQueues() {
         }
     });
 
-    orders.sort((a,b) => {
+    orders.forEach((element, index, object) => {
+        if (element.reservation === null) {
+            object.splice(index, 1);
+        }
+    });
+
+    orders.sort((a, b) => {
         return a.reservation.datetime_plan > b.reservation.datetime_plan ? 1 : -1;
     });
 
@@ -117,11 +126,14 @@ async function getReservationQueues(req, res, next) {
         const orders = await Order.find({
             type: TYPE_ORDER.RESERVATION,
             status: {
-                $gte: STATUS_ORDER.PROCESSED,
+                $gte: STATUS_ORDER.CREATE,
                 $lte: STATUS_ORDER.FINISH,
             },
             is_paid: STATUS_PAYMENT.NOT_YET,
-        }).populate('reservation').populate({
+        }).populate({
+            path: 'reservation',
+            match: { status: STATUS_RESERVATION.CONFIRMED }
+        }).populate({
             path: 'order_items',
             select: '-__v -price -total -order',
             populate: {
@@ -144,7 +156,13 @@ async function getReservationQueues(req, res, next) {
             }
         });
 
-        orders.sort((a,b) => {
+        orders.forEach((element, index, object) => {
+            if (element.reservation === null) {
+                object.splice(index, 1);
+            }
+        });
+
+        orders.sort((a, b) => {
             return a.reservation.datetime_plan > b.reservation.datetime_plan ? 1 : -1;
         });
 
@@ -358,7 +376,9 @@ async function updateOrderItem(req, res, next) {
 
         const orderData = await Order.findById(orderItem.order);
 
-        if (payload.status == STATUS_ORDER_ITEM.FINISH && orderItem.product.type.belong === PROCESSED_ON.INSIDE_KITCHEN && orderData.type === TYPE_ORDER.DINE_IN) {
+        if (payload.status == STATUS_ORDER_ITEM.FINISH 
+        && orderItem.product.type.belong === PROCESSED_ON.INSIDE_KITCHEN 
+        && orderData.type === TYPE_ORDER.DINE_IN) {
             queue.destroy(id.toString());
         }
 
@@ -368,6 +388,8 @@ async function updateOrderItem(req, res, next) {
 
         if (result == STATUS_ORDER_ITEM.FINISH) {
             await order.updateOne({ status: STATUS_ORDER.FINISH });
+        } else if (result == STATUS_ORDER_ITEM.IN_QUEUE || result == STATUS_ORDER_ITEM.IN_PROCESS) {
+            await order.updateOne({ status: STATUS_ORDER.PROCESSED });
         }
 
         return res.status(200).json({
@@ -438,7 +460,7 @@ async function verifyReservation(req, res, next) {
         await order.updateOne({
             table,
             waiter,
-            status: STATUS_ORDER.PROCESSED,
+            // status: STATUS_ORDER.PROCESSED,
         });
 
         await useTable(table);
