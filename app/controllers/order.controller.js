@@ -461,7 +461,7 @@ async function verifyReservation(req, res, next) {
             // status: STATUS_ORDER.PROCESSED,
         });
 
-        await useTable(table);
+        await tableReservation(table);
         await waiterServing(waiter, table);
 
         if (order.order_items.length > 0) {
