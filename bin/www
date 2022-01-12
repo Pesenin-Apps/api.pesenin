@@ -11,12 +11,12 @@ var debug = require('debug')('api.pesenin:server');
 // HTTP
 var http = require('http');
 
-// // HTTPS
+// HTTPS
 // var https = require('https');
 // var fs = require('fs');
 
 const { queues, reservationQueues } = require('../app/controllers/order.controller');
-// const { getOrderCount } = require('../app/controllers/socket.controller');
+const { getOrderCount } = require('../app/controllers/socket.controller');
 
 /**
  * currently using MongoDB Atlas, if you want to use Locally change to local configuration
@@ -78,7 +78,9 @@ io.on('connection', (socket) => {
   socket.on('reservation', async () => {
     socket.emit('queue', await reservationQueues());
   });
-  // socket.emit('count-order-today', await getOrderCount());
+  socket.on('counting', async () => {
+    socket.emit('order-today', await getOrderCount());
+  });
   // socket.on('table-section', async (data) => {
   //   socket.emit(data, await getTables(data));
   // });
