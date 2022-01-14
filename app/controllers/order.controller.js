@@ -1727,7 +1727,7 @@ async function cancelOrderByWaiter(req, res, next) {
                 });
             }
         } else {
-            if (order.reservation.status === STATUS_RESERVATION.CREATE && order.status <= STATUS_ORDER.CREATE && countItemProcessed === 0) {
+            if (order.reservation.status === STATUS_RESERVATION.CREATE && order.status <= STATUS_ORDER.PROCESSED && countItemProcessed === 0) {
                 await order.updateOne({ status: STATUS_ORDER.CANCEL });
             } else {
                 return res.status(400).json({
