@@ -1692,7 +1692,7 @@ async function cancelOrderByWaiter(req, res, next) {
                     select: 'belong',
                 }
             }
-        });
+        }).populate('reservation');
 
         if (!order) {
             return res.status(404).json({
@@ -1712,18 +1712,28 @@ async function cancelOrderByWaiter(req, res, next) {
             }
         });
 
-        if (order.status <= STATUS_ORDER.PROCESSED && countItemProcessed === 0) {
-            await waiterUnserve(waiter.waiter._id, order.table);
-            await order.updateOne({ status: STATUS_ORDER.CANCEL });
-            order.order_items.forEach((item) => {
-                if (item.status === STATUS_ORDER_ITEM.IN_QUEUE && item.product.type.belong === PROCESSED_ON.INSIDE_KITCHEN && order.type === TYPE_ORDER.DINE_IN) {
-                    queue.destroy(item._id.toString());
-                }
-            });
+        if (order.type === TYPE_ORDER.DINE_IN) {
+            if (order.status <= STATUS_ORDER.PROCESSED && countItemProcessed === 0) {
+                await waiterUnserve(waiter.waiter._id, order.table);
+                await order.updateOne({ status: STATUS_ORDER.CANCEL });
+                order.order_items.forEach((item) => {
+                    if (item.status === STATUS_ORDER_ITEM.IN_QUEUE && item.product.type.belong === PROCESSED_ON.INSIDE_KITCHEN) {
+                        queue.destroy(item._id.toString());
+                    }
+                });
+            } else {
+                return res.status(400).json({
+                    message: 'Pesanan telah diproses, anda tidak dapat membatalkannya!',
+                });
+            }
         } else {
-            return res.status(400).json({
-                message: 'Pesanan telah diproses, anda tidak dapat membatalkannya!',
-            });
+            if (order.reservation.status === STATUS_RESERVATION.CREATE && order.status <= STATUS_ORDER.CREATE && countItemProcessed === 0) {
+                await order.updateOne({ status: STATUS_ORDER.CANCEL });
+            } else {
+                return res.status(400).json({
+                    message: 'Reservasi anda telah terkonfirmasi, anda tidak dapat membatalkannya!',
+                });
+            }
         }
 
         if (order.guest !== null) {
