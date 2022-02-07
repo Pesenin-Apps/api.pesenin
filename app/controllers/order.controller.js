@@ -892,7 +892,9 @@ async function createOrderByCustomer(req, res, next) {
             order.order_items.push(item);
         });
 
-        if (await order.save()) {
+        await order.save();
+
+        if (order.type === TYPE_ORDER.DINE_IN) {
             await useTable(table);
         }
 
@@ -1441,7 +1443,9 @@ async function createOrderByWaiter(req, res, next) {
             }
         });
 
-        if (await order.save()) {
+        await order.save();
+
+        if (order.type === TYPE_ORDER.DINE_IN) {
             await useTable(table);
         }
 
