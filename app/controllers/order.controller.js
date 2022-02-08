@@ -182,13 +182,12 @@ async function getOrderCounts(req, res, next) {
         let data = {};
         const processed = [1, 2];
         const finished = [3];
-        const all = [...processed, ...finished];
         let now = new Date();
         let startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
 
-        const allData = await Order.find({ status: {$in: all}, createdAt: {$gte: startOfToday} }).countDocuments();
-        const processedData = await Order.find({ status: {$in: processed}, createdAt: {$gte: startOfToday} }).countDocuments();
-        const finishedData = await Order.find({ status: {$in: finished}, createdAt: {$gte: startOfToday} }).countDocuments();
+        const processedData = await Order.find({ status: {$in: processed} }).countDocuments();
+        const finishedData = await Order.find({ status: {$in: finished}, updatedAt: {$gte: startOfToday} }).countDocuments();
+        const allData = processedData + finishedData;
 
         data.all = allData;
         data.processed = processedData;
@@ -892,7 +891,9 @@ async function createOrderByCustomer(req, res, next) {
             order.order_items.push(item);
         });
 
-        if (await order.save()) {
+        await order.save();
+
+        if (order.type === TYPE_ORDER.DINE_IN) {
             await useTable(table);
         }
 
@@ -1441,7 +1442,9 @@ async function createOrderByWaiter(req, res, next) {
             }
         });
 
-        if (await order.save()) {
+        await order.save();
+
+        if (order.type === TYPE_ORDER.DINE_IN) {
             await useTable(table);
         }
 
