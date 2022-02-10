@@ -103,4 +103,3 @@ module.exports = LinkedList;
 
 // console.log(queue.print('pembakaran'));
 // console.log(queue.print('sayuran'));
-
