@@ -99,4 +99,3 @@ module.exports = LinkedList;
 // console.log(queue.count());
 
 // queue.push('cah toge', 'sayuran');
-// console.log(queue.count());
