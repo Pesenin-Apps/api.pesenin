@@ -97,4 +97,3 @@ module.exports = LinkedList;
 
 // queue.push('kepiting bakar', 'pembakaran');
 // console.log(queue.count());
-
