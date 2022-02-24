@@ -95,4 +95,3 @@ module.exports = LinkedList;
 // console.log('cumi bakar');
 // console.log(queue.count());
 
-// queue.push('kepiting bakar', 'pembakaran');
