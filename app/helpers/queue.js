@@ -94,4 +94,3 @@ module.exports = LinkedList;
 // queue.destroy('cumi bakar');
 // console.log('cumi bakar');
 // console.log(queue.count());
-
