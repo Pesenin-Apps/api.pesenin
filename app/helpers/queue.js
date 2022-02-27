@@ -93,4 +93,3 @@ module.exports = LinkedList;
 // console.log('ikan bakar putih');
 // queue.destroy('cumi bakar');
 // console.log('cumi bakar');
-// console.log(queue.count());
