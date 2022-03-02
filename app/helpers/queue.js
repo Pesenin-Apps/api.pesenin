@@ -12,28 +12,23 @@ class LinkedList {
 
   constructor() {
     this.head = null;
-    this.tail = null;
-    this.length = 0;
   }
 
   push(item, section) {
-    let current;
+    let current = this.head;
     const node = new Node(item, section);
-    if (this.head == null) {
+    if (current == null) {
       this.head = node;
     } else {
-      current = this.head;
       while (current.next) {
         current = current.next;
       }
       current.next = node;
     }
-    this.length++;
   }
 
   destroy(item) {
-    let current = this.head;
-    let previous;
+    let current = this.head, previous;
     if (current.order.item == item) {
       this.head = current.next;
     } else {
@@ -46,12 +41,10 @@ class LinkedList {
         current = current.next;
       }
     }
-    this.length--;
   }
 
   list() {
-    let str = "";
-    let current = this.head;
+    let current = this.head, str = "";
     while (current) {
       str += current.order.item + (current.next ? "#space#" : "");
       current = current.next;
@@ -60,8 +53,7 @@ class LinkedList {
   }
 
   print(section) {
-    const items = [];
-    let current = this.head;
+    let current = this.head, items = [];
     while (current) {
       if(current.order.section == section) {
         items.push(current.order.item);
@@ -69,10 +61,6 @@ class LinkedList {
       current = current.next;
     }
     return items;
-  }
-
-  count() {
-    return this.length;
   }
 
 }
