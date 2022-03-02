@@ -66,28 +66,3 @@ class LinkedList {
 }
 
 module.exports = LinkedList;
-
-// const queue = new LinkedList();
-
-// queue.push('ikan bakar putih', 'pembakaran');
-// queue.push('cah pakis', 'sayuran');
-// queue.push('ikan bakar baronang', 'pembakaran');
-// queue.push('cah kangkung', 'sayuran');
-// queue.push('terong tumis', 'sayuran');
-// queue.push('cumi bakar', 'pembakaran');
-
-// console.log(queue.list());
-
-// console.log(queue.print('pembakaran'));
-// console.log(queue.print('sayuran'));
-
-// console.log(queue.count());
-
-// queue.destroy('terong tumis');
-// console.log('terong tumis');
-// console.log(queue.count());
-
-// console.log(queue.print('sayuran'));
-
-// queue.destroy('ikan bakar putih');
-// console.log('ikan bakar putih');
