@@ -7,7 +7,6 @@ module.exports = {
     dbAtlasUser: process.env.DB_ATLAS_USER,
     dbAtlasPassword: process.env.DB_ATLAS_PASSWORD,
     dbAtlasName: process.env.DB_ATLAS_NAME,
-    dbAtlasName: process.env.DB_ATLAS_NAME,
     dbAtlasQueryString: process.env.DB_ATLAS_QUERY_STRING,
     dbAtlasOption: process.env.DB_ATLAS_OPTION,
 }
