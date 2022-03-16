@@ -7,7 +7,7 @@ async function index(req, res, next) {
 
         return res.status(200).json({
             message: "Categories Retrived Successfully!",
-            data: categories
+            data: categories,
         });
 
     } catch (err) {
