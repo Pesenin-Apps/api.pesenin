@@ -22,7 +22,7 @@ async function show(req, res, next) {
         
         return res.status(200).json({
             message: "ProductCategory Retrived Successfully!",
-            data: productCategory
+            data: productCategory,
         });
 
     } catch (err) {
