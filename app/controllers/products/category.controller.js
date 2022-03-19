@@ -40,7 +40,7 @@ async function store(req, res, next) {
 
         return res.status(201).json({
             message: 'ProductCategory Stored Successfully!',
-            data: productCategory
+            data: productCategory,
         });
 
     } catch (err) {
