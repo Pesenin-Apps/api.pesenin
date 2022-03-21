@@ -63,7 +63,7 @@ async function update(req, res, next) {
         let productCategory = await ProductCategory.findByIdAndUpdate(
             { _id: req.params.id },
             payload,
-            { new: true, runValidators: true }
+            { new: true, runValidators: true },
         );
 
         return res.status(200).json({
