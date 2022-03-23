@@ -76,7 +76,7 @@ async function update(req, res, next) {
         if (err && err.name === 'ValidationError') {
             return res.status(404).json({
                 message: err.message,
-                fields: err.errors
+                fields: err.errors,
             });
         }
         next(err);
