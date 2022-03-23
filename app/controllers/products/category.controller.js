@@ -88,6 +88,7 @@ async function destroy(req, res, next) {
     try {
 
         let productCategory = await ProductCategory.findOneAndDelete({ _id: req.params.id });
+        
         return res.status(200).json({
             message: 'ProductCategory Deleted Successfully!',
             data: productCategory
