@@ -41,16 +41,14 @@ async function store(req, res, next) {
         let code;
         let payload = req.body;
 
-        const existTable = await Table.findOne({
-            'number': payload.number
-        }).populate({
-            path: 'section',
+        const sectionExists = await TableSection.findById(payload.section).populate({
+            path: 'tables',
             match: {
-                _id: payload.section
-            }
+                number: payload.number
+            },
         });
-        
-        if (existTable?.section != null) {
+
+        if (sectionExists.tables.length > 0) {
             return res.status(400).json({
                 message: 'Meja telah tersedia!'
             });

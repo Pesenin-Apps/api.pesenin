@@ -43,15 +43,6 @@ class LinkedList {
     }
   }
 
-  list() {
-    let current = this.head, str = "";
-    while (current) {
-      str += current.order.item + (current.next ? "#space#" : "");
-      current = current.next;
-    }
-    return str.split('#space#');
-  }
-
   print(section) {
     let current = this.head, items = [];
     while (current) {
