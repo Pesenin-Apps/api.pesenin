@@ -91,7 +91,7 @@ async function destroy(req, res, next) {
         
         return res.status(200).json({
             message: 'ProductCategory Deleted Successfully!',
-            data: productCategory
+            data: productCategory,
         });
 
     } catch (err) {
