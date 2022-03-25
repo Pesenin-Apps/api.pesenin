@@ -104,5 +104,5 @@ module.exports = {
     show,
     store,
     update,
-    destroy
+    destroy,
 }
