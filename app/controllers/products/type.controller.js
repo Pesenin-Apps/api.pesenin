@@ -31,6 +31,7 @@ async function show(req, res, next) {
     try {
 
         let productType = await ProductType.findById(req.params.id).populate('products');
+        
         return res.status(200).json({
             message: "ProductType Retrived Successfully!",
             data: productType,
