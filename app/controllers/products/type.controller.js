@@ -31,7 +31,7 @@ async function show(req, res, next) {
     try {
 
         let productType = await ProductType.findById(req.params.id).populate('products');
-        
+
         return res.status(200).json({
             message: "ProductType Retrived Successfully!",
             data: productType,
@@ -52,7 +52,7 @@ async function store(req, res, next) {
 
         return res.status(201).json({
             message: 'ProductType Stored Successfully!',
-            data: productType
+            data: productType,
         });
 
     } catch (err) {
