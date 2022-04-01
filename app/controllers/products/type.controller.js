@@ -80,7 +80,7 @@ async function update(req, res, next) {
 
         return res.status(200).json({
             message: 'ProductType Updated Successfully!',
-            data: productType
+            data: productType,
         });
 
     } catch (err) {
