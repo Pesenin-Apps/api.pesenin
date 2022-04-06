@@ -16,7 +16,7 @@ async function index(req, res, next) {
         if (period !== "all") {
             if (!page || !limit) {
                 return res.status(400).json({
-                    message: 'Enter Params Page and Limit!'
+                    message: 'Enter Params Page and Limit!',
                 });
             }
             skipCol = (parseInt(page) - 1) * parseInt(limit);
