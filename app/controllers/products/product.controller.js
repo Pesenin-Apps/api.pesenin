@@ -33,7 +33,7 @@ async function index(req, res, next) {
         if(category.length){
             category = await ProductCategory.findById(category);
 			if(category) {
-                criteria = {...criteria, category: category._id}
+                criteria = { ...criteria, category: category._id }
 			}
 		}
 
