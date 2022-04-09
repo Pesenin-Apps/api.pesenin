@@ -26,7 +26,7 @@ async function index(req, res, next) {
         if(search.length){
 			criteria = {
 				...criteria, 
-				name: {$regex: `${search}`, $options: 'i'},
+				name: { $regex: `${search}`, $options: 'i' },
 			}
 		}
 
