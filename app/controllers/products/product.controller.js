@@ -50,7 +50,7 @@ async function index(req, res, next) {
             count: count,
             pageCurrent: parseInt(page),
             pageMaximum: Math.ceil(count / limit),
-            data: products
+            data: products,
         });
         
     } catch (err) {
