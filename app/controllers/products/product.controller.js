@@ -62,7 +62,7 @@ async function show(req, res, next) {
     try {
 
         let product = await Product.findById(req.params.id).populate('category').populate('type');
-        
+
         return res.status(200).json({
             message: "Product Retrived Successfully!",
             data: product,
@@ -82,9 +82,7 @@ async function store(req, res, next) {
 
         // relationship of category
         if (payload.category) {
-            let category = await ProductCategory.findOne({
-                _id: payload.category
-            });
+            let category = await ProductCategory.findOne({ _id: payload.category });
             if (category) {
                 payload = { ...payload, category: category._id }
             } else {
