@@ -118,7 +118,7 @@ async function store(req, res, next) {
                     await product.save();
                     return res.status(201).json({
                         message: 'Product Stored Successfully!',
-                        product: product
+                        product: product,
                     });
                 } catch (err) {
                     // if failed, destroy file uploaded
