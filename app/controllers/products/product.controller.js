@@ -127,7 +127,7 @@ async function store(req, res, next) {
                     if (err && err.name === 'ValidationError') {
                         return res.status(400).json({
                             message: err.message,
-                            fields: err.errors
+                            fields: err.errors,
                         });
                     }
                     next(err);
