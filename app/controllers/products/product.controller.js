@@ -169,9 +169,7 @@ async function update(req, res, next) {
 
         // relationship of category
         if (payload.category) {
-            let category = await ProductCategory.findOne({
-                _id: payload.category
-            });
+            let category = await ProductCategory.findOne({ _id: payload.category });
             if (category) {
                 payload = { ...payload, category: category._id }
             } else {
