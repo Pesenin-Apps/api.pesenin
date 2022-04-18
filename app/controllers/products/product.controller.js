@@ -179,9 +179,7 @@ async function update(req, res, next) {
 
         // relationship of type
         if (payload.type) {
-            let type = await ProductType.findOne({
-                _id: payload.type
-            });
+            let type = await ProductType.findOne({ _id: payload.type });
             if (type) {
                 payload = { ...payload, type: type._id }
             } else {
