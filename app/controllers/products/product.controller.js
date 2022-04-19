@@ -216,7 +216,7 @@ async function update(req, res, next) {
                     );
                     res.status(200).json({
                         message: 'Product Updated Successfully!',
-                        product: product
+                        product: product,
                     });
                 } catch (err) {
                     // if failed, destroy file uploaded
