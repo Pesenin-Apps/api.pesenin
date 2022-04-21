@@ -243,7 +243,7 @@ async function update(req, res, next) {
             );
             res.status(200).json({
                 message: 'Product Updated Successfully!',
-                data: product
+                data: product,
             });
         }
 
