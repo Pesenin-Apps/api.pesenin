@@ -212,7 +212,7 @@ async function update(req, res, next) {
                     product = await Product.findOneAndUpdate(
                         { _id: req.params.id },
                         { ...payload, image_url: fileName },
-                        { new: true, runValidators: true }
+                        { new: true, runValidators: true },
                     );
                     res.status(200).json({
                         message: 'Product Updated Successfully!',
