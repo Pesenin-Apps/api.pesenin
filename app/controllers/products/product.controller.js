@@ -16,7 +16,7 @@ async function index(req, res, next) {
         if (period !== "all") {
             if (!page || !limit) {
                 return res.status(400).json({
-                    message: 'Enter Params Page and Limit!'
+                    message: 'Enter Params Page and Limit!',
                 });
             }
             skipCol = (parseInt(page) - 1) * parseInt(limit);
@@ -26,14 +26,14 @@ async function index(req, res, next) {
         if(search.length){
 			criteria = {
 				...criteria, 
-				name: {$regex: `${search}`, $options: 'i'}
+				name: { $regex: `${search}`, $options: 'i' },
 			}
 		}
 
         if(category.length){
             category = await ProductCategory.findById(category);
 			if(category) {
-                criteria = {...criteria, category: category._id}
+                criteria = { ...criteria, category: category._id }
 			}
 		}
 
@@ -50,7 +50,7 @@ async function index(req, res, next) {
             count: count,
             pageCurrent: parseInt(page),
             pageMaximum: Math.ceil(count / limit),
-            data: products
+            data: products,
         });
         
     } catch (err) {
@@ -62,9 +62,10 @@ async function show(req, res, next) {
     try {
 
         let product = await Product.findById(req.params.id).populate('category').populate('type');
+
         return res.status(200).json({
             message: "Product Retrived Successfully!",
-            data: product
+            data: product,
         });
 
     } catch (err) {
@@ -81,9 +82,7 @@ async function store(req, res, next) {
 
         // relationship of category
         if (payload.category) {
-            let category = await ProductCategory.findOne({
-                _id: payload.category
-            });
+            let category = await ProductCategory.findOne({ _id: payload.category });
             if (category) {
                 payload = { ...payload, category: category._id }
             } else {
@@ -93,9 +92,7 @@ async function store(req, res, next) {
 
         // relationship of type
         if (payload.type) {
-            let type = await ProductType.findOne({
-                _id: payload.type
-            });
+            let type = await ProductType.findOne({ _id: payload.type });
             if (type) {
                 payload = { ...payload, type: type._id }
             } else {
@@ -121,7 +118,7 @@ async function store(req, res, next) {
                     await product.save();
                     return res.status(201).json({
                         message: 'Product Stored Successfully!',
-                        product: product
+                        product: product,
                     });
                 } catch (err) {
                     // if failed, destroy file uploaded
@@ -130,7 +127,7 @@ async function store(req, res, next) {
                     if (err && err.name === 'ValidationError') {
                         return res.status(400).json({
                             message: err.message,
-                            fields: err.errors
+                            fields: err.errors,
                         });
                     }
                     next(err);
@@ -146,7 +143,7 @@ async function store(req, res, next) {
             await product.save();
             return res.status(201).json({
                 message: 'Product Stored Successfully!',
-                data: product
+                data: product,
             });
         }
 
@@ -155,7 +152,7 @@ async function store(req, res, next) {
         if (err && err.name === 'ValidationError') {
             return res.status(400).json({
                 message: err.message,
-                fields: err.errors
+                fields: err.errors,
             });
         }
         next(err);
@@ -172,9 +169,7 @@ async function update(req, res, next) {
 
         // relationship of category
         if (payload.category) {
-            let category = await ProductCategory.findOne({
-                _id: payload.category
-            });
+            let category = await ProductCategory.findOne({ _id: payload.category });
             if (category) {
                 payload = { ...payload, category: category._id }
             } else {
@@ -184,9 +179,7 @@ async function update(req, res, next) {
 
         // relationship of type
         if (payload.type) {
-            let type = await ProductType.findOne({
-                _id: payload.type
-            });
+            let type = await ProductType.findOne({ _id: payload.type });
             if (type) {
                 payload = { ...payload, type: type._id }
             } else {
@@ -219,11 +212,11 @@ async function update(req, res, next) {
                     product = await Product.findOneAndUpdate(
                         { _id: req.params.id },
                         { ...payload, image_url: fileName },
-                        { new: true, runValidators: true }
+                        { new: true, runValidators: true },
                     );
                     res.status(200).json({
                         message: 'Product Updated Successfully!',
-                        product: product
+                        product: product,
                     });
                 } catch (err) {
                     // if failed, destroy file uploaded
@@ -232,7 +225,7 @@ async function update(req, res, next) {
                     if (err && err.name === 'ValidationError') {
                         return res.status(400).json({
                             message: err.message,
-                            fields: err.errors
+                            fields: err.errors,
                         });
                     }
                     next(err);
@@ -246,11 +239,11 @@ async function update(req, res, next) {
             let product = await Product.findOneAndUpdate(
                 { _id: req.params.id },
                 payload,
-                { new: true, runValidators: true}
+                { new: true, runValidators: true},
             );
             res.status(200).json({
                 message: 'Product Updated Successfully!',
-                data: product
+                data: product,
             });
         }
 
@@ -259,7 +252,7 @@ async function update(req, res, next) {
         if (err && err.name === 'ValidationError') {
             return res.status(400).json({
                 message: err.message,
-                fields: err.errors
+                fields: err.errors,
             });
         }
         next(err);
@@ -281,7 +274,7 @@ async function destroy(req, res, next) {
         
         res.status(200).json({
             message: 'Product Deleted Successfully!',
-            data: product
+            data: product,
         });
 
     } catch (err) {
@@ -294,5 +287,5 @@ module.exports = {
     show,
     store,
     update,
-    destroy
+    destroy,
 }

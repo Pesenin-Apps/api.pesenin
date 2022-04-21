@@ -4,9 +4,10 @@ async function index(req, res, next) {
     try {
 
         let categories = await ProductCategory.find().sort('name');
+
         return res.status(200).json({
             message: "Categories Retrived Successfully!",
-            data: categories
+            data: categories,
         });
 
     } catch (err) {
@@ -18,9 +19,10 @@ async function show(req, res, next) {
     try {
 
         let productCategory = await ProductCategory.findById(req.params.id).populate('products');
+        
         return res.status(200).json({
             message: "ProductCategory Retrived Successfully!",
-            data: productCategory
+            data: productCategory,
         });
 
     } catch (err) {
@@ -38,7 +40,7 @@ async function store(req, res, next) {
 
         return res.status(201).json({
             message: 'ProductCategory Stored Successfully!',
-            data: productCategory
+            data: productCategory,
         });
 
     } catch (err) {
@@ -46,7 +48,7 @@ async function store(req, res, next) {
         if (err && err.name === 'ValidationError') {
             return res.status(404).json({
                 message: err.message,
-                fields: err.errors
+                fields: err.errors,
             });
         }
         next(err);
@@ -61,12 +63,12 @@ async function update(req, res, next) {
         let productCategory = await ProductCategory.findByIdAndUpdate(
             { _id: req.params.id },
             payload,
-            { new: true, runValidators: true }
+            { new: true, runValidators: true },
         );
 
         return res.status(200).json({
             message: 'ProductCategory Updated Successfully!',
-            data: productCategory
+            data: productCategory,
         });
 
     } catch (err) {
@@ -74,7 +76,7 @@ async function update(req, res, next) {
         if (err && err.name === 'ValidationError') {
             return res.status(404).json({
                 message: err.message,
-                fields: err.errors
+                fields: err.errors,
             });
         }
         next(err);
@@ -86,9 +88,10 @@ async function destroy(req, res, next) {
     try {
 
         let productCategory = await ProductCategory.findOneAndDelete({ _id: req.params.id });
+        
         return res.status(200).json({
             message: 'ProductCategory Deleted Successfully!',
-            data: productCategory
+            data: productCategory,
         });
 
     } catch (err) {
@@ -101,5 +104,5 @@ module.exports = {
     show,
     store,
     update,
-    destroy
+    destroy,
 }
